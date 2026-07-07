@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>MugArt Admin | Categorias</title>
+
+  <link rel="icon" href="../assets/favicon.ico" sizes="any">
+  <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+
+<body class="admin-body">
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="dashboard.html">
+      <img src="../assets/logo.png" alt="MugArt" />
+    </a>
+
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="produtos.html">Produtos</a>
+      <a class="active" href="categorias.html">Categorias</a>
+      <a href="pedidos.html">Pedidos</a>
+      <a href="../loja.html">Ver Loja</a>
+    </nav>
+
+    <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">Organização</p>
+        <h1>Categorias</h1>
+      </div>
+    </header>
+
+    <section class="admin-grid-2">
+      <form id="categoryForm" class="admin-panel form-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Cadastro</p>
+            <h2>Nova categoria</h2>
+          </div>
+        </div>
+
+        <label>
+          Nome da categoria
+          <input id="categoryName" required placeholder="Caneca Coração" />
+        </label>
+
+        <button type="submit">Salvar categoria</button>
+      </form>
+
+      <section class="admin-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Lista</p>
+            <h2>Categorias cadastradas</h2>
+          </div>
+        </div>
+
+        <div id="categoriesList" class="chip-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

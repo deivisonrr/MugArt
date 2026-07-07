@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>MugArt Admin | Dashboard</title>
+
+  <link rel="icon" href="../assets/favicon.ico" sizes="any">
+  <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+
+<body class="admin-body">
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="dashboard.html">
+      <img src="../assets/logo.png" alt="MugArt" />
+    </a>
+
+    <nav>
+      <a class="active" href="dashboard.html">Dashboard</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="categorias.html">Categorias</a>
+      <a href="pedidos.html">Pedidos</a>
+      <a href="../loja.html">Ver Loja</a>
+    </nav>
+
+    <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">Resumo</p>
+        <h1>Dashboard</h1>
+      </div>
+
+      <a class="admin-action" href="produtos.html">Cadastrar produto</a>
+    </header>
+
+    <section class="metric-grid">
+      <article class="metric-card">
+        <span>Produtos ativos</span>
+        <strong id="metricProducts">0</strong>
+      </article>
+
+      <article class="metric-card">
+        <span>Estoque total</span>
+        <strong id="metricStock">0</strong>
+      </article>
+
+      <article class="metric-card">
+        <span>Pedidos</span>
+        <strong id="metricOrders">0</strong>
+      </article>
+
+      <article class="metric-card">
+        <span>Faturamento visual</span>
+        <strong id="metricRevenue">R$ 0,00</strong>
+      </article>
+    </section>
+
+    <section class="admin-panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Atenção</p>
+          <h2>Estoque baixo</h2>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Cor</th>
+              <th>Estoque</th>
+            </tr>
+          </thead>
+          <tbody id="lowStockTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
