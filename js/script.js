@@ -24,11 +24,19 @@ document.querySelectorAll(".nav a").forEach((link) => {
 function selectCard(card) {
   cards.forEach((item) => item.classList.remove("active"));
   card.classList.add("active");
-  selectedModel = card.dataset.modelo || card.querySelector("h3")?.innerText || "Caneca Branca";
+
+  selectedModel =
+    card.dataset.modelo ||
+    card.querySelector("h3")?.innerText ||
+    "Caneca Branca";
+
   selectedModelText.textContent = selectedModel;
 
   colors.forEach((color) => {
-    color.classList.toggle("selected", color.dataset.target === selectedModel);
+    color.classList.toggle(
+      "selected",
+      color.dataset.target === selectedModel
+    );
   });
 }
 
@@ -42,19 +50,31 @@ colors.forEach((color) => {
     color.classList.add("selected");
 
     const index = color.dataset.card;
+
     if (index !== undefined && cards[index]) {
       selectCard(cards[index]);
-      cards[index].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+
+      cards[index].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
     }
   });
 });
 
 document.querySelector(".arrow.left")?.addEventListener("click", () => {
-  modelsTrack.scrollBy({ left: -260, behavior: "smooth" });
+  modelsTrack.scrollBy({
+    left: -260,
+    behavior: "smooth",
+  });
 });
 
 document.querySelector(".arrow.right")?.addEventListener("click", () => {
-  modelsTrack.scrollBy({ left: 260, behavior: "smooth" });
+  modelsTrack.scrollBy({
+    left: 260,
+    behavior: "smooth",
+  });
 });
 
 artInput.addEventListener("change", (event) => {
@@ -82,14 +102,51 @@ clearArt.addEventListener("click", () => {
   hasArt = false;
   selectedFileName = "";
   selectedArtText.textContent = "Nenhuma";
+
   artPreview.removeAttribute("src");
   artPreview.style.display = "none";
   placeholderText.style.display = "block";
 });
 
 sendWhatsapp.addEventListener("click", () => {
-  const name = document.getElementById("customerName").value.trim() || "Não informado";
-  const note = document.getElementById("customerNote").value.trim() || "Sem observações";
+
+  const name =
+    document.getElementById("customerName").value.trim() ||
+    "Não informado";
+
+  const note =
+    document.getElementById("customerNote").value.trim() ||
+    "Sem observações";
+
+  /* ==========================
+     DATALAYER
+  ========================== */
+
+  window.dataLayer = window.dataLayer || [];
+
+  window.dataLayer.push({
+
+    event: "pedido_whatsapp",
+
+    customer_name: name,
+
+    mug_model: selectedModel,
+
+    artwork_uploaded: hasArt,
+
+    artwork_name: hasArt ? selectedFileName : "",
+
+    observations: note,
+
+    page_title: document.title,
+
+    page_location: window.location.href
+
+  });
+
+  /* ==========================
+     WHATSAPP
+  ========================== */
 
   const message = `Olá, vim pelo site da MugArt e gostaria de solicitar um orçamento.
 
@@ -101,5 +158,9 @@ Observações: ${note}
 
 Gostaria de continuar o atendimento pelo WhatsApp.`;
 
-  window.open(`https://wa.me/5511988849236?text=${encodeURIComponent(message)}`, "_blank");
+  window.open(
+    `https://wa.me/5511988849236?text=${encodeURIComponent(message)}`,
+    "_blank"
+  );
+
 });
