@@ -126,10 +126,73 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button">Selecionar</button>
           </article>
 
-          <article class="model-card" data-modelo="Caneca mágica" data-imagem="assets/caneca-magica.png" data-cor="magica">
-            <img src="assets/caneca-magica.png" alt="Caneca mágica" />
+          <article class="model-card" data-modelo="Caneca mágica" data-imagem="assets/caneca_magica.png" data-cor="magica">
+            <img src="assets/caneca_magica.png" alt="Caneca mágica" />
             <h3>Caneca Mágica</h3>
             <p>Fica preta e revela a arte com líquido quente.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca coração preta" data-imagem="assets/caneca_coracao_preta.jpeg" data-cor="preta">
+            <img src="assets/caneca_coracao_preta.jpeg" alt="Caneca coração preta" />
+            <h3>Caneca Coração Preta</h3>
+            <p>Modelo romântico com alça em formato de coração.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca coração marrom" data-imagem="assets/caneca_coracao_marrom.jpeg" data-cor="marrom">
+            <img src="assets/caneca_coracao_marrom.jpeg" alt="Caneca coração marrom" />
+            <h3>Caneca Coração Marrom</h3>
+            <p>Charmosa, criativa e perfeita para presentes especiais.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca coração azul" data-imagem="assets/caneca_coracao_azul.jpeg" data-cor="azul">
+            <img src="assets/caneca_coracao_azul.jpeg" alt="Caneca coração azul" />
+            <h3>Caneca Coração Azul</h3>
+            <p>Delicada e moderna para personalizações únicas.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca coração amarela" data-imagem="assets/caneca_coracao_amarelo.jpeg" data-cor="amarelo">
+            <img src="assets/caneca_coracao_amarelo.jpeg" alt="Caneca coração amarela" />
+            <h3>Caneca Coração Amarela</h3>
+            <p>Colorida, alegre e cheia de personalidade.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca coração vermelha" data-imagem="assets/caneca_coracao_vermelho.jpeg" data-cor="vermelho">
+            <img src="assets/caneca_coracao_vermelho.jpeg" alt="Caneca coração vermelha" />
+            <h3>Caneca Coração Vermelha</h3>
+            <p>Ideal para presentes românticos e datas especiais.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca comum marrom" data-imagem="assets/caneca_comum_marrom.png" data-cor="marrom">
+            <img src="assets/caneca_comum_marrom.png" alt="Caneca comum marrom" />
+            <h3>Caneca Comum Marrom</h3>
+            <p>Estilo clássico com cor interna diferenciada.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca comum roxa" data-imagem="assets/caneca_comum_roxo.png" data-cor="roxo">
+            <img src="assets/caneca_comum_roxo.png" alt="Caneca comum roxa" />
+            <h3>Caneca Comum Roxa</h3>
+            <p>Moderna, criativa e perfeita para destacar sua arte.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca comum verde" data-imagem="assets/caneca_comum_verde.png" data-cor="verde">
+            <img src="assets/caneca_comum_verde.png" alt="Caneca comum verde" />
+            <h3>Caneca Comum Verde</h3>
+            <p>Uma opção vibrante para personalizações especiais.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca comum laranja" data-imagem="assets/caneca_comum_laranja.png" data-cor="laranja">
+            <img src="assets/caneca_comum_laranja.png" alt="Caneca comum laranja" />
+            <h3>Caneca Comum Laranja</h3>
+            <p>Colorida, divertida e cheia de energia.</p>
             <button type="button">Selecionar</button>
           </article>
         </div>
@@ -164,6 +227,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="preview-stage">
         <div class="grid-bg"></div>
         <img class="preview-mug-base" id="previewMugBase" src="assets/caneca-studio.png" alt="Prévia da caneca" />
+        <div class="print-area">
+          <img id="artPreview" alt="Prévia da arte enviada" />
+          <span id="placeholderText">Sua<br><strong>arte</strong></span>
+        </div>
 
 
 
@@ -188,9 +255,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="color-dots">
           <button class="color white selected" data-target="Caneca branca" data-card="0" aria-label="Caneca branca"></button>
           <button class="color black" data-target="Interna e alça preta" data-card="1" aria-label="Caneca preta"></button>
-          <button class="color yellow" aria-label="Amarela sob consulta"></button>
           <button class="color pink" data-target="Interna e alça rosa" data-card="2" aria-label="Caneca rosa"></button>
           <button class="color cyan" data-target="Interna e alça azul" data-card="3" aria-label="Caneca azul"></button>
+          <button class="color black" data-target="Caneca mágica" data-card="4" aria-label="Caneca mágica"></button>
+          <button class="color black" data-target="Caneca coração preta" data-card="5" aria-label="Caneca coração preta"></button>
+          <button class="color brown" data-target="Caneca coração marrom" data-card="6" aria-label="Caneca coração marrom"></button>
+          <button class="color cyan" data-target="Caneca coração azul" data-card="7" aria-label="Caneca coração azul"></button>
+          <button class="color yellow" data-target="Caneca coração amarela" data-card="8" aria-label="Caneca coração amarela"></button>
+          <button class="color red" data-target="Caneca coração vermelha" data-card="9" aria-label="Caneca coração vermelha"></button>
+          <button class="color brown" data-target="Caneca comum marrom" data-card="10" aria-label="Caneca comum marrom"></button>
+          <button class="color purple" data-target="Caneca comum roxa" data-card="11" aria-label="Caneca comum roxa"></button>
+          <button class="color green" data-target="Caneca comum verde" data-card="12" aria-label="Caneca comum verde"></button>
+          <button class="color orange" data-target="Caneca comum laranja" data-card="13" aria-label="Caneca comum laranja"></button>
         </div>
 
         <button class="clear-btn" id="clearArt" type="button">🗑 Limpar arte</button>
