@@ -12,7 +12,11 @@ const sendWhatsapp = document.getElementById("sendWhatsapp");
 const modelsTrack = document.getElementById("modelsTrack");
 
 let selectedModel = "Caneca Branca";
+let selectedColor = "branca";
 let selectedFileName = "";
+let selectedFileType = "";
+let selectedFileExtension = "";
+let selectedFileSizeKb = 0;
 let hasArt = false;
 
 menuToggle?.addEventListener("click", () => nav.classList.toggle("open"));
@@ -29,6 +33,8 @@ function selectCard(card) {
     card.dataset.modelo ||
     card.querySelector("h3")?.innerText ||
     "Caneca Branca";
+
+  selectedColor = card.dataset.cor || "";
 
   selectedModelText.textContent = selectedModel;
 
@@ -83,15 +89,24 @@ artInput.addEventListener("change", (event) => {
   if (!file) return;
 
   selectedFileName = file.name;
+  selectedFileType = file.type;
+  selectedFileExtension = file.name.split(".").pop().toLowerCase();
+  selectedFileSizeKb = Math.round(file.size / 1024);
   hasArt = true;
+
   selectedArtText.textContent = file.name;
 
   const reader = new FileReader();
 
   reader.onload = (e) => {
-    artPreview.src = e.target.result;
-    artPreview.style.display = "block";
-    placeholderText.style.display = "none";
+    if (artPreview) {
+      artPreview.src = e.target.result;
+      artPreview.style.display = "block";
+    }
+
+    if (placeholderText) {
+      placeholderText.style.display = "none";
+    }
   };
 
   reader.readAsDataURL(file);
@@ -101,15 +116,23 @@ clearArt.addEventListener("click", () => {
   artInput.value = "";
   hasArt = false;
   selectedFileName = "";
+  selectedFileType = "";
+  selectedFileExtension = "";
+  selectedFileSizeKb = 0;
+
   selectedArtText.textContent = "Nenhuma";
 
-  artPreview.removeAttribute("src");
-  artPreview.style.display = "none";
-  placeholderText.style.display = "block";
+  if (artPreview) {
+    artPreview.removeAttribute("src");
+    artPreview.style.display = "none";
+  }
+
+  if (placeholderText) {
+    placeholderText.style.display = "block";
+  }
 });
 
 sendWhatsapp.addEventListener("click", () => {
-
   const name =
     document.getElementById("customerName").value.trim() ||
     "Não informado";
@@ -118,41 +141,34 @@ sendWhatsapp.addEventListener("click", () => {
     document.getElementById("customerNote").value.trim() ||
     "Sem observações";
 
-  /* ==========================
-     DATALAYER
-  ========================== */
-
   window.dataLayer = window.dataLayer || [];
 
   window.dataLayer.push({
-
     event: "pedido_whatsapp",
 
-    customer_name: name,
-
     mug_model: selectedModel,
+    mug_color: selectedColor,
 
     artwork_uploaded: hasArt,
-
     artwork_name: hasArt ? selectedFileName : "",
+    artwork_type: hasArt ? selectedFileType : "",
+    artwork_extension: hasArt ? selectedFileExtension : "",
+    artwork_size_kb: hasArt ? selectedFileSizeKb : 0,
 
-    observations: note,
+    customer_name_filled: name !== "Não informado",
+    customer_note_filled: note !== "Sem observações",
 
     page_title: document.title,
-
-    page_location: window.location.href
-
+    page_location: window.location.href,
+    page_path: window.location.pathname
   });
-
-  /* ==========================
-     WHATSAPP
-  ========================== */
 
   const message = `Olá, vim pelo site da MugArt e gostaria de solicitar um orçamento.
 
 Resumo do pedido:
 Nome: ${name}
 Modelo escolhido: ${selectedModel}
+Cor da caneca: ${selectedColor}
 Arte enviada pelo site: ${hasArt ? "Sim - " + selectedFileName : "Não"}
 Observações: ${note}
 
@@ -162,5 +178,4 @@ Gostaria de continuar o atendimento pelo WhatsApp.`;
     `https://wa.me/5511988849236?text=${encodeURIComponent(message)}`,
     "_blank"
   );
-
 });
