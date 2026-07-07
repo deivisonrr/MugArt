@@ -92,10 +92,11 @@
       </div>
 
       <div class="store-hero-card">
+        <span class="hero-badge">Pronta entrega</span>
         <img src="assets/hero-caneca.png" alt="Caneca MugArt" />
         <div>
-          <span>Pronta entrega</span>
-          <strong>A partir de R$ 29,90</strong>
+          <span>A partir de</span>
+          <strong>R$ 29,90</strong>
         </div>
       </div>
     </section>
@@ -120,10 +121,18 @@
       </article>
 
       <article>
-        <i class="fa-solid fa-shield-heart"></i>
-        <strong>Pedido seguro</strong>
-        <span>Pedidos serão validados por confirmação de pagamento.</span>
+        <i class="fa-solid fa-chart-line"></i>
+        <strong>DataLayer completo</strong>
+        <span>Eventos GA4 para funil de e-commerce.</span>
       </article>
+    </section>
+
+    <section class="featured-strip">
+      <div>
+        <span class="eyebrow-mini">Destaques</span>
+        <h2>Mais procuradas</h2>
+      </div>
+      <div class="featured-products" id="featuredProducts"></div>
     </section>
 
     <section class="store-layout" id="produtos">
@@ -147,6 +156,12 @@
           Cor
           <select id="colorFilter"></select>
         </label>
+
+        <div class="price-filter">
+          <span>Preço máximo</span>
+          <strong id="priceMaxLabel">R$ 70,00</strong>
+          <input id="priceMaxFilter" type="range" min="20" max="80" value="80" step="5">
+        </div>
 
         <label>
           Ordenar
@@ -172,6 +187,8 @@
         </div>
 
         <div class="products-grid" id="productsGrid"></div>
+
+        <div class="pagination" id="pagination"></div>
       </section>
     </section>
   </main>

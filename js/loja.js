@@ -1,5 +1,5 @@
 /* ==========================================================
-   MugArt Loja - Front-end
+   MugArt Loja v2 - Front-end
    Arquivo: js/loja.js
 ========================================================== */
 
@@ -7,6 +7,7 @@ var MUGART_CONFIG = {
   whatsapp: "5511988849236",
   currency: "BRL",
   locale: "pt-BR",
+  productsPerPage: 8,
   storageKeys: {
     cart: "mugart_cart",
     favorites: "mugart_favorites",
@@ -76,6 +77,38 @@ var PRODUCTS = [
     description: "Modelo delicado com alça coração azul, pronto para personalização.",
     specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["coração", "azul", "presente"],
+    active: true,
+    featured: false
+  },
+  {
+    id: "caneca-coracao-amarela-001",
+    sku: "MC-COR-AMARELA-001",
+    name: "Caneca Coração Amarela",
+    category: "Caneca Coração",
+    color: "Amarela",
+    price: 44.90,
+    oldPrice: 54.90,
+    stock: 7,
+    image: "assets/caneca_coracao_amarelo.jpeg",
+    description: "Caneca coração amarela, alegre e perfeita para presentes criativos.",
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
+    tags: ["coração", "amarela", "presente"],
+    active: true,
+    featured: false
+  },
+  {
+    id: "caneca-coracao-marrom-001",
+    sku: "MC-COR-MARROM-001",
+    name: "Caneca Coração Marrom",
+    category: "Caneca Coração",
+    color: "Marrom",
+    price: 44.90,
+    oldPrice: 54.90,
+    stock: 4,
+    image: "assets/caneca_coracao_marrom.jpeg",
+    description: "Caneca coração marrom, charmosa e ideal para presentes especiais.",
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
+    tags: ["coração", "marrom", "presente"],
     active: true,
     featured: false
   },
@@ -158,6 +191,22 @@ var PRODUCTS = [
     tags: ["vermelha", "colorida", "presente"],
     active: true,
     featured: false
+  },
+  {
+    id: "caneca-comum-marrom-001",
+    sku: "MC-COM-MARROM-001",
+    name: "Caneca Comum Marrom",
+    category: "Caneca Comum",
+    color: "Marrom",
+    price: 34.90,
+    oldPrice: 44.90,
+    stock: 5,
+    image: "assets/caneca_comum_marrom.png",
+    description: "Caneca comum marrom, elegante e pronta para personalização.",
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
+    tags: ["marrom", "colorida", "presente"],
+    active: true,
+    featured: false
   }
 ];
 
@@ -165,7 +214,8 @@ var StoreState = {
   products: PRODUCTS.filter(function(product) { return product.active; }),
   cart: [],
   favorites: [],
-  filters: { search: "", category: "todos", color: "todos", sort: "featured" },
+  currentPage: 1,
+  filters: { search: "", category: "todos", color: "todos", sort: "featured", maxPrice: 80 },
   selectedProduct: null
 };
 
@@ -234,6 +284,7 @@ document.addEventListener("DOMContentLoaded", function() {
   bindCartActions();
   renderCategories();
   renderColors();
+  renderFeaturedProducts();
   renderProducts();
   renderCart();
   updateCounters();
@@ -346,11 +397,13 @@ function bindFilters() {
   var categorySelect = $("#categoryFilter");
   var colorSelect = $("#colorFilter");
   var sortSelect = $("#sortFilter");
+  var priceMax = $("#priceMaxFilter");
   var clearFilters = $("#clearFilters");
 
   if (searchInput) {
     searchInput.addEventListener("input", function(event) {
       StoreState.filters.search = event.target.value;
+      StoreState.currentPage = 1;
       renderProducts();
       pushDataLayer({ event: "store_search", search_term: event.target.value });
     });
@@ -359,6 +412,7 @@ function bindFilters() {
   if (categorySelect) {
     categorySelect.addEventListener("change", function(event) {
       StoreState.filters.category = event.target.value;
+      StoreState.currentPage = 1;
       renderProducts();
     });
   }
@@ -366,6 +420,7 @@ function bindFilters() {
   if (colorSelect) {
     colorSelect.addEventListener("change", function(event) {
       StoreState.filters.color = event.target.value;
+      StoreState.currentPage = 1;
       renderProducts();
     });
   }
@@ -373,21 +428,42 @@ function bindFilters() {
   if (sortSelect) {
     sortSelect.addEventListener("change", function(event) {
       StoreState.filters.sort = event.target.value;
+      StoreState.currentPage = 1;
       renderProducts();
     });
   }
 
+  if (priceMax) {
+    priceMax.addEventListener("input", function(event) {
+      StoreState.filters.maxPrice = Number(event.target.value);
+      StoreState.currentPage = 1;
+      updatePriceLabel();
+      renderProducts();
+    });
+    updatePriceLabel();
+  }
+
   if (clearFilters) {
     clearFilters.addEventListener("click", function() {
-      StoreState.filters = { search: "", category: "todos", color: "todos", sort: "featured" };
+      StoreState.filters = { search: "", category: "todos", color: "todos", sort: "featured", maxPrice: 80 };
+      StoreState.currentPage = 1;
+
       if (searchInput) searchInput.value = "";
       if (categorySelect) categorySelect.value = "todos";
       if (colorSelect) colorSelect.value = "todos";
       if (sortSelect) sortSelect.value = "featured";
+      if (priceMax) priceMax.value = "80";
+
+      updatePriceLabel();
       renderCategories();
       renderProducts();
     });
   }
+}
+
+function updatePriceLabel() {
+  var label = $("#priceMaxLabel");
+  if (label) label.textContent = formatMoney(StoreState.filters.maxPrice);
 }
 
 function renderCategories() {
@@ -422,7 +498,8 @@ function renderCategories() {
     $all(".category-chip").forEach(function(button) {
       button.addEventListener("click", function() {
         StoreState.filters.category = button.dataset.category;
-        if (categorySelect) categorySelect.value = StoreState.filters.category;
+        StoreState.currentPage = 1;
+        if ($("#categoryFilter")) $("#categoryFilter").value = StoreState.filters.category;
         renderCategories();
         renderProducts();
       });
@@ -456,6 +533,7 @@ function getFilteredProducts() {
   var category = StoreState.filters.category;
   var color = StoreState.filters.color;
   var sort = StoreState.filters.sort;
+  var maxPrice = StoreState.filters.maxPrice;
   var searchTerm = normalizeText(search);
 
   var products = StoreState.products.filter(function(product) {
@@ -469,8 +547,9 @@ function getFilteredProducts() {
 
     var matchesCategory = category === "todos" || product.category === category;
     var matchesColor = color === "todos" || product.color === color;
+    var matchesPrice = product.price <= maxPrice;
 
-    return matchesSearch && matchesCategory && matchesColor;
+    return matchesSearch && matchesCategory && matchesColor && matchesPrice;
   });
 
   products.sort(function(a, b) {
@@ -484,6 +563,11 @@ function getFilteredProducts() {
   return products;
 }
 
+function getPagedProducts(products) {
+  var start = (StoreState.currentPage - 1) * MUGART_CONFIG.productsPerPage;
+  return products.slice(start, start + MUGART_CONFIG.productsPerPage);
+}
+
 function renderProducts() {
   var grid = $("#productsGrid") || $("#storeProducts") || $(".products-grid");
   var count = $("#productsCount");
@@ -491,16 +575,58 @@ function renderProducts() {
   if (!grid) return;
 
   var products = getFilteredProducts();
+  var paged = getPagedProducts(products);
 
   if (count) count.textContent = products.length + " produto" + (products.length === 1 ? "" : "s");
 
   if (!products.length) {
     grid.innerHTML = '<div class="empty-products"><h3>Nenhuma caneca encontrada</h3><p>Tente limpar os filtros ou buscar outro modelo.</p></div>';
+    renderPagination(products.length);
     return;
   }
 
-  grid.innerHTML = products.map(productCardTemplate).join("");
+  grid.innerHTML = paged.map(productCardTemplate).join("");
   bindProductCards();
+  renderPagination(products.length);
+}
+
+function renderFeaturedProducts() {
+  var container = $("#featuredProducts");
+  if (!container) return;
+
+  var featured = StoreState.products.filter(function(product) {
+    return product.featured;
+  }).slice(0, 4);
+
+  container.innerHTML = featured.map(productCardTemplate).join("");
+  bindProductCards();
+}
+
+function renderPagination(totalProducts) {
+  var pagination = $("#pagination");
+  if (!pagination) return;
+
+  var pages = Math.ceil(totalProducts / MUGART_CONFIG.productsPerPage);
+
+  if (pages <= 1) {
+    pagination.innerHTML = "";
+    return;
+  }
+
+  var html = "";
+  for (var i = 1; i <= pages; i++) {
+    html += '<button type="button" class="' + (i === StoreState.currentPage ? "active" : "") + '" data-page="' + i + '">' + i + '</button>';
+  }
+
+  pagination.innerHTML = html;
+
+  $all("#pagination button").forEach(function(button) {
+    button.addEventListener("click", function() {
+      StoreState.currentPage = Number(button.dataset.page);
+      renderProducts();
+      document.getElementById("produtos").scrollIntoView({ behavior: "smooth" });
+    });
+  });
 }
 
 function productCardTemplate(product) {
@@ -520,7 +646,7 @@ function productCardTemplate(product) {
         '<span class="product-category">' + product.category + '</span>' +
         '<h3>' + product.name + '</h3>' +
         '<p>' + product.description + '</p>' +
-        '<div class="product-meta"><span>' + product.color + '</span><span>' + (product.stock > 0 ? product.stock + " em estoque" : "Esgotado") + '</span></div>' +
+        '<div class="product-meta"><span>' + product.color + '</span><span class="' + (product.stock <= 4 ? "stock-low" : "") + '">' + (product.stock > 0 ? product.stock + " em estoque" : "Esgotado") + '</span></div>' +
         '<div class="product-price"><strong>' + formatMoney(product.price) + '</strong>' + (product.oldPrice ? '<small>' + formatMoney(product.oldPrice) + '</small>' : '') + '</div>' +
         '<div class="product-actions">' +
           '<button class="details-btn" type="button" data-action="view">Detalhes</button>' +
@@ -624,6 +750,7 @@ function toggleFavorite(productId) {
 
   saveToStorage(MUGART_CONFIG.storageKeys.favorites, StoreState.favorites);
   renderProducts();
+  renderFeaturedProducts();
   updateCounters();
 
   pushDataLayer({
