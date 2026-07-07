@@ -1,10 +1,12 @@
 # MugArt Mockup Studio
 
-Site estático para GitHub Pages com personalizador próprio de caneca em 3D usando Three.js.
+Versão corrigida: Three.js com importmap para funcionar no GitHub Pages.
 
-## Publicação
-Envie todos os arquivos desta pasta para o repositório do GitHub e ative:
-Settings > Pages > Deploy from a branch > main > /root.
+Envie para o GitHub exatamente estes itens na raiz do repositório:
 
-## Importante
-O mockup usa Three.js via CDN. No GitHub Pages funciona online. Para um módulo ainda mais realista, depois podemos trocar a caneca paramétrica por um arquivo `mug.glb` profissional em `assets/models/`.
+- index.html
+- css/style.css
+- js/app.js
+- assets/logo.png
+
+Depois aguarde o GitHub Pages atualizar. Se o site antigo continuar aparecendo, use Ctrl+F5 no navegador.

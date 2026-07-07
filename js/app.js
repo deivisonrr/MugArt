@@ -1,5 +1,5 @@
-import * as THREE from 'https://unpkg.com/three@0.161.0/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const logoUrl = './assets/logo.png';
 const whatsapp = '5511988849236';
@@ -63,8 +63,10 @@ function createMugScene(canvas, opts = {}) {
   return { scene, camera, renderer, controls, group, bodyMat, insideMat, decal, decalMat, texture, setColor(hex){ bodyMat.color.set(hex); insideMat.color.set(hex); }, setTexture(tex){ decalMat.map = tex; decalMat.needsUpdate = true; }, reset(){ group.rotation.set(0,0,0); camera.position.set(0,1.2,5.6); controls.target.set(0,.45,0); } };
 }
 
-const hero = createMugScene(document.querySelector('#hero3d'), { logoDecal:true, autoRotate:true });
-const studio = createMugScene(document.querySelector('#studio3d'), { autoRotate:false });
+const heroCanvas = document.querySelector('#hero3d');
+const studioCanvas = document.querySelector('#studio3d');
+const hero = createMugScene(heroCanvas, { logoDecal:true, autoRotate:true });
+const studio = createMugScene(studioCanvas, { autoRotate:false });
 
 const artUpload = document.querySelector('#artUpload');
 const scaleControl = document.querySelector('#scaleControl');
