@@ -1,65 +1,6 @@
-/* ==========================================================
-   MugArt Admin Front-end
-   LocalStorage agora. Supabase depois.
-========================================================== */
-
 const ADMIN_KEYS = {
-  auth: "mugart_admin_auth",
-  products: "mugart_admin_products",
-  categories: "mugart_admin_categories",
-  orders: "mugart_admin_orders"
+  auth: "mugart_admin_auth"
 };
-
-const DEFAULT_CATEGORIES = [
-  "Caneca Comum",
-  "Caneca Coração",
-  "Caneca Mágica"
-];
-
-const DEFAULT_PRODUCTS = [
-  {
-    id: "caneca-comum-branca-001",
-    sku: "MC-COM-BRANCA-001",
-    name: "Caneca Branca Personalizada",
-    category: "Caneca Comum",
-    color: "Branca",
-    price: 29.90,
-    oldPrice: 39.90,
-    stock: 12,
-    image: "assets/caneca-branca.png",
-    description: "Caneca branca pronta entrega, ideal para presentes personalizados, lembranças e uso diário.",
-    active: true,
-    featured: true
-  },
-  {
-    id: "caneca-magica-001",
-    sku: "MC-MAG-PRETA-001",
-    name: "Caneca Mágica",
-    category: "Caneca Mágica",
-    color: "Preta",
-    price: 49.90,
-    oldPrice: 59.90,
-    stock: 6,
-    image: "assets/caneca_magica.png",
-    description: "Caneca mágica preta que revela a arte ao entrar em contato com líquido quente.",
-    active: true,
-    featured: true
-  },
-  {
-    id: "caneca-coracao-vermelha-001",
-    sku: "MC-COR-VERM-001",
-    name: "Caneca Coração Vermelha",
-    category: "Caneca Coração",
-    color: "Vermelha",
-    price: 44.90,
-    oldPrice: 54.90,
-    stock: 8,
-    image: "assets/caneca_coracao_vermelho.jpeg",
-    description: "Caneca com alça em formato de coração, perfeita para datas românticas.",
-    active: true,
-    featured: true
-  }
-];
 
 function $(selector) {
   return document.querySelector(selector);
@@ -85,35 +26,12 @@ function slugify(text) {
     .replace(/(^-|-$)+/g, "");
 }
 
-function getData(key, fallback) {
-  try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function setData(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function seedData() {
-  if (!localStorage.getItem(ADMIN_KEYS.categories)) {
-    setData(ADMIN_KEYS.categories, DEFAULT_CATEGORIES);
-  }
-
-  if (!localStorage.getItem(ADMIN_KEYS.products)) {
-    setData(ADMIN_KEYS.products, DEFAULT_PRODUCTS);
-  }
-
-  if (!localStorage.getItem(ADMIN_KEYS.orders)) {
-    setData(ADMIN_KEYS.orders, []);
-  }
-}
-
 function isLoginPage() {
-  return location.pathname.includes("index.html") || location.pathname.endsWith("/admin/") || location.pathname.endsWith("/admin");
+  return (
+    location.pathname.endsWith("/admin/") ||
+    location.pathname.endsWith("/admin") ||
+    location.pathname.includes("/admin/index.html")
+  );
 }
 
 function requireAuth() {
@@ -126,12 +44,22 @@ function requireAuth() {
   }
 }
 
+function requireSupabase() {
+  if (!window.mugartSupabase) {
+    alert("Supabase não carregou. Verifique se supabase-config.js foi adicionado antes do admin.js.");
+    return false;
+  }
+
+  return true;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  seedData();
   requireAuth();
 
   bindLogin();
   bindLogout();
+
+  if (!isLoginPage() && !requireSupabase()) return;
 
   if ($("#metricProducts")) renderDashboard();
   if ($("#productForm")) initProductsPage();
@@ -168,35 +96,69 @@ function bindLogout() {
   });
 }
 
-function getProducts() {
-  return getData(ADMIN_KEYS.products, []);
+async function getCategories() {
+  const result = await mugartSupabase
+    .from("categories")
+    .select("*")
+    .order("name", { ascending: true });
+
+  if (result.error) {
+    console.error(result.error);
+    alert("Erro ao carregar categorias: " + result.error.message);
+    return [];
+  }
+
+  return result.data || [];
 }
 
-function saveProducts(products) {
-  setData(ADMIN_KEYS.products, products);
+async function getProducts() {
+  const result = await mugartSupabase
+    .from("products")
+    .select(`
+      *,
+      categories (
+        id,
+        name,
+        slug
+      )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (result.error) {
+    console.error(result.error);
+    alert("Erro ao carregar produtos: " + result.error.message);
+    return [];
+  }
+
+  return result.data || [];
 }
 
-function getCategories() {
-  return getData(ADMIN_KEYS.categories, []);
+async function getOrders() {
+  const result = await mugartSupabase
+    .from("orders")
+    .select(`
+      *,
+      customers (
+        id,
+        name,
+        email,
+        phone
+      )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (result.error) {
+    console.error(result.error);
+    alert("Erro ao carregar pedidos: " + result.error.message);
+    return [];
+  }
+
+  return result.data || [];
 }
 
-function saveCategories(categories) {
-  setData(ADMIN_KEYS.categories, categories);
-}
-
-function getOrders() {
-  return getData(ADMIN_KEYS.orders, []);
-}
-
-function saveOrders(orders) {
-  setData(ADMIN_KEYS.orders, orders);
-}
-
-/* Dashboard */
-
-function renderDashboard() {
-  const products = getProducts();
-  const orders = getOrders();
+async function renderDashboard() {
+  const products = await getProducts();
+  const orders = await getOrders();
 
   const activeProducts = products.filter((p) => p.active);
   const totalStock = products.reduce((sum, p) => sum + Number(p.stock || 0), 0);
@@ -214,74 +176,89 @@ function renderDashboard() {
       <tr>
         <td>
           <div class="product-mini">
-            <img src="../${p.image}" alt="${p.name}">
+            <img src="${p.image_url || "../assets/hero-caneca.png"}" alt="${p.name}">
             <strong>${p.name}</strong>
           </div>
         </td>
-        <td>${p.category}</td>
-        <td>${p.color}</td>
+        <td>${p.categories ? p.categories.name : "-"}</td>
+        <td>${p.color || "-"}</td>
         <td>${p.stock}</td>
       </tr>
     `).join("")
     : `<tr><td colspan="4">Nenhum produto com estoque baixo.</td></tr>`;
 }
 
-/* Produtos */
-
-function initProductsPage() {
-  populateCategorySelect();
-  renderProductsTable();
+async function initProductsPage() {
+  await populateCategorySelect();
+  await renderProductsTable();
 
   $("#productForm").addEventListener("submit", saveProductFromForm);
   $("#clearProductForm").addEventListener("click", clearProductForm);
   $("#newProductBtn")?.addEventListener("click", clearProductForm);
-
   $("#productSearch").addEventListener("input", renderProductsTable);
 }
 
-function populateCategorySelect() {
+async function populateCategorySelect() {
   const select = $("#productCategory");
   if (!select) return;
 
-  const categories = getCategories();
+  const categories = await getCategories();
+
+  if (!categories.length) {
+    select.innerHTML = `<option value="">Cadastre uma categoria primeiro</option>`;
+    return;
+  }
 
   select.innerHTML = categories
-    .map((category) => `<option value="${category}">${category}</option>`)
+    .map((category) => `<option value="${category.id}">${category.name}</option>`)
     .join("");
 }
 
-function saveProductFromForm(event) {
+async function saveProductFromForm(event) {
   event.preventDefault();
 
-  const products = getProducts();
   const currentId = $("#productId").value;
 
+  if (!$("#productCategory").value) {
+    alert("Cadastre uma categoria antes de salvar o produto.");
+    return;
+  }
+
   const product = {
-    id: currentId || `${slugify($("#productName").value)}-${Date.now()}`,
-    sku: $("#productSku").value.trim(),
     name: $("#productName").value.trim(),
-    category: $("#productCategory").value,
+    sku: $("#productSku").value.trim(),
+    category_id: $("#productCategory").value,
     color: $("#productColor").value.trim(),
     price: Number($("#productPrice").value || 0),
-    oldPrice: Number($("#productOldPrice").value || 0),
+    old_price: $("#productOldPrice").value ? Number($("#productOldPrice").value) : null,
     stock: Number($("#productStock").value || 0),
-    image: $("#productImage").value.trim(),
+    image_url: $("#productImage").value.trim(),
     description: $("#productDescription").value.trim(),
     active: $("#productActive").value === "true",
     featured: $("#productFeatured").value === "true"
   };
 
-  const index = products.findIndex((p) => p.id === product.id);
+  let result;
 
-  if (index >= 0) {
-    products[index] = product;
+  if (currentId) {
+    result = await mugartSupabase
+      .from("products")
+      .update(product)
+      .eq("id", currentId);
   } else {
-    products.push(product);
+    result = await mugartSupabase
+      .from("products")
+      .insert(product);
   }
 
-  saveProducts(products);
+  if (result.error) {
+    console.error(result.error);
+    alert("Erro ao salvar produto: " + result.error.message);
+    return;
+  }
+
   clearProductForm();
-  renderProductsTable();
+  await renderProductsTable();
 
   alert("Produto salvo com sucesso.");
 }
@@ -292,33 +269,35 @@ function clearProductForm() {
   $("#productFormTitle").textContent = "Novo produto";
 }
 
-function renderProductsTable() {
+async function renderProductsTable() {
   const tbody = $("#productsTable");
   if (!tbody) return;
 
   const search = ($("#productSearch")?.value || "").toLowerCase();
-  const products = getProducts().filter((product) => {
+  const products = await getProducts();
+
+  const filtered = products.filter((product) => {
     return (
       product.name.toLowerCase().includes(search) ||
-      product.category.toLowerCase().includes(search) ||
-      product.color.toLowerCase().includes(search) ||
-      product.sku.toLowerCase().includes(search)
+      (product.sku || "").toLowerCase().includes(search) ||
+      (product.color || "").toLowerCase().includes(search) ||
+      (product.categories?.name || "").toLowerCase().includes(search)
     );
   });
 
-  tbody.innerHTML = products.length
-    ? products.map((p) => `
+  tbody.innerHTML = filtered.length
+    ? filtered.map((p) => `
       <tr>
         <td>
           <div class="product-mini">
-            <img src="../${p.image}" alt="${p.name}">
+            <img src="${p.image_url || "../assets/hero-caneca.png"}" alt="${p.name}">
             <div>
               <strong>${p.name}</strong><br>
               <small>${p.sku}</small>
             </div>
           </div>
         </td>
-        <td>${p.category}</td>
+        <td>${p.categories ? p.categories.name : "-"}</td>
         <td>${formatMoney(p.price)}</td>
         <td>${p.stock}</td>
         <td><span class="status ${p.active ? "active" : "inactive"}">${p.active ? "Ativo" : "Inativo"}</span></td>
@@ -333,20 +312,30 @@ function renderProductsTable() {
     : `<tr><td colspan="6">Nenhum produto encontrado.</td></tr>`;
 }
 
-window.editProduct = function(id) {
-  const product = getProducts().find((p) => p.id === id);
-  if (!product) return;
+window.editProduct = async function(id) {
+  const result = await mugartSupabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (result.error) {
+    alert("Erro ao buscar produto: " + result.error.message);
+    return;
+  }
+
+  const product = result.data;
 
   $("#productId").value = product.id;
   $("#productName").value = product.name;
   $("#productSku").value = product.sku;
-  $("#productCategory").value = product.category;
-  $("#productColor").value = product.color;
+  $("#productCategory").value = product.category_id || "";
+  $("#productColor").value = product.color || "";
   $("#productPrice").value = product.price;
-  $("#productOldPrice").value = product.oldPrice;
+  $("#productOldPrice").value = product.old_price || "";
   $("#productStock").value = product.stock;
-  $("#productImage").value = product.image;
-  $("#productDescription").value = product.description;
+  $("#productImage").value = product.image_url || "";
+  $("#productDescription").value = product.description || "";
   $("#productActive").value = String(product.active);
   $("#productFeatured").value = String(product.featured);
   $("#productFormTitle").textContent = "Editar produto";
@@ -354,103 +343,142 @@ window.editProduct = function(id) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
-window.deleteProduct = function(id) {
+window.deleteProduct = async function(id) {
   if (!confirm("Deseja excluir este produto?")) return;
 
-  const products = getProducts().filter((p) => p.id !== id);
-  saveProducts(products);
-  renderProductsTable();
+  const result = await mugartSupabase
+    .from("products")
+    .delete()
+    .eq("id", id);
+
+  if (result.error) {
+    alert("Erro ao excluir produto: " + result.error.message);
+    return;
+  }
+
+  await renderProductsTable();
 };
 
-/* Categorias */
+async function initCategoriesPage() {
+  await renderCategoriesList();
 
-function initCategoriesPage() {
-  renderCategoriesList();
-
-  $("#categoryForm").addEventListener("submit", (event) => {
+  $("#categoryForm").addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const name = $("#categoryName").value.trim();
     if (!name) return;
 
-    const categories = getCategories();
+    const result = await mugartSupabase
+      .from("categories")
+      .insert({
+        name: name,
+        slug: slugify(name),
+        active: true
+      });
 
-    if (!categories.includes(name)) {
-      categories.push(name);
-      saveCategories(categories);
+    if (result.error) {
+      alert("Erro ao salvar categoria: " + result.error.message);
+      return;
     }
 
     $("#categoryName").value = "";
-    renderCategoriesList();
+    await renderCategoriesList();
   });
 }
 
-function renderCategoriesList() {
+async function renderCategoriesList() {
   const list = $("#categoriesList");
   if (!list) return;
 
-  const categories = getCategories();
+  const categories = await getCategories();
 
-  list.innerHTML = categories.map((category) => `
-    <span class="category-chip-admin">
-      ${category}
-      <button type="button" onclick="deleteCategory('${category}')">x</button>
-    </span>
-  `).join("");
+  list.innerHTML = categories.length
+    ? categories.map((category) => `
+      <span class="category-chip-admin">
+        ${category.name}
+        <button type="button" onclick="deleteCategory('${category.id}')">x</button>
+      </span>
+    `).join("")
+    : `<p>Nenhuma categoria cadastrada.</p>`;
 }
 
-window.deleteCategory = function(category) {
+window.deleteCategory = async function(id) {
   if (!confirm("Deseja excluir esta categoria?")) return;
 
-  const categories = getCategories().filter((item) => item !== category);
-  saveCategories(categories);
-  renderCategoriesList();
+  const result = await mugartSupabase
+    .from("categories")
+    .delete()
+    .eq("id", id);
+
+  if (result.error) {
+    alert("Erro ao excluir categoria. Verifique se existem produtos vinculados.");
+    return;
+  }
+
+  await renderCategoriesList();
 };
 
-/* Pedidos */
-
-function initOrdersPage() {
+async function initOrdersPage() {
   $("#createFakeOrder")?.addEventListener("click", createFakeOrder);
-  renderOrdersTable();
+  await renderOrdersTable();
 }
 
-function createFakeOrder() {
-  const orders = getOrders();
+async function createFakeOrder() {
+  const customerResult = await mugartSupabase
+    .from("customers")
+    .insert({
+      name: "Cliente Teste",
+      email: "cliente@email.com",
+      phone: "(11) 99999-9999"
+    })
+    .select()
+    .single();
 
-  orders.unshift({
-    id: `MUG-${Date.now()}`,
-    customer: "Cliente Teste",
-    payment: "Pix",
-    status: "pendente",
-    total: 79.80,
-    createdAt: new Date().toLocaleString("pt-BR")
-  });
+  if (customerResult.error) {
+    alert("Erro ao criar cliente teste: " + customerResult.error.message);
+    return;
+  }
 
-  saveOrders(orders);
-  renderOrdersTable();
+  const orderResult = await mugartSupabase
+    .from("orders")
+    .insert({
+      order_number: `MUG-${Date.now()}`,
+      customer_id: customerResult.data.id,
+      payment_method: "pix",
+      payment_status: "pending",
+      status: "pending",
+      total: 79.80
+    });
+
+  if (orderResult.error) {
+    alert("Erro ao criar pedido teste: " + orderResult.error.message);
+    return;
+  }
+
+  await renderOrdersTable();
 }
 
-function renderOrdersTable() {
+async function renderOrdersTable() {
   const tbody = $("#ordersTable");
   if (!tbody) return;
 
-  const orders = getOrders();
+  const orders = await getOrders();
 
   tbody.innerHTML = orders.length
     ? orders.map((order) => `
       <tr>
-        <td><strong>${order.id}</strong></td>
-        <td>${order.customer}</td>
-        <td>${order.payment}</td>
+        <td><strong>${order.order_number}</strong></td>
+        <td>${order.customers ? order.customers.name : "-"}</td>
+        <td>${order.payment_method || "-"}</td>
         <td>
           <select onchange="updateOrderStatus('${order.id}', this.value)">
-            ${["pendente", "pago", "producao", "concluido", "cancelado"].map((status) => `
+            ${["pending", "paid", "production", "completed", "cancelled"].map((status) => `
               <option value="${status}" ${order.status === status ? "selected" : ""}>${status}</option>
             `).join("")}
           </select>
         </td>
         <td>${formatMoney(order.total)}</td>
-        <td>${order.createdAt}</td>
+        <td>${new Date(order.created_at).toLocaleString("pt-BR")}</td>
         <td>
           <div class="row-actions">
             <button class="delete" type="button" onclick="deleteOrder('${order.id}')">Excluir</button>
@@ -461,38 +489,29 @@ function renderOrdersTable() {
     : `<tr><td colspan="7">Nenhum pedido encontrado.</td></tr>`;
 }
 
-window.updateOrderStatus = function(id, status) {
-  const orders = getOrders();
-  const order = orders.find((item) => item.id === id);
+window.updateOrderStatus = async function(id, status) {
+  const result = await mugartSupabase
+    .from("orders")
+    .update({ status: status })
+    .eq("id", id);
 
-  if (order) {
-    order.status = status;
-    saveOrders(orders);
+  if (result.error) {
+    alert("Erro ao atualizar status: " + result.error.message);
   }
 };
 
-window.deleteOrder = function(id) {
+window.deleteOrder = async function(id) {
   if (!confirm("Deseja excluir este pedido?")) return;
 
-  const orders = getOrders().filter((item) => item.id !== id);
-  saveOrders(orders);
-  renderOrdersTable();
+  const result = await mugartSupabase
+    .from("orders")
+    .delete()
+    .eq("id", id);
+
+  if (result.error) {
+    alert("Erro ao excluir pedido: " + result.error.message);
+    return;
+  }
+
+  await renderOrdersTable();
 };
-
-/* Supabase futuro
-
-Depois, vamos trocar localStorage por:
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-Tabelas:
-- products
-- categories
-- orders
-- order_items
-- customers
-
-Storage:
-- product-images
-
-*/
