@@ -1,240 +1,149 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const logoUrl = './assets/logo.png';
-const whatsapp = '5511988849236';
+const $ = (id)=>document.getElementById(id);
+const state = { color:'#ffffff', art:null, scale:1, x:0, y:0, rotation:0 };
 
-function makeTextTexture(text = 'Sua arte aqui') {
-  const c = document.createElement('canvas'); c.width = 1024; c.height = 640;
-  const ctx = c.getContext('2d');
-  ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle = 'rgba(255,255,255,0.0)'; ctx.fillRect(0,0,c.width,c.height);
-  ctx.strokeStyle = '#00a9cf'; ctx.setLineDash([18,12]); ctx.lineWidth = 6; ctx.strokeRect(70,70,884,500);
-  ctx.font = '900 92px Inter, Arial'; ctx.textAlign = 'center';
-  ctx.fillStyle = '#111'; ctx.fillText('Sua arte',512,290);
-  ctx.fillStyle = '#ff3d72'; ctx.fillText('aqui',512,400);
-  ctx.font = '42px Inter, Arial'; ctx.fillStyle = '#ffd20a'; ctx.fillText('♥',260,430);
-  ctx.fillStyle = '#00c7e8'; ctx.fillText('✦',750,180);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.needsUpdate = true; return tex;
-}
-
-function createMugScene(canvas, opts = {}) {
+function makeStudio(container, options={}){
   const scene = new THREE.Scene();
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer:true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const camera = new THREE.PerspectiveCamera(38, container.clientWidth/container.clientHeight, .1, 100);
+  camera.position.set(0, 1.35, 6.2);
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, preserveDrawingBuffer:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMappingExposure = 1.05;
+  container.appendChild(renderer.domElement);
 
-  const camera = new THREE.PerspectiveCamera(32, 1, .1, 100);
-  camera.position.set(0.15, 1.25, 5.2);
-
-  const controls = new OrbitControls(camera, canvas);
+  const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.enablePan = false;
-  controls.minDistance = 3.2;
-  controls.maxDistance = 7.0;
-  controls.target.set(0,.52,0);
+  controls.minDistance = 3.7; controls.maxDistance = 8;
+  controls.target.set(0,.75,0); controls.autoRotate = !!options.autoRotate; controls.autoRotateSpeed = 1.2;
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x111827, 2.0));
-  const key = new THREE.DirectionalLight(0xffffff, 4.8);
-  key.position.set(3.5,5.5,4.2);
-  key.castShadow = true;
-  key.shadow.mapSize.set(1024,1024);
-  scene.add(key);
-  const fill = new THREE.DirectionalLight(0x8df4ff, 1.9);
-  fill.position.set(-4,2,-2.5);
-  scene.add(fill);
-  const pink = new THREE.PointLight(0xff3d72, 2.0, 7);
-  pink.position.set(-2.4,.4,2.7);
-  scene.add(pink);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x334466, 2.1));
+  const key = new THREE.DirectionalLight(0xffffff, 4.0); key.position.set(3,5,4); scene.add(key);
+  const rim = new THREE.DirectionalLight(0x78e8ff, 2.0); rim.position.set(-4,3,-3); scene.add(rim);
+  const fill = new THREE.PointLight(0xff60dc, 55, 9); fill.position.set(-2,2.2,2.6); scene.add(fill);
 
-  const group = new THREE.Group();
-  group.rotation.y = -0.22;
-  scene.add(group);
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(3,96), new THREE.MeshStandardMaterial({color:0x0c0d13, roughness:.55, metalness:0}));
+  floor.rotation.x = -Math.PI/2; floor.position.y = -.86; scene.add(floor);
 
-  const mugColor = new THREE.Color(opts.color || '#ffffff');
-  const bodyMat = new THREE.MeshPhysicalMaterial({
-    color:mugColor,
-    roughness:.18,
-    metalness:0,
-    clearcoat:1,
-    clearcoatRoughness:.06,
-    reflectivity:.85,
-    sheen:0.15
-  });
-  const insideMat = new THREE.MeshPhysicalMaterial({ color:mugColor, roughness:.24, clearcoat:.9, clearcoatRoughness:.08 });
-  const shadowMat = new THREE.MeshStandardMaterial({ color:0x030408, roughness:.55, metalness:.15 });
+  let mugGroup = new THREE.Group(); scene.add(mugGroup);
+  let mugBodyMaterial = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(state.color), roughness:.18, metalness:0, clearcoat:1, clearcoatRoughness:.13, reflectivity:.55 });
+  let decalMesh = null, decalMat = new THREE.MeshBasicMaterial({ transparent:true, opacity:0.98, side:THREE.DoubleSide });
 
-  // Corpo em LatheGeometry: perfil curvo, borda fina e base menor. Parece caneca, não balde.
-  const profile = [
-    new THREE.Vector2(0.82, -1.03),
-    new THREE.Vector2(0.98, -0.99),
-    new THREE.Vector2(1.06, -0.82),
-    new THREE.Vector2(1.10, -0.38),
-    new THREE.Vector2(1.13, 0.18),
-    new THREE.Vector2(1.16, 0.72),
-    new THREE.Vector2(1.20, 0.96),
-    new THREE.Vector2(1.24, 1.04)
-  ];
-  const bodyGeo = new THREE.LatheGeometry(profile, 160);
-  bodyGeo.computeVertexNormals();
-  const body = new THREE.Mesh(bodyGeo, bodyMat);
-  body.position.y = .58;
-  body.castShadow = true;
-  body.receiveShadow = true;
-  group.add(body);
+  function createFallbackMug(){
+    const group = new THREE.Group();
+    const points = [];
+    const H = 3.0;
+    // smoother profile: base small, belly, lip
+    const profile = [
+      [0.72,-1.45],[0.82,-1.36],[0.92,-1.12],[1.02,-.55],[1.08,.25],[1.04,.88],[.99,1.23],[1.08,1.37],[1.1,1.45]
+    ];
+    profile.forEach(([r,y])=>points.push(new THREE.Vector2(r,y)));
+    const bodyGeo = new THREE.LatheGeometry(points, 160);
+    bodyGeo.computeVertexNormals();
+    const body = new THREE.Mesh(bodyGeo, mugBodyMaterial); group.add(body);
 
-  const bottom = new THREE.Mesh(new THREE.CylinderGeometry(.82,.96,.12,160), bodyMat);
-  bottom.position.y = -0.48;
-  bottom.castShadow = true;
-  group.add(bottom);
+    const inner = new THREE.Mesh(new THREE.CylinderGeometry(.93,.83,2.72,128,1,true), new THREE.MeshPhysicalMaterial({color:0xf7f7f4, roughness:.28, clearcoat:.8, side:THREE.BackSide}));
+    inner.position.y = .02; group.add(inner);
+    const lip = new THREE.Mesh(new THREE.TorusGeometry(1.045,.055,18,160), mugBodyMaterial); lip.position.y=1.45; lip.rotation.x=Math.PI/2; group.add(lip);
+    const base = new THREE.Mesh(new THREE.TorusGeometry(.72,.045,14,128), mugBodyMaterial); base.position.y=-1.45; base.rotation.x=Math.PI/2; group.add(base);
 
-  const rimOuter = new THREE.Mesh(new THREE.TorusGeometry(1.225,.043,24,160), bodyMat);
-  rimOuter.rotation.x=Math.PI/2;
-  rimOuter.position.y=1.63;
-  rimOuter.castShadow=true;
-  group.add(rimOuter);
+    const hCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(1.02,.95,0), new THREE.Vector3(1.82,.72,0), new THREE.Vector3(1.95,.02,0), new THREE.Vector3(1.78,-.65,0), new THREE.Vector3(1.02,-.85,0)
+    ]);
+    const handleOuter = new THREE.Mesh(new THREE.TubeGeometry(hCurve,96,.145,26,false), mugBodyMaterial); group.add(handleOuter);
+    const handleInnerMat = new THREE.MeshPhysicalMaterial({color:0xffffff, roughness:.22, clearcoat:1});
+    const hCurve2 = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(1.015,.78,.002), new THREE.Vector3(1.55,.54,.002), new THREE.Vector3(1.62,.02,.002), new THREE.Vector3(1.52,-.48,.002), new THREE.Vector3(1.015,-.66,.002)
+    ]);
+    const handleInner = new THREE.Mesh(new THREE.TubeGeometry(hCurve2,96,.06,18,false), handleInnerMat); group.add(handleInner);
 
-  const rimInner = new THREE.Mesh(new THREE.TorusGeometry(.91,.026,18,140), insideMat);
-  rimInner.rotation.x=Math.PI/2;
-  rimInner.position.y=1.615;
-  group.add(rimInner);
-
-  const coffeeHole = new THREE.Mesh(new THREE.CylinderGeometry(.89,.84,.055,144), new THREE.MeshStandardMaterial({color:0x151820,roughness:.5}));
-  coffeeHole.position.y = 1.595;
-  group.add(coffeeHole);
-
-  // Alça mais orgânica usando TubeGeometry com curva Bezier.
-  class HandleCurve extends THREE.Curve {
-    getPoint(t) {
-      const a = new THREE.Vector3(1.12, 1.18, 0);
-      const b = new THREE.Vector3(1.72, .92, 0);
-      const c = new THREE.Vector3(1.72, .04, 0);
-      const d = new THREE.Vector3(1.10, -.18, 0);
-      return new THREE.Vector3().copy(a).multiplyScalar((1-t)**3)
-        .add(new THREE.Vector3().copy(b).multiplyScalar(3*(1-t)**2*t))
-        .add(new THREE.Vector3().copy(c).multiplyScalar(3*(1-t)*t*t))
-        .add(new THREE.Vector3().copy(d).multiplyScalar(t**3));
+    // decal curved printable area on front
+    const rows=18, cols=36, radius=1.103, yMin=-.7, yMax=.75, thetaMin=-.64, thetaMax=.64;
+    const verts=[], uvs=[], idx=[];
+    for(let r=0;r<=rows;r++){
+      const v=r/rows; const y=yMin+(yMax-yMin)*v;
+      for(let c=0;c<=cols;c++){
+        const u=c/cols; const th=thetaMin+(thetaMax-thetaMin)*u;
+        verts.push(Math.sin(th)*radius, y, Math.cos(th)*radius);
+        uvs.push(u, 1-v);
+      }
     }
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      const a=r*(cols+1)+c, b=a+1, d=(r+1)*(cols+1)+c, e=d+1; idx.push(a,d,b,b,d,e);
+    }
+    const dg = new THREE.BufferGeometry();
+    dg.setAttribute('position', new THREE.Float32BufferAttribute(verts,3));
+    dg.setAttribute('uv', new THREE.Float32BufferAttribute(uvs,2)); dg.setIndex(idx); dg.computeVertexNormals();
+    decalMesh = new THREE.Mesh(dg, decalMat); group.add(decalMesh);
+    group.rotation.y = -.45;
+    return group;
   }
-  const handleGeo = new THREE.TubeGeometry(new HandleCurve(), 96, .105, 28, false);
-  const handle = new THREE.Mesh(handleGeo, bodyMat);
-  handle.castShadow=true;
-  group.add(handle);
 
-  const joinTop = new THREE.Mesh(new THREE.SphereGeometry(.16,32,16), bodyMat);
-  joinTop.scale.set(1,.65,.55); joinTop.position.set(1.105,1.18,0); group.add(joinTop);
-  const joinBottom = new THREE.Mesh(new THREE.SphereGeometry(.15,32,16), bodyMat);
-  joinBottom.scale.set(1,.65,.55); joinBottom.position.set(1.085,-.18,0); group.add(joinBottom);
+  function makeCanvasTexture(){
+    const canvas=document.createElement('canvas'); canvas.width=1024; canvas.height=1024;
+    const ctx=canvas.getContext('2d'); ctx.clearRect(0,0,1024,1024);
+    if(state.art){
+      ctx.save(); ctx.translate(512 + state.x*260, 512 - state.y*260); ctx.rotate(state.rotation*Math.PI/180);
+      const s=state.scale; const ratio=state.art.width/state.art.height;
+      let w=560*s, h=w/ratio; if(h>760*s){h=760*s; w=h*ratio}
+      ctx.drawImage(state.art, -w/2, -h/2, w, h); ctx.restore();
+    }else{
+      ctx.save(); ctx.fillStyle='rgba(255,255,255,0.0)'; ctx.fillRect(0,0,1024,1024);
+      ctx.fillStyle='#111827'; ctx.font='900 80px Arial'; ctx.textAlign='center'; ctx.fillText('MugArt',512,500);
+      ctx.font='500 34px Arial'; ctx.fillText('sua arte aqui',512,560); ctx.restore();
+    }
+    const tex=new THREE.CanvasTexture(canvas); tex.colorSpace=THREE.SRGBColorSpace; tex.needsUpdate=true; return tex;
+  }
+  function updateDecal(){ if(decalMesh){ decalMat.map = makeCanvasTexture(); decalMat.needsUpdate=true; } }
+  function updateColor(hex){ mugBodyMaterial.color.set(hex); }
 
-  // Brilhos sutis para aparência de porcelana.
-  const shineMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.18, depthWrite:false});
-  const shine = new THREE.Mesh(new THREE.PlaneGeometry(.18,1.15), shineMat);
-  shine.position.set(-.62,.72,1.08);
-  shine.rotation.z = -.08;
-  group.add(shine);
-  const shine2 = new THREE.Mesh(new THREE.PlaneGeometry(.08,.75), shineMat);
-  shine2.position.set(-.42,.82,1.095);
-  shine2.rotation.z = -.08;
-  group.add(shine2);
+  const status = $('modelStatus');
+  async function loadProfessionalModel(){
+    // Para usar um modelo 3D profissional, coloque o arquivo aqui: assets/models/mug.glb
+    return new Promise((resolve,reject)=>{
+      const loader = new GLTFLoader();
+      loader.load('assets/models/mug.glb', (gltf)=>{
+        const obj = gltf.scene;
+        obj.traverse(child=>{ if(child.isMesh){ child.castShadow=true; child.receiveShadow=true; if(child.material){ child.material.roughness=.22; child.material.needsUpdate=true; } } });
+        obj.scale.setScalar(2.35); obj.position.y=-.25; obj.rotation.y=-.35;
+        resolve(obj);
+      }, undefined, reject);
+    });
+  }
 
-  const texture = opts.logoDecal ? new THREE.TextureLoader().load(logoUrl) : makeTextTexture();
-  texture.colorSpace = THREE.SRGBColorSpace;
-  const decalMat = new THREE.MeshBasicMaterial({ map:texture, transparent:true, side:THREE.DoubleSide, depthWrite:false });
-  const decal = new THREE.Mesh(new THREE.PlaneGeometry(1.35,.86), decalMat);
-  decal.position.set(0,.55,1.142);
-  decal.rotation.x = THREE.MathUtils.degToRad(-2);
-  group.add(decal);
-
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(1.68,1.86,.18,160), shadowMat);
-  base.position.y=-.77;
-  base.receiveShadow=true;
-  group.add(base);
-  const neon1 = new THREE.Mesh(new THREE.TorusGeometry(1.68,.018,10,160), new THREE.MeshBasicMaterial({color:0xffd20a}));
-  neon1.rotation.x=Math.PI/2; neon1.position.y=-.65; group.add(neon1);
-  const neon2 = new THREE.Mesh(new THREE.TorusGeometry(1.83,.018,10,160), new THREE.MeshBasicMaterial({color:0x00c7e8}));
-  neon2.rotation.x=Math.PI/2; neon2.position.y=-.84; group.add(neon2);
-  const neon3 = new THREE.Mesh(new THREE.TorusGeometry(1.76,.014,10,160), new THREE.MeshBasicMaterial({color:0xff3d72}));
-  neon3.rotation.x=Math.PI/2; neon3.position.y=-.74; group.add(neon3);
-
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(2.15,160), new THREE.ShadowMaterial({opacity:.28}));
-  floor.rotation.x=-Math.PI/2;
-  floor.position.y=-.89;
-  floor.receiveShadow=true;
-  scene.add(floor);
-
-  function resize(){ const r=canvas.getBoundingClientRect(); renderer.setSize(r.width,r.height,false); camera.aspect=r.width/r.height; camera.updateProjectionMatrix(); }
-  const ro = new ResizeObserver(resize); ro.observe(canvas); resize();
-  let auto = opts.autoRotate ?? true;
-  function animate(){ requestAnimationFrame(animate); if(auto){ group.rotation.y += .0035; } controls.update(); renderer.render(scene,camera); }
-  animate();
-
-  return {
-    scene, camera, renderer, controls, group, bodyMat, insideMat, decal, decalMat, texture,
-    setColor(hex){ bodyMat.color.set(hex); insideMat.color.set(hex); },
-    setTexture(tex){ decalMat.map = tex; decalMat.needsUpdate = true; },
-    reset(){ group.rotation.set(0,-0.22,0); camera.position.set(0.15,1.25,5.2); controls.target.set(0,.52,0); controls.update(); }
-  };
-}
-
-const heroCanvas = document.querySelector('#hero3d');
-const studioCanvas = document.querySelector('#studio3d');
-const hero = createMugScene(heroCanvas, { logoDecal:true, autoRotate:true });
-const studio = createMugScene(studioCanvas, { autoRotate:false });
-
-const artUpload = document.querySelector('#artUpload');
-const scaleControl = document.querySelector('#scaleControl');
-const xControl = document.querySelector('#xControl');
-const yControl = document.querySelector('#yControl');
-const rotControl = document.querySelector('#rotControl');
-const resetBtn = document.querySelector('#resetBtn');
-const whatsBtn = document.querySelector('#whatsBtn');
-
-function updateWhats(){
-  const msg = encodeURIComponent('Olá, quero fazer um orçamento de caneca personalizada. Já montei uma prévia no site da MugArt.');
-  whatsBtn.href = `https://wa.me/${whatsapp}?text=${msg}`;
-}
-updateWhats();
-
-function applyDecalControls(){
-  studio.decal.scale.set(Number(scaleControl.value), Number(scaleControl.value), 1);
-  studio.decal.position.x = Number(xControl.value) * .38;
-  studio.decal.position.y = .58 + Number(yControl.value) * .38;
-  studio.decal.rotation.z = THREE.MathUtils.degToRad(Number(rotControl.value));
-}
-[scaleControl,xControl,yControl,rotControl].forEach(el=>el.addEventListener('input',applyDecalControls));
-
-artUpload.addEventListener('change', (e)=>{
-  const file = e.target.files?.[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement('canvas'); c.width=1024; c.height=640;
-      const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
-      const ratio = Math.min(820/img.width, 470/img.height);
-      const w=img.width*ratio, h=img.height*ratio;
-      ctx.drawImage(img,(c.width-w)/2,(c.height-h)/2,w,h);
-      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-      studio.setTexture(tex); updateWhats();
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-document.querySelectorAll('.swatches button').forEach(btn=>{
-  btn.style.background = btn.dataset.color;
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.swatches button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    studio.setColor(btn.dataset.color);
-    hero.setColor(btn.dataset.color);
+  loadProfessionalModel().then(obj=>{
+    mugGroup.clear(); mugGroup.add(obj);
+    if(status) status.textContent='Modelo profissional mug.glb carregado.';
+  }).catch(()=>{
+    mugGroup.clear(); mugGroup.add(createFallbackMug()); updateDecal();
+    if(status) status.textContent='Modelo profissional não encontrado: usando caneca 3D própria. Para qualidade máxima, adicione assets/models/mug.glb.';
   });
-});
-resetBtn.addEventListener('click',()=>{ studio.reset(); scaleControl.value=1; xControl.value=0; yControl.value=0; rotControl.value=0; applyDecalControls(); studio.setTexture(makeTextTexture()); });
 
-// fallback notice if CDN fails won't run, but page remains visible.
+  function resize(){ camera.aspect=container.clientWidth/container.clientHeight; camera.updateProjectionMatrix(); renderer.setSize(container.clientWidth, container.clientHeight); }
+  window.addEventListener('resize', resize);
+  function animate(){ requestAnimationFrame(animate); controls.update(); renderer.render(scene,camera); }
+  animate();
+  return { updateColor, updateDecal, setArt(img){state.art=img; updateDecal();}, renderer, scene, camera };
+}
+
+const studio = makeStudio($('viewer3d'));
+makeStudio($('heroScene'), { autoRotate:true });
+
+$('mugColor')?.addEventListener('input', e=>{ state.color=e.target.value; studio.updateColor(state.color); });
+['artScale','artX','artY','artRotation'].forEach(id=>$(id)?.addEventListener('input', e=>{ const key={artScale:'scale',artX:'x',artY:'y',artRotation:'rotation'}[id]; state[key]=parseFloat(e.target.value); studio.updateDecal(); }));
+$('artUpload')?.addEventListener('change', e=>{
+  const file=e.target.files?.[0]; if(!file) return;
+  const url=URL.createObjectURL(file); const img=new Image(); img.onload=()=>{studio.setArt(img); URL.revokeObjectURL(url);}; img.src=url;
+  const msg=encodeURIComponent('Olá, quero um orçamento de caneca personalizada pela MugArt. Já testei minha arte no mockup 3D do site.');
+  $('whatsBtn').href=`https://wa.me/5511988849236?text=${msg}`;
+});
+$('resetBtn')?.addEventListener('click',()=>{
+  state.scale=1; state.x=0; state.y=0; state.rotation=0; state.color='#ffffff';
+  $('artScale').value=1; $('artX').value=0; $('artY').value=0; $('artRotation').value=0; $('mugColor').value='#ffffff';
+  studio.updateColor(state.color); studio.updateDecal();
+});
