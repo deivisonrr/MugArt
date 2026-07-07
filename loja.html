@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Google Tag Manager -->
+  <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=KU4h6maLEP3XogjReXeIh5b6C10UBZ4mo_yR_QbPPMHbXjB-AMWYzxUkD5C0_jZJJGgrkVJ74nEOvQFOLrFc2Ye-rAcl1Pl60p3XvvG-ukTTZ4V4jYmvt37YB3-ifSAYh2fwr6DSlH2gMlB5lpiAHwt9wsTP49xVevAfAvogkUiixJTVzAhfAlSfUWYHPvbjlCKnj5x2k1jKAkCnbpc0NENsYnn6eMoXHAUELSRsHbzpHUY6St4X6oNfeQ_Qz3eAdzLejVNarpPYqHAeSGJjoWR13tjM2c8FdmkDlFbEZSgWgiDO9Kln1wJQSNUkP5ai" charset="UTF-8"></script><script>
+    (function(w,d,s,l,i){
+      w[l]=w[l]||[];
+      w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),
+      dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true;
+      j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+      f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NH94WCFS');
+  </script>
+  <!-- End Google Tag Manager -->
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: "page_view",
+      page_title: document.title,
+      page_location: window.location.href,
+      page_path: window.location.pathname
+    });
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>MugArt | Loja Pronta Entrega</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="icon" href="assets/favicon.ico" sizes="any">
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="assets/favicon.ico">
+  <meta name="theme-color" content="#030406">
+
+  <link rel="stylesheet" href="css/loja.css" />
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NH94WCFS"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <header class="topbar">
+    <a class="brand" href="index.html#inicio" aria-label="MugArt">
+      <img src="assets/logo.png" alt="MugArt" />
+    </a>
+
+    <button class="menu-toggle" id="menuToggle" type="button">☰</button>
+
+    <nav class="nav" id="nav">
+      <a href="index.html#inicio">Início</a>
+      <a href="index.html#canecas">Canecas</a>
+      <a class="active" href="loja.html">Loja</a>
+      <a href="index.html#personalize">Personalize</a>
+      <a href="index.html#contato">Contato</a>
+    </nav>
+
+    <div class="top-actions">
+      <a class="icon-link insta" href="https://instagram.com/mugartsp" target="_blank" aria-label="Instagram">
+        <i class="fa-brands fa-instagram"></i>
+      </a>
+      <a class="icon-link whats" href="https://wa.me/5511988849236" target="_blank" aria-label="WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+      </a>
+      <button class="cart-top-btn" id="openCart" type="button">
+        <i class="fa-solid fa-cart-shopping"></i>
+        Carrinho
+        <span id="cartCount">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="shop-hero">
+      <div class="shop-hero-copy">
+        <p class="eyebrow">Pronta entrega MugArt</p>
+        <h1>Canecas prontas para comprar agora</h1>
+        <p class="subtitle">
+          Escolha sua caneca, adicione ao carrinho e finalize o pedido. O pagamento real será integrado depois com Pix, crédito e débito.
+        </p>
+
+        <div class="hero-buttons">
+          <a class="btn btn-yellow" href="#produtos"><i class="fa-solid fa-mug-hot"></i> Ver produtos</a>
+          <button class="btn btn-outline" id="openAdminDemo" type="button"><i class="fa-solid fa-plus"></i> Cadastrar item</button>
+        </div>
+      </div>
+
+      <div class="shop-hero-panel">
+        <div class="mini-card">
+          <strong>Entrega</strong>
+          <span>São Paulo e Brasil</span>
+        </div>
+        <div class="mini-card">
+          <strong>Pagamento</strong>
+          <span>Pix, crédito e débito em breve</span>
+        </div>
+        <div class="mini-card">
+          <strong>Pedido</strong>
+          <span>Gerado após confirmação</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="shop-section" id="produtos">
+      <div class="section-heading">
+        <span class="dot pink-bg"></span>
+        <h2>Produtos em pronta entrega</h2>
+        <span class="dot cyan-bg"></span>
+      </div>
+
+      <div class="shop-toolbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="searchInput" type="text" placeholder="Buscar por nome, cor ou categoria..." />
+        </div>
+
+        <select id="categoryFilter">
+          <option value="todos">Todas as categorias</option>
+          <option value="comum">Caneca comum</option>
+          <option value="coracao">Caneca coração</option>
+          <option value="magica">Caneca mágica</option>
+        </select>
+      </div>
+
+      <div class="products-grid" id="productsGrid"></div>
+    </section>
+  </main>
+
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <div>
+        <small>Seu carrinho</small>
+        <h3>Pedido MugArt</h3>
+      </div>
+      <button id="closeCart" type="button" aria-label="Fechar carrinho">×</button>
+    </div>
+
+    <div class="cart-items" id="cartItems">
+      <p class="empty-cart">Seu carrinho está vazio.</p>
+    </div>
+
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <strong id="cartSubtotal">R$ 0,00</strong>
+      </div>
+      <div class="summary-row">
+        <span>Entrega</span>
+        <strong>A calcular</strong>
+      </div>
+      <button class="checkout-btn" id="checkoutBtn" type="button">Finalizar compra</button>
+      <p class="payment-note">Checkout visual. O pagamento real será conectado ao backend depois.</p>
+    </div>
+  </aside>
+
+  <div class="overlay" id="overlay"></div>
+
+  <section class="checkout-modal" id="checkoutModal">
+    <div class="checkout-box">
+      <button class="modal-close" id="closeCheckout" type="button">×</button>
+
+      <p class="eyebrow">Finalização do pedido</p>
+      <h2>Dados para compra</h2>
+
+      <form id="checkoutForm">
+        <div class="form-grid">
+          <label>
+            Nome completo
+            <input id="buyerName" type="text" required placeholder="Digite seu nome" />
+          </label>
+
+          <label>
+            WhatsApp
+            <input id="buyerPhone" type="tel" required placeholder="(11) 99999-9999" />
+          </label>
+
+          <label>
+            E-mail
+            <input id="buyerEmail" type="email" required placeholder="seuemail@exemplo.com" />
+          </label>
+
+          <label>
+            CEP
+            <input id="buyerZip" type="text" required placeholder="00000-000" />
+          </label>
+
+          <label class="full">
+            Endereço
+            <input id="buyerAddress" type="text" required placeholder="Rua, número, bairro, cidade - UF" />
+          </label>
+
+          <label class="full">
+            Observações
+            <textarea id="buyerNote" rows="3" placeholder="Ex: entregar após as 18h"></textarea>
+          </label>
+        </div>
+
+        <div class="payment-preview">
+          <h3>Pagamento</h3>
+          <div class="payment-options">
+            <button type="button" class="payment-option active" data-payment="pix">Pix</button>
+            <button type="button" class="payment-option" data-payment="credito">Crédito</button>
+            <button type="button" class="payment-option" data-payment="debito">Débito</button>
+          </div>
+          <p>Na próxima etapa, este botão será integrado ao Mercado Pago para validar pagamento e gerar o pedido automaticamente.</p>
+        </div>
+
+        <button class="confirm-order-btn" type="submit">Gerar pedido teste</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="admin-demo-modal" id="adminDemoModal">
+    <div class="admin-box">
+      <button class="modal-close" id="closeAdminDemo" type="button">×</button>
+
+      <p class="eyebrow">Cadastro visual</p>
+      <h2>Novo produto</h2>
+      <p class="admin-info">
+        Este formulário é só o front-end. Depois ele será ligado ao backend para salvar produto, imagem, preço e estoque.
+      </p>
+
+      <form id="productForm">
+        <label>
+          Nome do produto
+          <input id="newProductName" type="text" placeholder="Ex: Caneca Coração Vermelha" required>
+        </label>
+
+        <label>
+          Descrição
+          <textarea id="newProductDescription" rows="3" placeholder="Descrição do produto" required></textarea>
+        </label>
+
+        <div class="form-grid two">
+          <label>
+            Preço
+            <input id="newProductPrice" type="number" step="0.01" min="0" placeholder="39.90" required>
+          </label>
+
+          <label>
+            Estoque
+            <input id="newProductStock" type="number" min="0" placeholder="10" required>
+          </label>
+        </div>
+
+        <label>
+          Imagem
+          <input id="newProductImage" type="text" placeholder="assets/minha-caneca.png" required>
+        </label>
+
+        <label>
+          Categoria
+          <select id="newProductCategory">
+            <option value="comum">Caneca comum</option>
+            <option value="coracao">Caneca coração</option>
+            <option value="magica">Caneca mágica</option>
+          </select>
+        </label>
+
+        <button class="confirm-order-btn" type="submit">Adicionar na tela</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-brand">
+      <img src="assets/logo.png" alt="MugArt" />
+      <p>Canecas personalizadas e pronta entrega com qualidade, criatividade e amor em cada detalhe.</p>
+    </div>
+
+    <div>
+      <h4>Loja</h4>
+      <a href="#produtos">Produtos</a>
+      <a href="index.html#personalize">Personalizar caneca</a>
+      <a href="index.html#contato">Contato</a>
+    </div>
+
+    <div>
+      <h4>Fale conosco</h4>
+      <p>☘ (11) 98884-9236</p>
+      <p>✉ contato@mugart.com.br</p>
+      <p>◎ @mugartsp</p>
+      <p>⌖ São Paulo - SP</p>
+    </div>
+  </footer>
+
+  <div class="copyright">© 2026 MugArt — Todos os direitos reservados.</div>
+
+  <script src="js/loja.js"></script>
+</body>
+</html>
