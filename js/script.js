@@ -19,10 +19,14 @@ let selectedFileExtension = "";
 let selectedFileSizeKb = 0;
 let hasArt = false;
 
-menuToggle?.addEventListener("click", () => nav.classList.toggle("open"));
+if (menuToggle && nav) {
+  menuToggle.addEventListener("click", () => nav.classList.toggle("open"));
+}
 
 document.querySelectorAll(".nav a").forEach((link) => {
-  link.addEventListener("click", () => nav.classList.remove("open"));
+  link.addEventListener("click", () => {
+    if (nav) nav.classList.remove("open");
+  });
 });
 
 function selectCard(card) {
@@ -36,7 +40,9 @@ function selectCard(card) {
 
   selectedColor = card.dataset.cor || "";
 
-  selectedModelText.textContent = selectedModel;
+  if (selectedModelText) {
+    selectedModelText.textContent = selectedModel;
+  }
 
   colors.forEach((color) => {
     color.classList.toggle(
@@ -70,100 +76,113 @@ colors.forEach((color) => {
 });
 
 document.querySelector(".arrow.left")?.addEventListener("click", () => {
-  modelsTrack.scrollBy({
-    left: -260,
-    behavior: "smooth",
-  });
+  if (modelsTrack) {
+    modelsTrack.scrollBy({
+      left: -260,
+      behavior: "smooth",
+    });
+  }
 });
 
 document.querySelector(".arrow.right")?.addEventListener("click", () => {
-  modelsTrack.scrollBy({
-    left: 260,
-    behavior: "smooth",
-  });
+  if (modelsTrack) {
+    modelsTrack.scrollBy({
+      left: 260,
+      behavior: "smooth",
+    });
+  }
 });
 
-artInput.addEventListener("change", (event) => {
-  const file = event.target.files?.[0];
+if (artInput) {
+  artInput.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
 
-  if (!file) return;
+    if (!file) return;
 
-  selectedFileName = file.name;
-  selectedFileType = file.type;
-  selectedFileExtension = file.name.split(".").pop().toLowerCase();
-  selectedFileSizeKb = Math.round(file.size / 1024);
-  hasArt = true;
+    selectedFileName = file.name;
+    selectedFileType = file.type;
+    selectedFileExtension = file.name.split(".").pop().toLowerCase();
+    selectedFileSizeKb = Math.round(file.size / 1024);
+    hasArt = true;
 
-  selectedArtText.textContent = file.name;
+    if (selectedArtText) {
+      selectedArtText.textContent = file.name;
+    }
 
-  const reader = new FileReader();
+    const reader = new FileReader();
 
-  reader.onload = (e) => {
+    reader.onload = (e) => {
+      if (artPreview) {
+        artPreview.src = e.target.result;
+        artPreview.style.display = "block";
+      }
+
+      if (placeholderText) {
+        placeholderText.style.display = "none";
+      }
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+if (clearArt) {
+  clearArt.addEventListener("click", () => {
+    if (artInput) artInput.value = "";
+    hasArt = false;
+    selectedFileName = "";
+    selectedFileType = "";
+    selectedFileExtension = "";
+    selectedFileSizeKb = 0;
+
+    if (selectedArtText) {
+      selectedArtText.textContent = "Nenhuma";
+    }
+
     if (artPreview) {
-      artPreview.src = e.target.result;
-      artPreview.style.display = "block";
+      artPreview.removeAttribute("src");
+      artPreview.style.display = "none";
     }
 
     if (placeholderText) {
-      placeholderText.style.display = "none";
+      placeholderText.style.display = "block";
     }
-  };
-
-  reader.readAsDataURL(file);
-});
-
-clearArt.addEventListener("click", () => {
-  artInput.value = "";
-  hasArt = false;
-  selectedFileName = "";
-  selectedFileType = "";
-  selectedFileExtension = "";
-  selectedFileSizeKb = 0;
-
-  selectedArtText.textContent = "Nenhuma";
-
-  if (artPreview) {
-    artPreview.removeAttribute("src");
-    artPreview.style.display = "none";
-  }
-
-  if (placeholderText) {
-    placeholderText.style.display = "block";
-  }
-});
-
-sendWhatsapp.addEventListener("click", () => {
-  const name =
-    document.getElementById("customerName").value.trim() ||
-    "Não informado";
-
-  const note =
-    document.getElementById("customerNote").value.trim() ||
-    "Sem observações";
-
-  window.dataLayer = window.dataLayer || [];
-
-  window.dataLayer.push({
-    event: "pedido_whatsapp",
-
-    mug_model: selectedModel,
-    mug_color: selectedColor,
-
-    artwork_uploaded: hasArt,
-    artwork_name: hasArt ? selectedFileName : "",
-    artwork_type: hasArt ? selectedFileType : "",
-    artwork_extension: hasArt ? selectedFileExtension : "",
-    artwork_size_kb: hasArt ? selectedFileSizeKb : 0,
-
-    customer_name_filled: name !== "Não informado",
-    customer_note_filled: note !== "Sem observações",
-
-    page_title: document.title,
-    page_location: window.location.href,
-    page_path: window.location.pathname
   });
+}
 
-  const message = `Olá, vim pelo site da MugArt e gostaria de solicitar um orçamento.
+if (sendWhatsapp) {
+  sendWhatsapp.addEventListener("click", () => {
+    const name =
+      document.getElementById("customerName")?.value.trim() ||
+      "Não informado";
+
+    const note =
+      document.getElementById("customerNote")?.value.trim() ||
+      "Sem observações";
+
+    window.dataLayer = window.dataLayer || [];
+
+    window.dataLayer.push({
+      event: "pedido_whatsapp",
+
+      mug_model: selectedModel,
+      mug_color: selectedColor,
+
+      artwork_uploaded: hasArt,
+      artwork_name: hasArt ? selectedFileName : "",
+      artwork_type: hasArt ? selectedFileType : "",
+      artwork_extension: hasArt ? selectedFileExtension : "",
+      artwork_size_kb: hasArt ? selectedFileSizeKb : 0,
+
+      customer_name_filled: name !== "Não informado",
+      customer_note_filled: note !== "Sem observações",
+
+      page_title: document.title,
+      page_location: window.location.href,
+      page_path: window.location.pathname
+    });
+
+    const message = `Olá, vim pelo site da MugArt e gostaria de solicitar um orçamento.
 
 Resumo do pedido:
 Nome: ${name}
@@ -174,8 +193,9 @@ Observações: ${note}
 
 Gostaria de continuar o atendimento pelo WhatsApp.`;
 
-  window.open(
-    `https://wa.me/5511988849236?text=${encodeURIComponent(message)}`,
-    "_blank"
-  );
-});
+    window.open(
+      `https://wa.me/5511988849236?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+  });
+}

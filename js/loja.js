@@ -25,14 +25,8 @@ var PRODUCTS = [
     oldPrice: 39.90,
     stock: 12,
     image: "assets/caneca-branca.png",
-    images: ["assets/caneca-branca.png"],
     description: "Caneca branca pronta entrega, ideal para presentes personalizados, lembranças e uso diário.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Brilhante",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["pronta entrega", "branca", "presente"],
     active: true,
     featured: true
@@ -47,14 +41,8 @@ var PRODUCTS = [
     oldPrice: 59.90,
     stock: 6,
     image: "assets/caneca_magica.png",
-    images: ["assets/caneca_magica.png"],
     description: "Caneca mágica preta que revela a arte ao entrar em contato com líquido quente.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Termossensível",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Termossensível", personalizacao: "Sublimação" },
     tags: ["mágica", "preta", "presente especial"],
     active: true,
     featured: true
@@ -69,14 +57,8 @@ var PRODUCTS = [
     oldPrice: 54.90,
     stock: 8,
     image: "assets/caneca_coracao_vermelho.jpeg",
-    images: ["assets/caneca_coracao_vermelho.jpeg"],
     description: "Caneca com alça em formato de coração, perfeita para datas românticas e presentes especiais.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Brilhante",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["coração", "vermelha", "romântica"],
     active: true,
     featured: true
@@ -91,14 +73,8 @@ var PRODUCTS = [
     oldPrice: 54.90,
     stock: 5,
     image: "assets/caneca_coracao_azul.jpeg",
-    images: ["assets/caneca_coracao_azul.jpeg"],
     description: "Modelo delicado com alça coração azul, pronto para personalização.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Brilhante",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["coração", "azul", "presente"],
     active: true,
     featured: false
@@ -113,14 +89,8 @@ var PRODUCTS = [
     oldPrice: 44.90,
     stock: 10,
     image: "assets/caneca_comum_roxo.png",
-    images: ["assets/caneca_comum_roxo.png"],
     description: "Caneca comum com interior e alça roxa, moderna e criativa.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Brilhante",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["roxa", "colorida", "pronta entrega"],
     active: true,
     featured: false
@@ -135,14 +105,8 @@ var PRODUCTS = [
     oldPrice: 44.90,
     stock: 9,
     image: "assets/caneca_comum_verde.png",
-    images: ["assets/caneca_comum_verde.png"],
     description: "Caneca comum com interior e alça verde, pronta para personalizar.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Brilhante",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["verde", "colorida", "pronta entrega"],
     active: true,
     featured: false
@@ -157,14 +121,8 @@ var PRODUCTS = [
     oldPrice: 44.90,
     stock: 7,
     image: "assets/caneca_comum_laranja.png",
-    images: ["assets/caneca_comum_laranja.png"],
     description: "Caneca comum laranja, divertida, vibrante e perfeita para artes criativas.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Brilhante",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["laranja", "colorida", "criativa"],
     active: true,
     featured: false
@@ -179,14 +137,8 @@ var PRODUCTS = [
     oldPrice: 44.90,
     stock: 11,
     image: "assets/caneca_comum_amarelo.png",
-    images: ["assets/caneca_comum_amarelo.png"],
     description: "Caneca comum amarela, alegre e ideal para presentes personalizados.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Brilhante",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["amarela", "colorida", "alegre"],
     active: true,
     featured: false
@@ -201,14 +153,8 @@ var PRODUCTS = [
     oldPrice: 44.90,
     stock: 4,
     image: "assets/caneca_comum_vermelho.png",
-    images: ["assets/caneca_comum_vermelho.png"],
     description: "Caneca comum vermelha, marcante e perfeita para datas especiais.",
-    specs: {
-      capacidade: "325ml",
-      material: "Cerâmica",
-      acabamento: "Brilhante",
-      personalizacao: "Sublimação"
-    },
+    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
     tags: ["vermelha", "colorida", "presente"],
     active: true,
     featured: false
@@ -219,12 +165,7 @@ var StoreState = {
   products: PRODUCTS.filter(function(product) { return product.active; }),
   cart: [],
   favorites: [],
-  filters: {
-    search: "",
-    category: "todos",
-    color: "todos",
-    sort: "featured"
-  },
+  filters: { search: "", category: "todos", color: "todos", sort: "featured" },
   selectedProduct: null
 };
 
@@ -239,10 +180,7 @@ function formatMoney(value) {
 }
 
 function normalizeText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function saveToStorage(key, value) {
@@ -353,7 +291,7 @@ function createBaseUIIfMissing() {
         '<div class="checkout-card">' +
           '<button class="modal-close" id="checkoutClose" type="button">×</button>' +
           '<h2>Finalizar compra</h2>' +
-          '<p class="checkout-subtitle">Pagamento real será conectado no backend com Mercado Pago.</p>' +
+          '<p class="checkout-subtitle">Pagamento real será conectado no backend.</p>' +
           '<form id="checkoutForm" class="checkout-form">' +
             '<div class="checkout-grid">' +
               '<label>Nome completo<input name="name" required placeholder="Seu nome" /></label>' +
@@ -786,12 +724,7 @@ function getCartItemsDetailed() {
   return StoreState.cart.map(function(item) {
     var product = getProductById(item.productId);
     if (!product) return null;
-    return {
-      productId: item.productId,
-      quantity: item.quantity,
-      product: product,
-      subtotal: product.price * item.quantity
-    };
+    return { productId: item.productId, quantity: item.quantity, product: product, subtotal: product.price * item.quantity };
   }).filter(Boolean);
 }
 
