@@ -4,158 +4,163 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MugArt | Canecas Personalizadas</title>
-  <meta name="description" content="MugArt transforma ideias em canecas incríveis. Crie sua caneca personalizada e solicite orçamento pelo WhatsApp." />
-  <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header class="topbar">
-    <div class="container nav">
-      <a class="brand" href="#inicio">
-        <div class="brand-icon">☕</div>
-        <div>
-          <strong>MugArt</strong>
-          <span>Canecas personalizadas</span>
-        </div>
-      </a>
+    <a class="brand" href="#inicio" aria-label="MugArt início">
+      <img src="assets/logo.png" alt="MugArt" />
+    </a>
 
-      <nav class="menu" id="menu">
-        <a href="#produtos">Produtos</a>
-        <a href="#mockup">Mockup 3D</a>
-        <a href="#como-funciona">Como funciona</a>
-        <a href="#contato">Contato</a>
-      </nav>
+    <button class="menu-toggle" aria-label="Abrir menu">☰</button>
 
-      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
+    <nav class="nav">
+      <a href="#inicio" class="active">Início</a>
+      <a href="#canecas">Canecas</a>
+      <a href="#personalize">Personalize</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#contato">Contato</a>
+    </nav>
+
+    <div class="top-actions">
+      <a class="social instagram" href="https://instagram.com/mugartsp" target="_blank" rel="noopener">◎</a>
+      <a class="social whatsapp" href="https://wa.me/5511988849236" target="_blank" rel="noopener">☏</a>
+      <a class="budget" href="https://wa.me/5511988849236?text=Ol%C3%A1%2C%20quero%20fazer%20um%20or%C3%A7amento%20de%20caneca%20personalizada%20com%20a%20MugArt." target="_blank" rel="noopener">Faça seu orçamento <span>›</span></a>
     </div>
   </header>
 
   <main>
-    <section class="hero" id="inicio">
-      <div class="container hero-grid">
-        <div class="hero-content">
-          <span class="tag">Transformamos ideias em canecas incríveis</span>
-          <h1>Canecas personalizadas para presentes, empresas e eventos.</h1>
-          <p>
-            Crie uma caneca única com foto, logo, frase ou arte personalizada.
-            A MugArt cuida da criação visual até a produção final.
-          </p>
-          <div class="hero-actions">
-            <a class="btn primary" target="_blank" href="https://wa.me/5511988849236?text=Ol%C3%A1%2C%20quero%20fazer%20uma%20caneca%20personalizada%20com%20a%20MugArt.">Pedir orçamento</a>
-            <a class="btn secondary" href="#mockup">Ver mockup 3D</a>
-          </div>
+    <section id="inicio" class="hero section-glow">
+      <div class="paint paint-yellow"></div>
+      <div class="paint paint-blue"></div>
+      <div class="paint paint-pink"></div>
+
+      <div class="hero-content">
+        <p class="eyebrow">Sua ideia, sua caneca, seu estilo!</p>
+        <h1>Transformamos <span class="yellow">ideias</span> em <span class="blue">canecas</span> <span class="pink">incríveis!</span></h1>
+        <p class="subtitle">Canecas personalizadas com qualidade premium para presentes, empresas, eventos e momentos inesquecíveis.</p>
+
+        <div class="hero-buttons">
+          <a class="btn btn-primary" href="#canecas">☕ Ver canecas</a>
+          <a class="btn btn-outline" href="#personalize">✎ Personalize agora</a>
         </div>
 
-        <div class="hero-card">
-          <div class="mug-preview">
-            <div class="mug-body">
-              <span>MugArt</span>
-            </div>
-            <div class="mug-handle"></div>
+        <div class="benefits">
+          <div><strong>Qualidade</strong><span>Premium</span></div>
+          <div><strong>Arte</strong><span>Personalizada</span></div>
+          <div><strong>Compra</strong><span>100% segura</span></div>
+          <div><strong>Feito</strong><span>com amor</span></div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="platform"></div>
+        <div class="mug-preview">
+          <div class="mug-body">
+            <img src="assets/logo.png" alt="Logo aplicado na caneca" />
           </div>
-          <div class="floating-card one">🎁 Presentes criativos</div>
-          <div class="floating-card two">🏢 Brindes corporativos</div>
+          <div class="mug-handle"></div>
         </div>
       </div>
     </section>
 
-    <section class="section" id="produtos">
-      <div class="container">
-        <div class="section-title">
-          <span>Produtos</span>
-          <h2>Canecas para todos os momentos</h2>
-        </div>
+    <section id="canecas" class="products panel">
+      <div class="section-title">
+        <span></span><h2>Nossas canecas</h2><span></span>
+      </div>
 
-        <div class="cards">
-          <article class="card">
-            <div class="card-icon">☕</div>
-            <h3>Caneca branca personalizada</h3>
-            <p>Ideal para fotos, frases, artes e presentes personalizados.</p>
-          </article>
-          <article class="card">
-            <div class="card-icon">✨</div>
-            <h3>Caneca mágica</h3>
-            <p>A arte aparece com líquido quente. Perfeita para surpreender.</p>
-          </article>
-          <article class="card">
-            <div class="card-icon">🏢</div>
-            <h3>Brindes empresariais</h3>
-            <p>Canecas com logo para ações comerciais, eventos e equipes.</p>
-          </article>
-        </div>
+      <div class="mug-grid">
+        <article class="mug-card yellow-border">
+          <div class="icon">☕</div>
+          <h3>Caneca branca</h3>
+          <p>Modelo clássico para fotos, frases, artes e logos.</p>
+        </article>
+        <article class="mug-card blue-border">
+          <div class="icon">🎨</div>
+          <h3>Caneca personalizada</h3>
+          <p>Personalização com a sua arte, nome, tema ou ideia.</p>
+        </article>
+        <article class="mug-card pink-border">
+          <div class="icon">💝</div>
+          <h3>Caneca presente</h3>
+          <p>Ideal para datas especiais, lembranças e surpresas.</p>
+        </article>
+        <article class="mug-card yellow-border">
+          <div class="icon">🏢</div>
+          <h3>Caneca corporativa</h3>
+          <p>Para marcas, equipes, eventos e brindes empresariais.</p>
+        </article>
       </div>
     </section>
 
-    <section class="section dark" id="mockup">
-      <div class="container mockup-grid">
-        <div>
-          <div class="section-title align-left">
-            <span>Mockup 3D</span>
-            <h2>Veja sua arte aplicada na caneca</h2>
-          </div>
-          <p class="muted">
-            Envie uma imagem e veja uma prévia simples em 3D. Essa primeira versão roda direto no navegador e pode ser publicada no GitHub Pages.
-          </p>
+    <section id="personalize" class="customizer panel">
+      <div class="custom-text">
+        <p class="eyebrow">Mockup 3D</p>
+        <h2>Personalize <span>do seu jeito!</span></h2>
+        <p>Envie sua arte, veja uma prévia na caneca 3D, gire, dê zoom e finalize o orçamento pelo WhatsApp.</p>
 
-          <div class="upload-box">
-            <label for="artUpload">Enviar imagem da arte</label>
-            <input type="file" id="artUpload" accept="image/*" />
-            <small>Use PNG ou JPG. A imagem será usada apenas na prévia do navegador.</small>
-          </div>
+        <label class="upload-btn">
+          ⬆ Enviar minha arte
+          <input id="artUpload" type="file" accept="image/png,image/jpeg,image/webp" />
+        </label>
+        <small>Formatos aceitos: PNG, JPG e WEBP.</small>
 
-          <div class="mockup-actions">
-            <button class="btn secondary" id="resetArt">Remover arte</button>
-            <a class="btn primary" target="_blank" href="https://wa.me/5511988849236?text=Ol%C3%A1%2C%20quero%20enviar%20uma%20arte%20para%20personalizar%20uma%20caneca.">Enviar pelo WhatsApp</a>
-          </div>
-        </div>
-
-        <div class="viewer-card">
-          <canvas id="mugCanvas"></canvas>
-          <p>Arraste com o mouse ou toque para girar a caneca.</p>
-        </div>
+        <a id="whatsOrder" class="btn btn-primary wide" href="https://wa.me/5511988849236?text=Ol%C3%A1%2C%20quero%20fazer%20uma%20caneca%20personalizada%20com%20a%20MugArt." target="_blank" rel="noopener">Finalizar pelo WhatsApp</a>
       </div>
+
+      <div class="viewer-wrap">
+        <div id="viewer3d"></div>
+        <div class="viewer-note">Arraste para girar • Scroll para zoom</div>
+      </div>
+
+      <aside class="controls">
+        <h3>Controles</h3>
+        <button id="resetView">⟳ Centralizar</button>
+        <button id="autoRotate">↻ Girar automático</button>
+        <h4>Cor da caneca</h4>
+        <div class="color-row">
+          <button class="color active" data-color="#ffffff" style="--c:#ffffff"></button>
+          <button class="color" data-color="#ffd400" style="--c:#ffd400"></button>
+          <button class="color" data-color="#00d8ff" style="--c:#00d8ff"></button>
+          <button class="color" data-color="#ff3f78" style="--c:#ff3f78"></button>
+          <button class="color" data-color="#111111" style="--c:#111111"></button>
+        </div>
+      </aside>
     </section>
 
-    <section class="section" id="como-funciona">
-      <div class="container">
-        <div class="section-title">
-          <span>Processo</span>
-          <h2>Como funciona</h2>
-        </div>
-
-        <div class="steps">
-          <div class="step"><strong>1</strong><h3>Envie sua ideia</h3><p>Foto, logo, frase ou referência.</p></div>
-          <div class="step"><strong>2</strong><h3>Criamos a arte</h3><p>Montamos uma prévia para aprovação.</p></div>
-          <div class="step"><strong>3</strong><h3>Produzimos sua caneca</h3><p>Após aprovação, seguimos para produção.</p></div>
-          <div class="step"><strong>4</strong><h3>Você recebe</h3><p>Entrega combinada conforme sua região.</p></div>
-        </div>
+    <section id="como-funciona" class="steps">
+      <div class="section-title">
+        <span></span><h2>Como funciona</h2><span></span>
       </div>
-    </section>
-
-    <section class="contact" id="contato">
-      <div class="container contact-box">
-        <div>
-          <span>Fale com a MugArt</span>
-          <h2>Pronto para criar sua caneca?</h2>
-          <p>Chame no WhatsApp e envie sua ideia para orçamento.</p>
-        </div>
-        <div class="contact-actions">
-          <a class="btn primary" target="_blank" href="https://wa.me/5511988849236">WhatsApp</a>
-          <a class="btn secondary" href="mailto:contato@mugart.com.br">contato@mugart.com.br</a>
-          <a class="btn secondary" target="_blank" href="https://instagram.com/mugartsp">@mugartsp</a>
-        </div>
+      <div class="step-row">
+        <div class="step"><b>1</b><strong>Escolha</strong><span>a caneca</span></div>
+        <div class="step"><b>2</b><strong>Envie sua arte</strong><span>ou imagem</span></div>
+        <div class="step"><b>3</b><strong>Visualize</strong><span>no mockup 3D</span></div>
+        <div class="step"><b>4</b><strong>Finalize</strong><span>pelo WhatsApp</span></div>
       </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <p>© <span id="year"></span> MugArt. Todos os direitos reservados.</p>
+  <footer id="contato" class="footer">
+    <img src="assets/logo.png" alt="MugArt" />
+    <div>
+      <h3>Sobre a MugArt</h3>
+      <p>Transformamos ideias em canecas incríveis, com criatividade, carinho e qualidade.</p>
+    </div>
+    <div>
+      <h3>Fale conosco</h3>
+      <p>WhatsApp: (11) 98884-9236</p>
+      <p>E-mail: contato@mugart.com.br</p>
+      <p>Instagram: @mugartsp</p>
     </div>
   </footer>
 
+  <script type="importmap">
+    {"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+  </script>
   <script type="module" src="js/script.js"></script>
 </body>
 </html>
