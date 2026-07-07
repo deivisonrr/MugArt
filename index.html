@@ -4,163 +4,97 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MugArt | Canecas Personalizadas</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css" />
+  <meta name="description" content="MugArt - canecas personalizadas com arte, qualidade e criatividade." />
+  <style>
+    :root{
+      --bg:#030305;--card:#101014;--card2:#15151a;--text:#fff;--muted:#c8c8d2;
+      --yellow:#ffd400;--cyan:#04c8f4;--pink:#ff3b7d;--line:rgba(255,255,255,.14);
+      --shadow:0 22px 70px rgba(0,0,0,.65);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at 80% 15%,rgba(4,200,244,.14),transparent 28%),radial-gradient(circle at 10% 55%,rgba(255,212,0,.12),transparent 25%),var(--bg);color:var(--text);overflow-x:hidden}.wrap{width:min(1180px,92%);margin:auto}a{text-decoration:none;color:inherit}button,input{font:inherit}.topbar{position:sticky;top:0;z-index:20;background:rgba(3,3,5,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.nav{height:118px;display:flex;align-items:center;gap:32px}.logo{width:145px;height:auto;object-fit:contain}.menu{display:flex;gap:28px;align-items:center;margin-left:auto;font-weight:800;font-size:14px;text-transform:uppercase}.menu a{opacity:.92}.menu a:hover,.menu a.active{color:var(--yellow)}.social{display:flex;gap:14px;margin-left:10px}.soc{width:38px;height:38px;border:1px solid currentColor;border-radius:13px;display:grid;place-items:center;font-weight:900}.soc.insta{color:var(--pink)}.soc.whats{color:var(--cyan)}.budget{border:2px solid var(--yellow);color:var(--yellow);border-radius:999px;padding:14px 24px;font-weight:900;text-transform:uppercase;box-shadow:0 0 20px rgba(255,212,0,.16)}.stripe{height:5px;background:linear-gradient(90deg,var(--yellow) 0 33%,var(--cyan) 33% 60%,var(--pink) 60% 100%)}
+    .hero{position:relative;padding:58px 0 54px;min-height:640px}.hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 84% 55%,rgba(255,59,125,.18),transparent 25%),radial-gradient(circle at 62% 35%,rgba(255,212,0,.18),transparent 22%);pointer-events:none}.hero-grid{position:relative;display:grid;grid-template-columns:1fr 1.05fr;gap:30px;align-items:center}.tag{color:var(--yellow);font-weight:900;text-transform:uppercase;margin-bottom:20px;font-size:17px}.title{font-size:clamp(42px,6vw,74px);line-height:.98;font-weight:1000;letter-spacing:-2px;text-transform:uppercase;text-shadow:0 5px 28px rgba(255,255,255,.12)}.yellow{color:var(--yellow)}.cyan{color:var(--cyan)}.pink{color:var(--pink)}.lead{color:#e8e8ee;font-size:18px;line-height:1.55;margin:24px 0 28px;max-width:520px}.actions{display:flex;gap:18px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;gap:10px;border-radius:999px;padding:18px 28px;font-weight:1000;text-transform:uppercase;border:2px solid transparent;cursor:pointer}.btn-primary{background:var(--yellow);color:#101010;box-shadow:0 0 30px rgba(255,212,0,.3)}.btn-outline{border-color:var(--cyan);color:#fff}.benefits{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:34px;max-width:610px}.benefit{display:flex;gap:10px;align-items:center;color:#fff;font-size:13px}.benefit b{font-size:25px}.hero-art{position:relative;min-height:470px;display:grid;place-items:center}.splash{position:absolute;border-radius:50%;filter:drop-shadow(0 0 20px currentColor);opacity:.95}.s1{width:180px;height:70px;background:var(--cyan);right:0;top:95px;transform:rotate(-35deg)}.s2{width:210px;height:80px;background:var(--pink);right:14px;bottom:105px;transform:rotate(-15deg)}.s3{width:170px;height:70px;background:var(--yellow);left:25px;top:220px;transform:rotate(-28deg)}.hero-mug{position:relative;width:min(570px,96%);filter:drop-shadow(0 28px 45px rgba(0,0,0,.7));z-index:2}.podium{position:absolute;width:490px;height:110px;border-radius:50%;background:linear-gradient(180deg,#232326,#070708);bottom:42px;box-shadow:0 0 0 5px rgba(255,212,0,.9),0 0 0 10px rgba(4,200,244,.75),0 35px 80px rgba(0,0,0,.9)}
+    .section{padding:38px 0}.sec-title{text-align:center;font-size:26px;text-transform:uppercase;margin-bottom:25px;font-weight:1000}.dots:before,.dots:after{content:"••";letter-spacing:12px;margin:0 18px;color:var(--pink)}.dots:after{color:var(--cyan)}.models{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}.model{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden}.model:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--yellow),var(--cyan),var(--pink))}.mini-mug{width:138px;height:138px;margin:4px auto 16px;border-radius:12px;background:radial-gradient(circle at 38% 25%,#fff,#ddd 55%,#aaa);position:relative}.mini-mug:after{content:"";position:absolute;right:-31px;top:38px;width:47px;height:58px;border:14px solid var(--handle,#eee);border-left:0;border-radius:0 35px 35px 0}.m-black{--handle:#111}.m-pink{--handle:var(--pink);background:radial-gradient(circle at 38% 25%,#fff,#f8d5df 55%,#bbb)}.m-blue{--handle:var(--cyan);background:radial-gradient(circle at 38% 25%,#fff,#d7f5ff 55%,#bbb)}.model h3{font-size:22px;margin-bottom:10px}.model p{color:var(--muted);line-height:1.45}.detail{margin-top:18px;background:var(--pink);border:0;color:#fff;border-radius:999px;padding:12px 24px;font-weight:900}.detail.alt{background:linear-gradient(90deg,var(--cyan),#028bb4)}
+    .custom{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid var(--line);border-radius:22px;padding:34px;display:grid;grid-template-columns:280px 1fr 260px;gap:28px;align-items:center;box-shadow:var(--shadow)}.custom h2{font-size:31px;text-transform:uppercase;line-height:1.1;margin-bottom:20px}.custom p{color:#e0e0e8;line-height:1.5}.upload{display:inline-flex;margin-top:24px;background:var(--pink);color:white;border-radius:999px;padding:17px 24px;font-weight:1000;text-transform:uppercase;cursor:pointer}.upload input{display:none}.viewer{height:410px;border-radius:18px;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.16),transparent 34%),linear-gradient(180deg,#111,#050506);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08)}#mug3d{width:100%;height:100%;display:block}.fallback-mug{display:none;position:absolute;inset:0;place-items:center}.css-mug{width:230px;height:245px;border-radius:32px 32px 45px 45px;background:linear-gradient(110deg,#fff,#dcdcdc,#fff);box-shadow:inset -35px 0 55px rgba(0,0,0,.18),0 35px 55px #000;position:relative}.css-mug:after{content:"";position:absolute;right:-77px;top:58px;width:100px;height:115px;border:27px solid #eee;border-left:0;border-radius:0 80px 80px 0}.art-preview{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:135px;height:115px;border:2px dashed var(--cyan);display:grid;place-items:center;text-align:center;color:#111;font-weight:900;background:rgba(255,255,255,.55);border-radius:8px;overflow:hidden}.art-preview img{width:100%;height:100%;object-fit:contain}.hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);border:1px solid var(--line);border-radius:999px;padding:9px 14px;color:#ddd;font-size:12px;white-space:nowrap}.panel{border:1px solid var(--line);border-radius:18px;padding:24px;background:rgba(0,0,0,.26)}.panel h4{text-transform:uppercase;margin-bottom:20px}.controls{display:flex;justify-content:space-between;text-align:center;color:#eee;font-size:13px}.ctrl{color:var(--cyan);font-size:25px;display:block;margin-bottom:8px}.colors{display:flex;gap:10px;margin:22px 0}.color{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.4);cursor:pointer}.color.white{background:white}.color.black{background:#050505}.color.yellow{background:var(--yellow)}.color.pink{background:var(--pink)}.color.blue{background:var(--cyan)}.clear{width:100%;padding:14px;border-radius:999px;background:transparent;color:var(--pink);border:1px solid var(--line);font-weight:900}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}.step{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;align-items:center;gap:16px}.num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--yellow);font-weight:1000}.step b{text-transform:uppercase;color:var(--yellow)}.step:nth-child(2) b{color:var(--cyan)}.step:nth-child(3) b{color:var(--pink)}footer{margin-top:34px;border-top:1px solid var(--line);background:#050506}.foot{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr;gap:30px;padding:38px 0}.foot-logo{width:150px}.foot h3{text-transform:uppercase;font-size:16px;margin-bottom:14px}.foot p,.foot a{display:block;color:#cfcfd8;margin:8px 0;line-height:1.4}.copy{border-top:1px solid var(--line);padding:18px 0;color:#aaa;text-align:center;font-size:13px}.to-top{position:fixed;right:22px;bottom:22px;width:48px;height:48px;border-radius:50%;border:2px solid var(--pink);color:var(--pink);display:grid;place-items:center;background:#070708;font-weight:1000;z-index:10}
+    @media(max-width:980px){.nav{height:auto;padding:16px 0;flex-wrap:wrap}.menu{order:3;width:100%;justify-content:center;gap:16px;flex-wrap:wrap}.hero-grid,.custom{grid-template-columns:1fr}.hero{text-align:center}.lead,.benefits{margin-left:auto;margin-right:auto}.actions{justify-content:center}.models,.steps,.foot{grid-template-columns:1fr 1fr}.custom{padding:24px}.panel{max-width:430px;margin:auto;width:100%}}@media(max-width:620px){.logo{width:115px}.budget{padding:10px 14px;font-size:12px}.hero{padding-top:30px}.benefits,.models,.steps,.foot{grid-template-columns:1fr}.title{font-size:42px}.hero-art{min-height:360px}.podium{width:280px;height:70px}.custom{padding:18px}.viewer{height:330px}.social{margin-left:auto}.menu{font-size:12px}.splash{opacity:.65}}
+  </style>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#inicio" aria-label="MugArt início">
-      <img src="assets/logo.png" alt="MugArt" />
-    </a>
-
-    <button class="menu-toggle" aria-label="Abrir menu">☰</button>
-
-    <nav class="nav">
-      <a href="#inicio" class="active">Início</a>
-      <a href="#canecas">Canecas</a>
-      <a href="#personalize">Personalize</a>
-      <a href="#como-funciona">Como funciona</a>
-      <a href="#contato">Contato</a>
-    </nav>
-
-    <div class="top-actions">
-      <a class="social instagram" href="https://instagram.com/mugartsp" target="_blank" rel="noopener">◎</a>
-      <a class="social whatsapp" href="https://wa.me/5511988849236" target="_blank" rel="noopener">☏</a>
-      <a class="budget" href="https://wa.me/5511988849236?text=Ol%C3%A1%2C%20quero%20fazer%20um%20or%C3%A7amento%20de%20caneca%20personalizada%20com%20a%20MugArt." target="_blank" rel="noopener">Faça seu orçamento <span>›</span></a>
-    </div>
+    <div class="wrap nav">
+      <img src="assets/logo.png" class="logo" alt="MugArt">
+      <nav class="menu">
+        <a class="active" href="#inicio">Início</a><a href="#canecas">Canecas</a><a href="#personalize">Personalize</a><a href="#como-funciona">Como funciona</a><a href="#sobre">Sobre nós</a><a href="#contato">Contato</a>
+      </nav>
+      <div class="social"><a class="soc insta" href="https://instagram.com/mugartsp" target="_blank">◎</a><a class="soc whats" href="https://wa.me/5511988849236" target="_blank">☏</a></div>
+      <a class="budget" href="https://wa.me/5511988849236?text=Olá! Quero fazer um orçamento de caneca personalizada." target="_blank">Faça seu orçamento</a>
+    </div><div class="stripe"></div>
   </header>
 
-  <main>
-    <section id="inicio" class="hero section-glow">
-      <div class="paint paint-yellow"></div>
-      <div class="paint paint-blue"></div>
-      <div class="paint paint-pink"></div>
-
-      <div class="hero-content">
-        <p class="eyebrow">Sua ideia, sua caneca, seu estilo!</p>
-        <h1>Transformamos <span class="yellow">ideias</span> em <span class="blue">canecas</span> <span class="pink">incríveis!</span></h1>
-        <p class="subtitle">Canecas personalizadas com qualidade premium para presentes, empresas, eventos e momentos inesquecíveis.</p>
-
-        <div class="hero-buttons">
-          <a class="btn btn-primary" href="#canecas">☕ Ver canecas</a>
-          <a class="btn btn-outline" href="#personalize">✎ Personalize agora</a>
-        </div>
-
-        <div class="benefits">
-          <div><strong>Qualidade</strong><span>Premium</span></div>
-          <div><strong>Arte</strong><span>Personalizada</span></div>
-          <div><strong>Compra</strong><span>100% segura</span></div>
-          <div><strong>Feito</strong><span>com amor</span></div>
-        </div>
-      </div>
-
-      <div class="hero-visual">
-        <div class="platform"></div>
-        <div class="mug-preview">
-          <div class="mug-body">
-            <img src="assets/logo.png" alt="Logo aplicado na caneca" />
-          </div>
-          <div class="mug-handle"></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="canecas" class="products panel">
-      <div class="section-title">
-        <span></span><h2>Nossas canecas</h2><span></span>
-      </div>
-
-      <div class="mug-grid">
-        <article class="mug-card yellow-border">
-          <div class="icon">☕</div>
-          <h3>Caneca branca</h3>
-          <p>Modelo clássico para fotos, frases, artes e logos.</p>
-        </article>
-        <article class="mug-card blue-border">
-          <div class="icon">🎨</div>
-          <h3>Caneca personalizada</h3>
-          <p>Personalização com a sua arte, nome, tema ou ideia.</p>
-        </article>
-        <article class="mug-card pink-border">
-          <div class="icon">💝</div>
-          <h3>Caneca presente</h3>
-          <p>Ideal para datas especiais, lembranças e surpresas.</p>
-        </article>
-        <article class="mug-card yellow-border">
-          <div class="icon">🏢</div>
-          <h3>Caneca corporativa</h3>
-          <p>Para marcas, equipes, eventos e brindes empresariais.</p>
-        </article>
-      </div>
-    </section>
-
-    <section id="personalize" class="customizer panel">
-      <div class="custom-text">
-        <p class="eyebrow">Mockup 3D</p>
-        <h2>Personalize <span>do seu jeito!</span></h2>
-        <p>Envie sua arte, veja uma prévia na caneca 3D, gire, dê zoom e finalize o orçamento pelo WhatsApp.</p>
-
-        <label class="upload-btn">
-          ⬆ Enviar minha arte
-          <input id="artUpload" type="file" accept="image/png,image/jpeg,image/webp" />
-        </label>
-        <small>Formatos aceitos: PNG, JPG e WEBP.</small>
-
-        <a id="whatsOrder" class="btn btn-primary wide" href="https://wa.me/5511988849236?text=Ol%C3%A1%2C%20quero%20fazer%20uma%20caneca%20personalizada%20com%20a%20MugArt." target="_blank" rel="noopener">Finalizar pelo WhatsApp</a>
-      </div>
-
-      <div class="viewer-wrap">
-        <div id="viewer3d"></div>
-        <div class="viewer-note">Arraste para girar • Scroll para zoom</div>
-      </div>
-
-      <aside class="controls">
-        <h3>Controles</h3>
-        <button id="resetView">⟳ Centralizar</button>
-        <button id="autoRotate">↻ Girar automático</button>
-        <h4>Cor da caneca</h4>
-        <div class="color-row">
-          <button class="color active" data-color="#ffffff" style="--c:#ffffff"></button>
-          <button class="color" data-color="#ffd400" style="--c:#ffd400"></button>
-          <button class="color" data-color="#00d8ff" style="--c:#00d8ff"></button>
-          <button class="color" data-color="#ff3f78" style="--c:#ff3f78"></button>
-          <button class="color" data-color="#111111" style="--c:#111111"></button>
-        </div>
-      </aside>
-    </section>
-
-    <section id="como-funciona" class="steps">
-      <div class="section-title">
-        <span></span><h2>Como funciona</h2><span></span>
-      </div>
-      <div class="step-row">
-        <div class="step"><b>1</b><strong>Escolha</strong><span>a caneca</span></div>
-        <div class="step"><b>2</b><strong>Envie sua arte</strong><span>ou imagem</span></div>
-        <div class="step"><b>3</b><strong>Visualize</strong><span>no mockup 3D</span></div>
-        <div class="step"><b>4</b><strong>Finalize</strong><span>pelo WhatsApp</span></div>
-      </div>
-    </section>
+  <main id="inicio" class="hero">
+    <div class="wrap hero-grid">
+      <section>
+        <div class="tag">Sua ideia, sua caneca, seu estilo!</div>
+        <h1 class="title">Transformamos<br><span class="yellow">ideias</span> em<br><span class="cyan">canecas</span> <span class="pink">incríveis!</span></h1>
+        <p class="lead">Canecas personalizadas com qualidade premium para momentos inesquecíveis.</p>
+        <div class="actions"><a href="#canecas" class="btn btn-primary">☕ Ver modelos</a><a href="#personalize" class="btn btn-outline">✎ Personalizar agora</a></div>
+        <div class="benefits"><div class="benefit"><b class="pink">♢</b>Qualidade<br>Premium</div><div class="benefit"><b class="cyan">▱</b>Envio para<br>todo Brasil</div><div class="benefit"><b class="yellow">▣</b>Compra 100%<br>Segura</div><div class="benefit"><b class="pink">♡</b>Feito com<br>Amor</div></div>
+      </section>
+      <section class="hero-art" aria-label="Caneca MugArt">
+        <span class="splash s1"></span><span class="splash s2"></span><span class="splash s3"></span><span class="podium"></span>
+        <img class="hero-mug" src="assets/caneca-hero.png" alt="Caneca personalizada MugArt">
+      </section>
+    </div>
   </main>
 
-  <footer id="contato" class="footer">
-    <img src="assets/logo.png" alt="MugArt" />
-    <div>
-      <h3>Sobre a MugArt</h3>
-      <p>Transformamos ideias em canecas incríveis, com criatividade, carinho e qualidade.</p>
-    </div>
-    <div>
-      <h3>Fale conosco</h3>
-      <p>WhatsApp: (11) 98884-9236</p>
-      <p>E-mail: contato@mugart.com.br</p>
-      <p>Instagram: @mugartsp</p>
-    </div>
-  </footer>
+  <section id="canecas" class="section"><div class="wrap"><h2 class="sec-title dots">Nossos modelos de canecas</h2><div class="models">
+    <article class="model"><div class="mini-mug"></div><h3>Caneca Branca</h3><p>Clássica e perfeita para qualquer ocasião.</p><button class="detail">Ver detalhes</button></article>
+    <article class="model"><div class="mini-mug m-black"></div><h3>Interna e Alça Preta</h3><p>Um toque de elegância para sua caneca.</p><button class="detail alt">Ver detalhes</button></article>
+    <article class="model"><div class="mini-mug m-pink"></div><h3>Interna e Alça Rosa</h3><p>Doce, moderna e cheia de personalidade.</p><button class="detail">Ver detalhes</button></article>
+    <article class="model"><div class="mini-mug m-blue"></div><h3>Interna e Alça Azul</h3><p>Estilo e cor para destacar sua criatividade.</p><button class="detail alt">Ver detalhes</button></article>
+  </div></div></section>
 
-  <script type="importmap">
-    {"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+  <section id="personalize" class="section"><div class="wrap custom">
+    <div><h2>Personalize<br><span class="yellow">do seu jeito!</span></h2><p>Envie sua arte, ajuste como quiser e visualize sua caneca em 3D em tempo real.</p><label class="upload">⇧ Enviar minha arte<input id="upload" type="file" accept="image/png,image/jpeg,image/webp"></label><p style="font-size:13px;margin-top:18px;color:#bdbdc7">Formatos aceitos: PNG, JPG, WEBP<br>Tamanho máximo: 10MB</p></div>
+    <div class="viewer"><canvas id="mug3d"></canvas><div class="fallback-mug" id="fallback"><div class="css-mug"><div class="art-preview" id="artPreview">Sua arte<br>aqui</div></div></div><div class="hint">Dica: arraste para girar a caneca • role para dar zoom</div></div>
+    <aside class="panel"><h4>Controles</h4><div class="controls"><div><span class="ctrl">↻</span>Girar</div><div><span class="ctrl">⌕</span>Zoom</div><div><span class="ctrl">⟳</span>Reiniciar</div></div><hr style="border-color:var(--line);margin:22px 0"><h4>Cores da caneca</h4><div class="colors"><button class="color white" data-color="#ffffff"></button><button class="color black" data-color="#050505"></button><button class="color yellow" data-color="#ffd400"></button><button class="color pink" data-color="#ff3b7d"></button><button class="color blue" data-color="#04c8f4"></button></div><button id="clear" class="clear">🗑 Limpar</button></aside>
+  </div></section>
+
+  <section id="como-funciona" class="section"><div class="wrap"><h2 class="sec-title dots">Como funciona</h2><div class="steps"><div class="step"><span class="num">1</span><div><b>Escolha</b><br>o modelo</div></div><div class="step"><span class="num">2</span><div><b>Envie sua arte</b><br>ou imagem</div></div><div class="step"><span class="num">3</span><div><b>Personalize</b><br>como quiser</div></div><div class="step"><span class="num">4</span><div><b>Receba em casa</b><br>com todo cuidado</div></div></div></div></section>
+  </main>
+
+  <footer id="contato"><div class="wrap foot"><div><img src="assets/logo.png" class="foot-logo" alt="MugArt"><p>Transformamos ideias em canecas incríveis! Qualidade, criatividade e amor em cada detalhe.</p></div><div><h3 class="yellow">Links rápidos</h3><a href="#inicio">Início</a><a href="#canecas">Canecas</a><a href="#personalize">Personalize</a><a href="#como-funciona">Como funciona</a></div><div><h3 class="cyan">Ajuda</h3><a>Perguntas frequentes</a><a>Trocas e devoluções</a><a>Prazo de entrega</a><a>Formas de pagamento</a></div><div><h3 class="pink">Fale conosco</h3><p>☏ (11) 98884-9236</p><p>✉ contato@mugart.com.br</p><p>◎ @mugartsp</p><p>⌖ São Paulo - SP</p></div></div><div class="copy">© 2026 MugArt - Todos os direitos reservados. Feito com ❤ para você!</div></footer>
+  <a class="to-top" href="#inicio">↑</a>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    const fallback = document.getElementById('fallback');
+    const upload = document.getElementById('upload');
+    const artPreview = document.getElementById('artPreview');
+    let mugMaterial, artMesh, renderer, scene, camera, group;
+    function start3D(){
+      if(!window.THREE){ fallback.style.display='grid'; return; }
+      const canvas=document.getElementById('mug3d'); scene=new THREE.Scene();
+      camera=new THREE.PerspectiveCamera(35,canvas.clientWidth/canvas.clientHeight,.1,100); camera.position.set(0,1.2,6);
+      renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(canvas.clientWidth,canvas.clientHeight,false);
+      scene.add(new THREE.AmbientLight(0xffffff,.9)); const l=new THREE.DirectionalLight(0xffffff,1.4); l.position.set(4,6,5); scene.add(l); const p=new THREE.PointLight(0x04c8f4,1.2,8); p.position.set(-3,2,3); scene.add(p);
+      group=new THREE.Group(); scene.add(group);
+      mugMaterial=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.32,metalness:.04});
+      const body=new THREE.Mesh(new THREE.CylinderGeometry(1.18,1.02,2.15,96,1,true),mugMaterial); body.rotation.y=.18; group.add(body);
+      const rim=new THREE.Mesh(new THREE.TorusGeometry(1.18,.055,16,96),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.22})); rim.position.y=1.08; rim.rotation.x=Math.PI/2; group.add(rim);
+      const base=new THREE.Mesh(new THREE.CylinderGeometry(1.02,1.03,.08,96),mugMaterial); base.position.y=-1.08; group.add(base);
+      const inner=new THREE.Mesh(new THREE.CylinderGeometry(1.02,1.03,.06,96),new THREE.MeshStandardMaterial({color:0xe8e8e8,roughness:.45})); inner.position.y=1.04; group.add(inner);
+      const handle=new THREE.Mesh(new THREE.TorusGeometry(.55,.12,22,72,Math.PI*1.45),mugMaterial); handle.position.set(1.15,.02,.06); handle.rotation.z=Math.PI/2; handle.rotation.y=.15; group.add(handle);
+      const plate=new THREE.Mesh(new THREE.CylinderGeometry(1.65,1.78,.2,96),new THREE.MeshStandardMaterial({color:0x09090a,roughness:.38,metalness:.1})); plate.position.y=-1.28; group.add(plate);
+      artMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.25,.95),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.92})); artMesh.position.set(0,.03,1.04); group.add(artMesh);
+      const grid=new THREE.GridHelper(7,18,0x333333,0x171717); grid.position.y=-1.4; scene.add(grid);
+      let dragging=false,lastX=0,rot=.25; canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX}); window.addEventListener('pointerup',()=>dragging=false); window.addEventListener('pointermove',e=>{if(dragging){rot+=(e.clientX-lastX)*.01;lastX=e.clientX;}}); canvas.addEventListener('wheel',e=>{e.preventDefault();camera.position.z=Math.max(3.5,Math.min(8,camera.position.z+e.deltaY*.004));},{passive:false});
+      function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(canvas.width!==w||canvas.height!==h){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}};
+      function anim(){requestAnimationFrame(anim);resize();group.rotation.y=rot;renderer.render(scene,camera);} anim();
+    }
+    start3D();
+    upload.addEventListener('change',e=>{const file=e.target.files[0]; if(!file)return; const url=URL.createObjectURL(file); artPreview.innerHTML='<img src="'+url+'">'; if(window.THREE&&artMesh){new THREE.TextureLoader().load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace; artMesh.material.map=tex; artMesh.material.color.set(0xffffff); artMesh.material.needsUpdate=true;});}});
+    document.querySelectorAll('.color').forEach(btn=>btn.addEventListener('click',()=>{if(mugMaterial)mugMaterial.color.set(btn.dataset.color);}));
+    document.getElementById('clear').addEventListener('click',()=>{upload.value='';artPreview.innerHTML='Sua arte<br>aqui'; if(artMesh){artMesh.material.map=null;artMesh.material.color.set(0xffffff);artMesh.material.needsUpdate=true;}});
   </script>
-  <script type="module" src="js/script.js"></script>
 </body>
 </html>
