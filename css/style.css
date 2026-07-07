@@ -11,6 +11,10 @@
   --pink: #ff3b7b;
   --cyan: #00d8ff;
   --green: #20c463;
+  --brown: #7a4a2a;
+  --purple: #7d3cff;
+  --orange: #ff8a00;
+  --red: #e73535;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -332,7 +336,8 @@ h1 {
 
 .model-card {
   min-width: 210px;
-  min-height: 285px;
+  min-height: 330px;
+  height: 330px;
   padding: 18px 14px 20px;
   border-radius: 12px;
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
@@ -343,6 +348,9 @@ h1 {
   transition: transform .2s ease, border .2s ease, box-shadow .2s ease;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .model-card::after {
@@ -365,9 +373,13 @@ h1 {
 
 .model-card img {
   width: 100%;
-  height: 140px;
+  height: 150px;
+  max-height: 150px;
   object-fit: contain;
-  margin-bottom: 13px;
+  object-position: center;
+  display: block;
+  margin: 0 auto 13px;
+  flex-shrink: 0;
 }
 
 .model-card h3 {
@@ -375,18 +387,24 @@ h1 {
   font-size: 24px;
   font-weight: 900;
   margin-bottom: 8px;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.05;
 }
 
 .model-card p {
   color: rgba(255,255,255,.76);
-  line-height: 1.45;
-  min-height: 42px;
+  line-height: 1.35;
+  min-height: 58px;
+  font-size: 14px;
 }
 
 .model-card button {
   border: 0;
   padding: 11px 20px;
-  margin-top: 13px;
+  margin-top: auto;
   border-radius: 999px;
   background: var(--pink);
   color: white;
@@ -617,6 +635,7 @@ h1 {
 
 .color-dots {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin: 16px 0 24px;
 }
@@ -639,6 +658,11 @@ h1 {
 .color.yellow { background: var(--yellow); }
 .color.pink { background: var(--pink); }
 .color.cyan { background: #08a9d9; }
+.color.brown { background: var(--brown); }
+.color.purple { background: var(--purple); }
+.color.green { background: var(--green); }
+.color.orange { background: var(--orange); }
+.color.red { background: var(--red); }
 
 .clear-btn,
 .whatsapp-order {
@@ -784,6 +808,14 @@ footer div:nth-child(3) h4 { color: var(--pink); }
   .hero-visual { min-height: auto; }
   .models-shell { padding: 18px 42px; }
   .models-track { grid-auto-columns: 235px; }
+  .model-card {
+    height: 340px;
+    min-height: 340px;
+  }
+  .model-card img {
+    height: 145px;
+    max-height: 145px;
+  }
   .customizer { margin-left: 0; margin-right: 0; border-radius: 0; padding: 24px 18px; }
   .steps-grid { grid-template-columns: 1fr; }
   .tip { position: relative; margin-top: 14px; white-space: normal; text-align: center; }
