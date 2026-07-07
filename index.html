@@ -1,828 +1,265 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;600;700;800;900&display=swap');
-
-:root {
-  --bg: #030406;
-  --panel: rgba(16, 17, 20, 0.86);
-  --panel2: rgba(8, 9, 12, 0.92);
-  --stroke: rgba(255,255,255,.14);
-  --white: #fff;
-  --muted: rgba(255,255,255,.74);
-  --yellow: #ffd400;
-  --pink: #ff3b7b;
-  --cyan: #00d8ff;
-  --green: #20c463;
-  --brown: #7a4a2a;
-  --purple: #8d4dff;
-  --orange: #ff8a00;
-  --red: #ff2f3d;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
-  color: var(--white);
-  background:
-    radial-gradient(circle at 82% 12%, rgba(0,216,255,.16), transparent 32%),
-    radial-gradient(circle at 8% 20%, rgba(255,59,123,.09), transparent 30%),
-    radial-gradient(circle at 78% 92%, rgba(255,212,0,.08), transparent 30%),
-    #030406;
-  overflow-x: hidden;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(circle at 10% 50%, rgba(255,255,255,.08) 0 1px, transparent 2px) 0 0/22px 22px,
-    linear-gradient(120deg, transparent 0 68%, rgba(0,216,255,.04), transparent 80%);
-  opacity: .28;
-  pointer-events: none;
-  z-index: -1;
-}
-
-a { color: inherit; text-decoration: none; }
-
-.topbar {
-  width: 100%;
-  min-height: 112px;
-  display: flex;
-  align-items: center;
-  padding: 12px 5.4%;
-  gap: 26px;
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  background: rgba(3,4,6,.78);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-.brand img {
-  width: 155px;
-  max-height: 95px;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 16px 22px rgba(0,0,0,.55));
-}
-
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
-  margin-left: auto;
-}
-
-.nav a {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: .2px;
-  color: rgba(255,255,255,.92);
-  position: relative;
-  padding: 12px 0;
-}
-
-.nav a.active,
-.nav a:hover { color: var(--yellow); }
-
-.nav a.active::after {
-  content: "";
-  height: 3px;
-  border-radius: 8px;
-  background: var(--yellow);
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 3px;
-}
-
-.top-actions {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-}
-
-.icon-link {
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.insta { color: var(--pink); }
-.whats { color: var(--cyan); }
-
-.quote-btn {
-  font-family: "Barlow Condensed", sans-serif;
-  font-weight: 900;
-  font-size: 18px;
-  color: var(--yellow);
-  padding: 14px 25px;
-  border: 2px solid var(--yellow);
-  border-radius: 999px;
-  box-shadow: 0 0 22px rgba(255,212,0,.16);
-}
-
-.quote-btn span { font-size: 24px; margin-left: 10px; }
-
-.menu-toggle {
-  display: none;
-  background: none;
-  border: 0;
-  color: white;
-  font-size: 30px;
-  margin-left: auto;
-}
-
-.hero {
-  min-height: 720px;
-  display: grid;
-  grid-template-columns: 1fr 1.12fr;
-  align-items: center;
-  gap: 32px;
-  padding: 42px 6% 20px;
-  position: relative;
-}
-
-.hero::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -45px;
-  height: 150px;
-  background: linear-gradient(to bottom, transparent, #030406);
-  pointer-events: none;
-}
-
-.eyebrow {
-  font-family: "Barlow Condensed", sans-serif;
-  color: var(--yellow);
-  font-weight: 900;
-  text-transform: uppercase;
-  font-size: clamp(22px, 2vw, 28px);
-  margin-bottom: 18px;
-}
-
-h1 {
-  font-family: "Barlow Condensed", sans-serif;
-  text-transform: uppercase;
-  font-weight: 900;
-  font-size: clamp(55px, 7vw, 92px);
-  line-height: .92;
-  letter-spacing: -1px;
-  margin-bottom: 18px;
-  text-shadow: 0 12px 36px rgba(0,0,0,.55);
-}
-
-.yellow { color: var(--yellow); }
-.cyan { color: var(--cyan); }
-.pink { color: var(--pink); }
-.yellow-bg { background: var(--yellow); }
-.cyan-bg { background: var(--cyan); }
-.pink-bg { background: var(--pink); }
-
-.subtitle {
-  max-width: 430px;
-  color: var(--muted);
-  font-size: 18px;
-  line-height: 1.55;
-  margin-bottom: 30px;
-}
-
-.hero-buttons {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 34px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 17px 28px;
-  border-radius: 999px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 19px;
-  font-weight: 900;
-  text-transform: uppercase;
-  min-width: 178px;
-  justify-content: center;
-}
-
-.btn-yellow {
-  background: var(--yellow);
-  color: #080808;
-  box-shadow: 0 12px 35px rgba(255,212,0,.32);
-}
-
-.btn-outline {
-  border: 2px solid var(--cyan);
-  color: white;
-  background: rgba(0,216,255,.03);
-}
-
-.benefits {
-  display: flex;
-  gap: 26px;
-  flex-wrap: wrap;
-  color: rgba(255,255,255,.83);
-  font-size: 14px;
-}
-
-.benefits span {
-  display: inline-block;
-  font-size: 30px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-
-.hero-visual {
-  position: relative;
-  min-height: 470px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-visual::before,
-.hero-visual::after {
-  content: "";
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(30px);
-  opacity: .35;
-}
-
-.hero-visual::before {
-  width: 330px;
-  height: 330px;
-  background: var(--cyan);
-  right: 10%;
-  top: 10%;
-}
-
-.hero-visual::after {
-  width: 320px;
-  height: 250px;
-  background: var(--pink);
-  right: 3%;
-  bottom: 15%;
-}
-
-.hero-visual img {
-  width: min(100%, 640px);
-  position: relative;
-  z-index: 2;
-  filter: drop-shadow(0 45px 55px rgba(0,0,0,.45));
-}
-
-.models-section {
-  padding: 38px 3% 18px;
-  position: relative;
-  z-index: 2;
-}
-
-.section-heading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 13px;
-  margin: 18px 0 30px;
-  text-align: center;
-}
-
-.section-heading h2 {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: clamp(30px, 3.4vw, 42px);
-  text-transform: uppercase;
-  font-weight: 900;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  display: inline-block;
-  box-shadow: 0 0 20px currentColor;
-}
-
-/* ==========================
-   CARROSSEL DE CANECAS V2
-========================== */
-
-.models-shell {
-  position: relative;
-  background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
-  border: 1px solid rgba(255,255,255,.09);
-  border-radius: 25px;
-  padding: 24px 58px;
-  box-shadow: 0 28px 80px rgba(0,0,0,.35);
-}
-
-.models-track {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 230px;
-  gap: 22px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  padding: 8px 2px 14px;
-  scrollbar-width: none;
-}
-
-.models-track::-webkit-scrollbar { display: none; }
-
-.model-card {
-  width: 230px;
-  min-width: 230px;
-  height: 365px;
-  padding: 18px 14px 20px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
-  border: 1px solid rgba(255,255,255,.16);
-  text-align: center;
-  scroll-snap-align: start;
-  cursor: pointer;
-  transition: transform .2s ease, border .2s ease, box-shadow .2s ease;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.model-card::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--yellow), var(--pink), var(--cyan));
-  opacity: .78;
-}
-
-.model-card:hover,
-.model-card.active {
-  transform: translateY(-7px);
-  border-color: rgba(255,212,0,.55);
-  box-shadow: 0 0 0 1px rgba(255,212,0,.13), 0 24px 50px rgba(0,0,0,.45);
-}
-
-.model-card img {
-  width: 100%;
-  height: 165px;
-  max-height: 165px;
-  object-fit: contain;
-  object-position: center;
-  display: block;
-  margin: 0 auto 14px;
-  flex: 0 0 165px;
-}
-
-.model-card h3 {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 23px;
-  line-height: 1.05;
-  font-weight: 900;
-  margin-bottom: 8px;
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.model-card p {
-  color: rgba(255,255,255,.76);
-  line-height: 1.35;
-  font-size: 14px;
-  min-height: 58px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.model-card button {
-  border: 0;
-  padding: 11px 20px;
-  margin-top: auto;
-  border-radius: 999px;
-  background: var(--pink);
-  color: white;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.model-card:nth-child(even) button { background: #089fd0; }
-
-.arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  border-radius: 999px;
-  border: 2px solid var(--pink);
-  background: rgba(0,0,0,.65);
-  color: var(--pink);
-  font-size: 38px;
-  line-height: .6;
-  cursor: pointer;
-  z-index: 5;
-}
-
-.arrow.left { left: 12px; }
-.arrow.right { right: 12px; }
-
-.customizer {
-  margin: 20px 3% 0;
-  min-height: 360px;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.12);
-  background:
-    linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
-    #06070a;
-  display: grid;
-  grid-template-columns: .9fr 1.35fr .88fr;
-  gap: 25px;
-  align-items: stretch;
-  padding: 28px 32px;
-  position: relative;
-  overflow: hidden;
-}
-
-.customizer::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 0 90%, rgba(255,212,0,.25), transparent 18%),
-    radial-gradient(circle at 100% 95%, rgba(0,216,255,.18), transparent 20%);
-  pointer-events: none;
-}
-
-.customizer > * { position: relative; z-index: 2; }
-
-.customizer-copy h2 {
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: clamp(34px, 4vw, 45px);
-  line-height: .95;
-  text-transform: uppercase;
-  margin-bottom: 22px;
-}
-
-.customizer-copy h2 span { color: var(--yellow); }
-
-.customizer-copy p {
-  color: rgba(255,255,255,.78);
-  line-height: 1.6;
-  margin-bottom: 20px;
-  max-width: 260px;
-}
-
-.upload-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 25px;
-  border-radius: 999px;
-  background: var(--pink);
-  color: white;
-  font-family: "Barlow Condensed", sans-serif;
-  font-weight: 900;
-  text-transform: uppercase;
-  font-size: 18px;
-  cursor: pointer;
-  box-shadow: 0 15px 30px rgba(255,59,123,.22);
-}
-
-.upload-btn input { display: none; }
-
-.file-note {
-  font-size: 13px;
-  margin: 15px 0 18px !important;
-  opacity: .9;
-}
-
-.field { margin-top: 14px; }
-
-.field label {
-  display: block;
-  font-weight: 800;
-  font-size: 13px;
-  margin-bottom: 7px;
-  color: rgba(255,255,255,.9);
-}
-
-.field input,
-.field textarea {
-  width: 100%;
-  background: rgba(255,255,255,.07);
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 14px;
-  padding: 12px 13px;
-  color: white;
-  outline: 0;
-  resize: vertical;
-}
-
-.preview-stage {
-  min-height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.grid-bg {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
-  background-size: 34px 34px;
-  opacity: .27;
-  mask-image: radial-gradient(ellipse at center, black 0 48%, transparent 72%);
-}
-
-.preview-mug-base {
-  width: min(92%, 440px);
-  max-height: 340px;
-  object-fit: contain;
-  filter: drop-shadow(0 35px 32px rgba(0,0,0,.4));
-  z-index: 2;
-}
-
-.print-area {
-  position: absolute;
-  z-index: 4;
-  width: 150px;
-  height: 124px;
-  left: 50%;
-  top: 48%;
-  transform: translate(-55%, -42%);
-  border: 2px dashed rgba(0,163,255,.95);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #111;
-  font-size: 26px;
-  line-height: .98;
-  font-family: "Barlow Condensed", sans-serif;
-  pointer-events: none;
-  overflow: hidden;
-  border-radius: 3px;
-}
-
-.print-area img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: none;
-  background: rgba(255,255,255,.55);
-}
-
-.print-area strong { color: var(--pink); }
-
-.tip {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  font-size: 13px;
-  background: rgba(0,0,0,.5);
-  color: rgba(255,255,255,.86);
-  padding: 8px 13px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.1);
-}
-
-.controls-panel {
-  align-self: center;
-  border: 1px solid rgba(255,255,255,.17);
-  background: rgba(0,0,0,.35);
-  border-radius: 18px;
-  padding: 23px;
-}
-
-.controls-panel h3 {
-  font-family: "Barlow Condensed", sans-serif;
-  text-transform: uppercase;
-  font-size: 20px;
-  margin: 5px 0 13px;
-}
-
-.selected-box {
-  background: rgba(255,255,255,.065);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 14px;
-  padding: 12px;
-  margin-bottom: 11px;
-}
-
-.selected-box small {
-  display: block;
-  color: rgba(255,255,255,.55);
-  margin-bottom: 5px;
-}
-
-.selected-box strong { color: var(--yellow); }
-
-.color-dots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 16px 0 24px;
-}
-
-.color {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.25);
-  cursor: pointer;
-  flex: 0 0 32px;
-}
-
-.color.selected {
-  outline: 3px solid white;
-  outline-offset: 3px;
-}
-
-.color.white { background: #fff; }
-.color.black { background: #050505; }
-.color.yellow { background: var(--yellow); }
-.color.pink { background: var(--pink); }
-.color.cyan { background: #08a9d9; }
-.color.brown { background: var(--brown); }
-.color.purple { background: var(--purple); }
-.color.green { background: var(--green); }
-.color.orange { background: var(--orange); }
-.color.red { background: var(--red); }
-
-.clear-btn,
-.whatsapp-order {
-  width: 100%;
-  border: 0;
-  border-radius: 999px;
-  padding: 14px 18px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 19px;
-  font-weight: 900;
-  text-transform: uppercase;
-  cursor: pointer;
-  margin-top: 12px;
-}
-
-.clear-btn {
-  color: var(--pink);
-  background: transparent;
-  border: 1px solid rgba(255,255,255,.18);
-}
-
-.whatsapp-order {
-  color: white;
-  background: var(--green);
-  box-shadow: 0 14px 35px rgba(32,196,99,.25);
-}
-
-.steps { padding: 5px 5% 28px; }
-
-.steps-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-}
-
-.step {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-height: 86px;
-  padding: 18px 22px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
-  position: relative;
-}
-
-.step:not(:last-child)::after {
-  content: "›";
-  position: absolute;
-  right: -15px;
-  color: var(--yellow);
-  font-size: 38px;
-  z-index: 2;
-}
-
-.step .icon { font-size: 34px; }
-
-.step strong {
-  display: block;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 20px;
-  text-transform: uppercase;
-}
-
-.step p { color: rgba(255,255,255,.74); }
-
-footer {
-  margin: 0 5%;
-  border-top: 1px solid rgba(255,255,255,.12);
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1.1fr;
-  gap: 38px;
-  padding: 30px 0;
-}
-
-footer img {
-  width: 155px;
-  display: block;
-  margin-bottom: 8px;
-}
-
-footer p,
-footer a {
-  color: rgba(255,255,255,.78);
-  line-height: 1.75;
-  display: block;
-  font-size: 14px;
-}
-
-footer h4 {
-  font-family: "Barlow Condensed", sans-serif;
-  color: var(--yellow);
-  text-transform: uppercase;
-  font-size: 22px;
-  margin-bottom: 12px;
-}
-
-footer div:nth-child(3) h4 { color: var(--pink); }
-
-.copyright {
-  border-top: 1px solid rgba(255,255,255,.08);
-  padding: 15px 5%;
-  color: rgba(255,255,255,.7);
-  font-size: 13px;
-  display: flex;
-  justify-content: space-between;
-}
-
-@media (max-width: 1000px) {
-  .topbar { min-height: 86px; }
-  .brand img { width: 115px; }
-  .menu-toggle { display: block; }
-  .nav {
-    display: none;
-    position: absolute;
-    top: 86px;
-    left: 0;
-    right: 0;
-    padding: 18px 6%;
-    background: rgba(3,4,6,.97);
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .nav.open { display: flex; }
-  .top-actions { display: none; }
-  .hero { grid-template-columns: 1fr; text-align: center; padding-top: 26px; }
-  .subtitle { margin-left: auto; margin-right: auto; }
-  .hero-buttons, .benefits { justify-content: center; }
-  .customizer { grid-template-columns: 1fr; }
-  .print-area { width: 122px; height: 100px; top: 49%; }
-  .steps-grid { grid-template-columns: 1fr 1fr; }
-  .step::after { display: none; }
-  footer { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 620px) {
-  h1 { font-size: 52px; }
-  .hero-visual { min-height: auto; }
-  .models-shell { padding: 18px 42px; }
-  .models-track { grid-auto-columns: 220px; }
-  .model-card {
-    width: 220px;
-    min-width: 220px;
-    height: 355px;
-  }
-  .model-card img {
-    height: 155px;
-    max-height: 155px;
-    flex-basis: 155px;
-  }
-  .customizer { margin-left: 0; margin-right: 0; border-radius: 0; padding: 24px 18px; }
-  .steps-grid { grid-template-columns: 1fr; }
-  .tip { position: relative; margin-top: 14px; white-space: normal; text-align: center; }
-}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-NH94WCFS');</script>
+<!-- End Google Tag Manager -->
+
+  <script>
+  window.dataLayer = window.dataLayer || [];
+
+  window.dataLayer.push({
+    event: "page_view",
+    page_title: document.title,
+    page_location: window.location.href,
+    page_path: window.location.pathname
+  });
+</script>
+  
+  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MugArt | Canecas Personalizadas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NH94WCFS"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+  
+  <header class="topbar">
+    <a class="brand" href="#inicio" aria-label="MugArt">
+      <img src="assets/logo.png" alt="MugArt" />
+    </a>
+
+    <button class="menu-toggle" id="menuToggle">☰</button>
+
+    <nav class="nav" id="nav">
+      <a class="active" href="#inicio">Início</a>
+      <a href="loja.html">Loja</a>
+      <a href="#canecas">Canecas</a>
+      <a href="#personalize">Personalize</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#contato">Contato</a>
+    </nav>
+
+    <div class="top-actions">
+      <a class="icon-link insta" href="https://instagram.com/mugartsp" target="_blank" aria-label="Instagram">◎</a>
+      <a class="icon-link whats" href="https://wa.me/5511988849236" target="_blank" aria-label="WhatsApp">◉</a>
+      <a class="quote-btn" href="#personalize">Fazer orçamento <span>›</span></a>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Sua ideia, sua caneca, seu estilo!</p>
+        <h1>
+          Transformamos <span class="yellow">ideias</span> em
+          <span class="cyan">canecas</span>
+          <span class="pink">incríveis!</span>
+        </h1>
+        <p class="subtitle">Canecas personalizadas com qualidade premium para momentos inesquecíveis.</p>
+
+        <div class="hero-buttons">
+          <a class="btn btn-yellow" href="#canecas"><span>☕</span> Ver modelos</a>
+          <a class="btn btn-outline" href="#personalize"><span>✎</span> Personalizar agora</a>
+        </div>
+
+        <div class="benefits">
+          <div><span class="pink">♡</span> Qualidade<br>Premium</div>
+          <div><span class="cyan">▱</span> Envio para<br>todo Brasil</div>
+          <div><span class="yellow">▣</span> Compra 100%<br>Segura</div>
+          <div><span class="pink">♥</span> Feito com<br>Amor</div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <img src="assets/hero-caneca.png" alt="Caneca MugArt personalizada" />
+      </div>
+    </section>
+
+    <section class="models-section" id="canecas">
+      <div class="section-heading">
+        <span class="dot pink-bg"></span>
+        <span class="dot pink-bg"></span>
+        <h2>Nossos modelos de canecas</h2>
+        <span class="dot cyan-bg"></span>
+        <span class="dot cyan-bg"></span>
+      </div>
+
+      <div class="models-shell">
+        <button class="arrow left" type="button" aria-label="Anterior">‹</button>
+
+        <div class="models-track" id="modelsTrack">
+          <article class="model-card active" data-modelo="Caneca branca" data-imagem="assets/caneca-branca.png" data-cor="branca">
+            <img src="assets/caneca-branca.png" alt="Caneca branca" />
+            <h3>Caneca Branca</h3>
+            <p>Clássica e perfeita para qualquer ocasião.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Interna e alça preta" data-imagem="assets/caneca-preta.png" data-cor="preta">
+            <img src="assets/caneca-preta.png" alt="Caneca interna e alça preta" />
+            <h3>Interna e Alça Preta</h3>
+            <p>Um toque de elegância para sua caneca.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Interna e alça rosa" data-imagem="assets/caneca-rosa.png" data-cor="rosa">
+            <img src="assets/caneca-rosa.png" alt="Caneca interna e alça rosa" />
+            <h3>Interna e Alça Rosa</h3>
+            <p>Doce, moderna e cheia de personalidade.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Interna e alça azul" data-imagem="assets/caneca-azul.png" data-cor="azul">
+            <img src="assets/caneca-azul.png" alt="Caneca interna e alça azul" />
+            <h3>Interna e Alça Azul</h3>
+            <p>Estilo e cor para destacar sua criatividade.</p>
+            <button type="button">Selecionar</button>
+          </article>
+
+          <article class="model-card" data-modelo="Caneca mágica" data-imagem="assets/caneca-magica.png" data-cor="magica">
+            <img src="assets/caneca-magica.png" alt="Caneca mágica" />
+            <h3>Caneca Mágica</h3>
+            <p>Fica preta e revela a arte com líquido quente.</p>
+            <button type="button">Selecionar</button>
+          </article>
+        </div>
+
+        <button class="arrow right" type="button" aria-label="Próximo">›</button>
+      </div>
+    </section>
+
+    <section class="customizer" id="personalize">
+      <div class="customizer-copy">
+        <h2>Personalize<br><span>do seu jeito!</span></h2>
+        <p>Envie sua arte, escolha o modelo e solicite seu orçamento pelo WhatsApp.</p>
+
+        <label class="upload-btn">
+          <input type="file" id="artInput" accept="image/png,image/jpeg,image/webp" />
+          <span>⇧</span> Enviar minha arte
+        </label>
+
+        <p class="file-note">Formatos aceitos: PNG, JPG, WEBP<br>Tamanho máximo recomendado: 10MB</p>
+
+        <div class="field">
+          <label for="customerName">Seu nome</label>
+          <input id="customerName" type="text" placeholder="Digite seu nome" />
+        </div>
+
+        <div class="field">
+          <label for="customerNote">Observações</label>
+          <textarea id="customerNote" rows="4" placeholder="Ex: colocar nome, frase, imagem centralizada..."></textarea>
+        </div>
+      </div>
+
+      <div class="preview-stage">
+        <div class="grid-bg"></div>
+        <img class="preview-mug-base" id="previewMugBase" src="assets/caneca-studio.png" alt="Prévia da caneca" />
+
+
+
+
+        
+        <div class="tip">ⓘ Dica: escolha o modelo, envie a arte e finalize pelo WhatsApp</div>
+      </div>
+
+      <aside class="controls-panel">
+        <h3>Pedido</h3>
+        <div class="selected-box">
+          <small>Modelo selecionado</small>
+          <strong id="selectedModelText">Caneca Branca</strong>
+        </div>
+
+        <div class="selected-box">
+          <small>Arte enviada</small>
+          <strong id="selectedArtText">Nenhuma</strong>
+        </div>
+
+        <h3>Cores da caneca</h3>
+        <div class="color-dots">
+          <button class="color white selected" data-target="Caneca branca" data-card="0" aria-label="Caneca branca"></button>
+          <button class="color black" data-target="Interna e alça preta" data-card="1" aria-label="Caneca preta"></button>
+          <button class="color yellow" aria-label="Amarela sob consulta"></button>
+          <button class="color pink" data-target="Interna e alça rosa" data-card="2" aria-label="Caneca rosa"></button>
+          <button class="color cyan" data-target="Interna e alça azul" data-card="3" aria-label="Caneca azul"></button>
+        </div>
+
+        <button class="clear-btn" id="clearArt" type="button">🗑 Limpar arte</button>
+
+        
+        
+        <button class="whatsapp-order" id="sendWhatsapp" type="button">☘ Solicitar orçamento</button>
+      </aside>
+    </section>
+
+    <section class="steps" id="como-funciona">
+      <div class="section-heading">
+        <span class="dot pink-bg"></span>
+        <span class="dot pink-bg"></span>
+        <h2>Como funciona</h2>
+        <span class="dot pink-bg"></span>
+        <span class="dot pink-bg"></span>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step"><span class="icon yellow">☕</span><strong>1 Escolha</strong><p>o modelo</p></div>
+        <div class="step"><span class="icon cyan">☁</span><strong>2 Envie sua arte</strong><p>ou imagem</p></div>
+        <div class="step"><span class="icon pink">✎</span><strong>3 Personalize</strong><p>como quiser</p></div>
+        <div class="step"><span class="icon yellow">▣</span><strong>4 Receba em casa</strong><p>com todo cuidado</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contato">
+    <div class="footer-brand">
+      <img src="assets/logo.png" alt="MugArt" />
+      <p>Transformamos ideias em canecas incríveis! Qualidade, criatividade e amor em cada detalhe.</p>
+    </div>
+
+    <div>
+      <h4>Links rápidos</h4>
+      <a href="#inicio">Início</a>
+      <a href="#canecas">Canecas</a>
+      <a href="#personalize">Personalize</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#contato">Contato</a>
+    </div>
+
+    <div>
+      <h4>Fale conosco</h4>
+      <p>☘ (11) 98884-9236</p>
+      <p>✉ contato@mugart.com.br</p>
+      <p>◎ @mugartsp</p>
+      <p>⌖ São Paulo - SP</p>
+    </div>
+  </footer>
+
+  <div class="copyright">© 2026 MugArt — Todos os direitos reservados. Feito com 💗 para você!</div>
+
+  <script src="js/script.js"></script>
+
+<!-- START Widget WhastApp hospedagemwordpresspro -->
+<a href="https://api.whatsapp.com/send?phone=5511988849236&text=Olá!%20Gostaria%20de%20mais%20informações%20sobre%20as%20canecas%20personalizadas%20da%20MugArt" id="waurlsite" class="bt-whatsApp" target="_blank" style="right:25px; position:fixed;width:60px;height:60px;bottom:40px;z-index:100;">
+<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pjxzdmcgdmlld0JveD0iMjYxOSA1MDYgMTIwIDEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogIzI3ZDA0NTsKICAgICAgfQoKICAgICAgLmNscy0yLCAuY2xzLTUgewogICAgICAgIGZpbGw6IG5vbmU7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgc3Ryb2tlOiAjZmZmOwogICAgICAgIHN0cm9rZS13aWR0aDogNXB4OwogICAgICB9CgogICAgICAuY2xzLTMgewogICAgICAgIGZpbGw6ICNmZmY7CiAgICAgIH0KCiAgICAgIC5jbHMtNCB7CiAgICAgICAgc3Ryb2tlOiBub25lOwogICAgICB9CiAgICA8L3N0eWxlPjwvZGVmcz48ZyBkYXRhLW5hbWU9Ikdyb3VwIDM2IiBpZD0iR3JvdXBfMzYiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIzMDAgNzMpIj48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjYwIiBjeT0iNjAiIGRhdGEtbmFtZT0iRWxsaXBzZSAxOCIgaWQ9IkVsbGlwc2VfMTgiIHI9IjYwIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMTkgNDMzKSIvPjxnIGRhdGEtbmFtZT0iR3JvdXAgMzUiIGlkPSJHcm91cF8zNSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU0IDM4NikiPjxnIGRhdGEtbmFtZT0iR3JvdXAgMzQiIGlkPSJHcm91cF8zNCI+PGcgY2xhc3M9ImNscy0yIiBkYXRhLW5hbWU9IkVsbGlwc2UgMTkiIGlkPSJFbGxpcHNlXzE5IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg5NCA3NSkiPjxjaXJjbGUgY2xhc3M9ImNscy00IiBjeD0iMzEuNSIgY3k9IjMxLjUiIHI9IjMxLjUiLz48Y2lyY2xlIGNsYXNzPSJjbHMtNSIgY3g9IjMxLjUiIGN5PSIzMS41IiByPSIyOSIvPjwvZz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0xNDI0LDE5MWwtNC42LDE2LjMsMTYuOS00LjcuOS01LjItMTEsMy41LDIuOS0xMC41WiIgZGF0YS1uYW1lPSJQYXRoIDEyNiIgaWQ9IlBhdGhfMTI2IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtMTMyNSAtNjgpIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTI2Niw5MGMwLS4xLDMuNS0xMS43LDMuNS0xMS43bDguNCw3LjlaIiBkYXRhLW5hbWU9IlBhdGggMTI3IiBpZD0iUGF0aF8xMjciIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0xMTY1IDQzKSIvPjwvZz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0xNDM5LjMsMTYwLjZhOS40LDkuNCwwLDAsMC0zLjksNi4xYy0uNSwzLjksMS45LDcuOSwxLjksNy45YTUwLjg3Niw1MC44NzYsMCwwLDAsOC42LDkuOCwzMC4xODEsMzAuMTgxLDAsMCwwLDkuNiw1LjEsMTEuMzc4LDExLjM3OCwwLDAsMCw2LjQuNiw5LjE2Nyw5LjE2NywwLDAsMCw0LjgtMy4yLDkuODUxLDkuODUxLDAsMCwwLC42LTIuMiw1Ljg2OCw1Ljg2OCwwLDAsMCwwLTJjLS4xLS43LTcuMy00LTgtMy44cy0xLjMsMS41LTIuMSwyLjYtMS4xLDEuNi0xLjksMS42LTQuMy0xLjQtNy42LTQuNGExNS44NzUsMTUuODc1LDAsMCwxLTQuMy02cy42LS43LDEuNC0xLjhhNS42NjQsNS42NjQsMCwwLDAsMS4zLTIuNGMwLS41LTIuOC03LjYtMy41LTcuOUExMS44NTIsMTEuODUyLDAsMCwwLDE0MzkuMywxNjAuNloiIGRhdGEtbmFtZT0iUGF0aCAxMjgiIGlkPSJQYXRoXzEyOCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTEzMjYuMzMyIC02OC40NjcpIi8+PC9nPjwvZz48L3N2Zz4=" alt="" width="60px">
+</a>
+<span id="alertWapp" style="right:30px; visibility: hidden; position:fixed;	width:17px;	height:17px;bottom:90px; background:red;z-index:101; font-size:11px;color:#fff;text-align:center;border-radius: 50px; font-weight:bold;line-height: normal; "> 1 </span>
+<div id="msg1" style="right: 90px; visibility: visible; background: #1EBC59; color: #fff; position: fixed; width: 200px; bottom: 52px; text-align: center; font-size: 13px; line-height: 31px; height: 32px; border-radius: 100px; z-index: 100; ">Fale com a gente no WhatsApp</div>
+<script type="text/javascript">function showIt2() {document.getElementById("msg1").style.visibility = "visible";}    setTimeout("showIt2()", 5000); function hiddenIt() {document.getElementById("msg1").style.visibility = "hidden";}setTimeout("hiddenIt()", 15000); function showIt3() {document.getElementById("msg1").style.visibility = "visible";} setTimeout("showIt3()", 25000);  msg1.onclick = function() {document.getElementById('msg1').style.visibility = "hidden"; };function alertW() { document.getElementById("alertWapp").style.visibility = "visible";	} setTimeout("alertW()", 15000); </script>
+<!-- END Widget WhastApp -->
+
+
+
+  
+</body>
+</html>
