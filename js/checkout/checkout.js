@@ -284,7 +284,6 @@ async function iniciarPagamentoMercadoPago(order){
 }
 async function finishOrder(e) {
 	e.preventDefault();
-	alert("Clique funcionou");
     const items = getCartItems();
     if (!items.length) {
         toast("Seu carrinho está vazio.");
@@ -367,8 +366,8 @@ async function finishOrder(e) {
         country: "Brasil"
     });
     await mugartSupabase.from("payments").insert({
-        order_id: orderId,
-        provider: "checkout",
+   		order_id: orderId,
+    	provider: "mercadopago",,
         method: CheckoutState.selectedPayment,
         status: "pending",
         amount: total
@@ -386,4 +385,16 @@ async function finishOrder(e) {
     customer_email:customerPayload.email,
     items:rows
 });
+}
+function setLoading(isLoading){
+
+    const btn=document.getElementById("finishOrderBtn");
+
+    if(!btn) return;
+
+    btn.disabled=isLoading;
+
+    btn.textContent=isLoading
+        ? "Processando..."
+        : "Ir para pagamento";
 }
