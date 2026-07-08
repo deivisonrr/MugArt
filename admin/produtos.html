@@ -85,9 +85,32 @@
             <input id="productStock" type="number" min="0" step="1" required placeholder="10" />
           </label>
 
-          <label>
+          <label class="full">
             Imagem principal
-            <input id="productImage" required placeholder="assets/caneca_coracao_vermelho.jpeg" />
+            <input id="productImage" required placeholder="A URL será preenchida automaticamente após upload" />
+
+            <div class="upload-box">
+              <div class="image-preview-wrap">
+                <img id="productImagePreview" src="" alt="Preview do produto" />
+                <span id="productImagePlaceholder">Nenhuma imagem selecionada</span>
+              </div>
+
+              <div class="upload-actions">
+                <label class="upload-btn">
+                  Escolher imagem
+                  <input id="productImageFile" type="file" accept="image/png,image/jpeg,image/webp" />
+                </label>
+
+                <button id="uploadProductImageBtn" type="button" class="upload-send-btn">
+                  Enviar imagem
+                </button>
+              </div>
+
+              <small class="upload-help">
+                Primeiro clique em <strong>Escolher imagem</strong>, depois em <strong>Enviar imagem</strong>.
+                A URL será preenchida automaticamente.
+              </small>
+            </div>
           </label>
 
           <label class="full">
@@ -148,7 +171,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script src="js/supabase-config.js"></script>
-   <script src="js/admin.js"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

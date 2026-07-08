@@ -1,6 +1,12 @@
+/* ==========================================================
+   MugArt Admin + Supabase + Upload Corrigido
+========================================================== */
+
 const ADMIN_KEYS = {
   auth: "mugart_admin_auth"
 };
+
+const STORAGE_BUCKET = "product-images";
 
 function $(selector) {
   return document.querySelector(selector);
@@ -67,6 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("#ordersTable")) initOrdersPage();
 });
 
+/* LOGIN TEMPORÁRIO */
+
 function bindLogin() {
   const form = $("#loginForm");
   if (!form) return;
@@ -95,6 +103,8 @@ function bindLogout() {
     location.href = "index.html";
   });
 }
+
+/* SUPABASE */
 
 async function getCategories() {
   const result = await mugartSupabase
@@ -156,6 +166,8 @@ async function getOrders() {
   return result.data || [];
 }
 
+/* DASHBOARD */
+
 async function renderDashboard() {
   const products = await getProducts();
   const orders = await getOrders();
@@ -188,14 +200,35 @@ async function renderDashboard() {
     : `<tr><td colspan="4">Nenhum produto com estoque baixo.</td></tr>`;
 }
 
+/* PRODUTOS */
+
 async function initProductsPage() {
   await populateCategorySelect();
+  bindProductImageUpload();
   await renderProductsTable();
 
   $("#productForm").addEventListener("submit", saveProductFromForm);
   $("#clearProductForm").addEventListener("click", clearProductForm);
   $("#newProductBtn")?.addEventListener("click", clearProductForm);
   $("#productSearch").addEventListener("input", renderProductsTable);
+}
+
+function bindProductImageUpload() {
+  const fileInput = $("#productImageFile");
+  const uploadBtn = $("#uploadProductImageBtn");
+  const urlInput = $("#productImage");
+
+  if (fileInput) {
+    fileInput.addEventListener("change", previewSelectedImage);
+  }
+
+  if (uploadBtn) {
+    uploadBtn.addEventListener("click", uploadSelectedProductImage);
+  }
+
+  if (urlInput) {
+    urlInput.addEventListener("input", updateImagePreviewFromUrl);
+  }
 }
 
 async function populateCategorySelect() {
@@ -212,6 +245,107 @@ async function populateCategorySelect() {
   select.innerHTML = categories
     .map((category) => `<option value="${category.id}">${category.name}</option>`)
     .join("");
+}
+
+function previewSelectedImage(event) {
+  const file = event.target.files?.[0];
+  const preview = $("#productImagePreview");
+  const placeholder = $("#productImagePlaceholder");
+
+  if (!file || !preview) return;
+
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    preview.src = e.target.result;
+    preview.style.display = "block";
+
+    if (placeholder) {
+      placeholder.style.display = "none";
+    }
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function updateImagePreviewFromUrl() {
+  const url = $("#productImage")?.value.trim();
+  const preview = $("#productImagePreview");
+  const placeholder = $("#productImagePlaceholder");
+
+  if (!preview || !placeholder) return;
+
+  if (url) {
+    preview.src = url;
+    preview.style.display = "block";
+    placeholder.style.display = "none";
+  } else {
+    preview.removeAttribute("src");
+    preview.style.display = "none";
+    placeholder.style.display = "block";
+  }
+}
+
+async function uploadSelectedProductImage() {
+  const fileInput = $("#productImageFile");
+  const nameInput = $("#productName");
+  const imageInput = $("#productImage");
+
+  const file = fileInput?.files?.[0];
+
+  if (!file) {
+    alert("Escolha uma imagem primeiro.");
+    return;
+  }
+
+  const maxSizeMb = 5;
+  if (file.size > maxSizeMb * 1024 * 1024) {
+    alert("A imagem deve ter no máximo 5MB.");
+    return;
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    alert("Use imagens JPG, PNG ou WEBP.");
+    return;
+  }
+
+  const productName = nameInput?.value.trim() || "produto";
+  const extension = file.name.split(".").pop().toLowerCase();
+  const fileName = `${slugify(productName)}-${Date.now()}.${extension}`;
+  const filePath = `produtos/${fileName}`;
+
+  const btn = $("#uploadProductImageBtn");
+  const originalText = btn.textContent;
+  btn.textContent = "Enviando...";
+  btn.disabled = true;
+
+  const uploadResult = await mugartSupabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: true
+    });
+
+  btn.textContent = originalText;
+  btn.disabled = false;
+
+  if (uploadResult.error) {
+    console.error(uploadResult.error);
+    alert("Erro ao enviar imagem: " + uploadResult.error.message);
+    return;
+  }
+
+  const publicResult = mugartSupabase.storage
+    .from(STORAGE_BUCKET)
+    .getPublicUrl(filePath);
+
+  const publicUrl = publicResult.data.publicUrl;
+
+  imageInput.value = publicUrl;
+  updateImagePreviewFromUrl();
+
+  alert("Imagem enviada com sucesso.");
 }
 
 async function saveProductFromForm(event) {
@@ -267,6 +401,18 @@ function clearProductForm() {
   $("#productForm").reset();
   $("#productId").value = "";
   $("#productFormTitle").textContent = "Novo produto";
+
+  const preview = $("#productImagePreview");
+  const placeholder = $("#productImagePlaceholder");
+
+  if (preview) {
+    preview.removeAttribute("src");
+    preview.style.display = "none";
+  }
+
+  if (placeholder) {
+    placeholder.style.display = "block";
+  }
 }
 
 async function renderProductsTable() {
@@ -340,6 +486,8 @@ window.editProduct = async function(id) {
   $("#productFeatured").value = String(product.featured);
   $("#productFormTitle").textContent = "Editar produto";
 
+  updateImagePreviewFromUrl();
+
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
@@ -358,6 +506,8 @@ window.deleteProduct = async function(id) {
 
   await renderProductsTable();
 };
+
+/* CATEGORIAS */
 
 async function initCategoriesPage() {
   await renderCategoriesList();
@@ -417,6 +567,8 @@ window.deleteCategory = async function(id) {
 
   await renderCategoriesList();
 };
+
+/* PEDIDOS */
 
 async function initOrdersPage() {
   $("#createFakeOrder")?.addEventListener("click", createFakeOrder);
