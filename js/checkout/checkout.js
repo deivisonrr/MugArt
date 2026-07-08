@@ -238,60 +238,74 @@ function handleCepInput(e) {
 async function searchCep() {
     const cep = onlyNumbers(qs("#shippingZip").value);
     if (cep.length !== 8) return;
+
     try {
-        const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`),
-            d = await r.json();
+        const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const d = await r.json();
+
         if (d.erro) {
             toast("CEP não encontrado.");
-            return
+            return;
         }
+
         qs("#shippingStreet").value = d.logradouro || "";
         qs("#shippingNeighborhood").value = d.bairro || "";
         qs("#shippingCity").value = d.localidade || "";
         qs("#shippingState").value = d.uf || "";
         qs("#shippingNumber").focus();
+
         saveDraft();
-        updateProgress()
-            } catch (e) {
+        updateProgress();
+    } catch (e) {
         console.error(e);
-        toast("Erro ao buscar CEP.")
+        toast("Erro ao buscar CEP.");
     }
 }
 
-async function iniciarPagamentoMercadoPago(order){
-async function iniciarPagamentoMercadoPago(order){
-  const { data, error } = await mugartSupabase.functions.invoke("create-payment", {
-    body:{
-      order_id: order.id,
-      customer_name: order.customer_name,
-      customer_email: order.customer_email,
-      items: order.items.map(item => ({
-        id: item.product_id,
-        title: item.product_name,
-        quantity: item.quantity,
-        currency_id: "BRL",
-        unit_price: Number(item.unit_price)
-      }))
+async function iniciarPagamentoMercadoPago(order) {
+    const { data, error } = await mugartSupabase.functions.invoke("create-payment", {
+        body: {
+            order_id: order.id,
+            customer_name: order.customer_name,
+            customer_email: order.customer_email,
+            items: order.items.map(item => ({
+                id: item.product_id,
+                title: item.product_name,
+                quantity: Number(item.quantity),
+                currency_id: "BRL",
+                unit_price: Number(item.unit_price)
+            }))
+        }
+    });
+
+    if (error) {
+        console.error(error);
+        toast("Erro ao iniciar pagamento.");
+        return;
     }
-  });
 
-  if(error){
-    console.error(error);
-    toast("Erro ao iniciar pagamento.");
-    return;
-  }
+    if (!data || !data.init_point) {
+        console.error("Resposta inválida:", data);
+        toast("Mercado Pago não retornou o link.");
+        return;
+    }
 
-  window.location.href = data.init_point;
+    window.location.href = data.init_point;
 }
+
 async function finishOrder(e) {
-	e.preventDefault();
+    e.preventDefault();
+
     const items = getCartItems();
+
     if (!items.length) {
         toast("Seu carrinho está vazio.");
-        return
+        return;
     }
-    const subtotal = items.reduce((s, i) => s + i.subtotal, 0),
-        total = Math.max(0, subtotal - CheckoutState.discount + CheckoutState.shipping);
+
+    const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
+    const total = Math.max(0, subtotal - CheckoutState.discount + CheckoutState.shipping);
+
     const customerPayload = {
         name: qs("#customerName").value.trim(),
         email: qs("#customerEmail").value.trim(),
@@ -302,13 +316,17 @@ async function finishOrder(e) {
         city: qs("#shippingCity").value.trim(),
         state: qs("#shippingState").value.trim()
     };
+
     const cr = await mugartSupabase.from("customers").insert(customerPayload).select().single();
+
     if (cr.error) {
         console.error(cr.error);
         toast("Erro ao salvar cliente.");
-        return
+        return;
     }
+
     const orderNumber = "MUG-" + Date.now();
+
     const orderPayload = {
         order_number: orderNumber,
         customer_id: cr.data.id,
@@ -321,20 +339,24 @@ async function finishOrder(e) {
         payment_method: CheckoutState.selectedPayment,
         payment_status: "pending",
         shipping_status: "not_shipped",
-        subtotal,
+        subtotal: subtotal,
         discount: CheckoutState.discount,
         shipping: CheckoutState.shipping,
-        total,
+        total: total,
         coupon: CheckoutState.coupon,
         notes: "Pedido criado pelo Checkout 3.0"
     };
+
     const or = await mugartSupabase.from("orders").insert(orderPayload).select().single();
+
     if (or.error) {
         console.error(or.error);
         toast("Erro ao criar pedido.");
-        return
+        return;
     }
+
     const orderId = or.data.id;
+
     const rows = items.map(i => ({
         order_id: orderId,
         product_id: i.product.id,
@@ -347,12 +369,15 @@ async function finishOrder(e) {
         discount: 0,
         total: i.subtotal
     }));
+
     const ir = await mugartSupabase.from("order_items").insert(rows);
+
     if (ir.error) {
         console.error(ir.error);
         toast("Erro ao salvar itens.");
-        return
+        return;
     }
+
     await mugartSupabase.from("order_addresses").insert({
         order_id: orderId,
         recipient_name: customerPayload.name,
@@ -366,13 +391,15 @@ async function finishOrder(e) {
         state: qs("#shippingState").value.trim(),
         country: "Brasil"
     });
+
     await mugartSupabase.from("payments").insert({
-   		order_id: orderId,
-    	provider: "mercadopago",,
+        order_id: orderId,
+        provider: "mercadopago",
         method: CheckoutState.selectedPayment,
         status: "pending",
         amount: total
     });
+
     await mugartSupabase.from("order_history").insert({
         order_id: orderId,
         event_type: "created",
@@ -380,22 +407,11 @@ async function finishOrder(e) {
         note: "Pedido criado automaticamente pelo Checkout 3.0.",
         created_by: "checkout"
     });
+
     await iniciarPagamentoMercadoPago({
-    id:orderId,
-    customer_name:customerPayload.name,
-    customer_email:customerPayload.email,
-    items:rows
-});
-}
-function setLoading(isLoading){
-
-    const btn=document.getElementById("finishOrderBtn");
-
-    if(!btn) return;
-
-    btn.disabled=isLoading;
-
-    btn.textContent=isLoading
-        ? "Processando..."
-        : "Ir para pagamento";
+        id: orderId,
+        customer_name: customerPayload.name,
+        customer_email: customerPayload.email,
+        items: rows
+    });
 }
