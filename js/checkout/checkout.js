@@ -257,35 +257,29 @@ async function searchCep() {
         toast("Erro ao buscar CEP.")
     }
 	
-	async function iniciarPagamentoMercadoPago(order){
-
-    const { data, error } = await mugartSupabase.functions.invoke(
-        "create-payment",
-        {
-            body:{
-                order_id:order.id,
-                customer_name:order.customer_name,
-                customer_email:order.customer_email,
-
-                items:order.items.map(item=>({
-                    id:item.product_id,
-                    title:item.product_name,
-                    quantity:item.quantity,
-                    currency_id:"BRL",
-                    unit_price:Number(item.unit_price)
-                }))
-            }
-        }
-    );
-
-    if(error){
-        console.error(error);
-        toast("Erro ao iniciar pagamento.");
-        return;
+async function iniciarPagamentoMercadoPago(order){
+  const { data, error } = await mugartSupabase.functions.invoke("create-payment", {
+    body:{
+      order_id: order.id,
+      customer_name: order.customer_name,
+      customer_email: order.customer_email,
+      items: order.items.map(item => ({
+        id: item.product_id,
+        title: item.product_name,
+        quantity: item.quantity,
+        currency_id: "BRL",
+        unit_price: Number(item.unit_price)
+      }))
     }
+  });
 
-    window.location.href=data.init_point;
-}
+  if(error){
+    console.error(error);
+    toast("Erro ao iniciar pagamento.");
+    return;
+  }
+
+  window.location.href = data.init_point;
 }
 async function finishOrder(e) {
 	e.preventDefault();
