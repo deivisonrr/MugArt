@@ -213,29 +213,6 @@ function configureMaxPriceFilter() {
   if (label) label.textContent = formatMoney(roundedMax);
 }
 
-function createBaseUIIfMissing() {
-  if (!$(".cart-drawer")) {
-    document.body.appendChild(createElementFromHTML(
-      '<aside class="cart-drawer" id="cartDrawer">' +
-        '<div class="cart-header">' +
-          '<div><span class="cart-label">Seu carrinho</span><h3>Produtos selecionados</h3></div>' +
-          '<button class="cart-close" id="cartClose" type="button">×</button>' +
-        '</div>' +
-        '<div class="cart-items" id="cartItems"></div>' +
-        '<div class="cart-footer">' +
-          '<div class="cart-summary-line"><span>Subtotal</span><strong id="cartSubtotal">R$ 0,00</strong></div>' +
-          '<div class="cart-summary-line"><span>Frete</span><strong>A calcular</strong></div>' +
-          '<button class="checkout-btn" id="checkoutBtn" type="button">Finalizar compra</button>' +
-          '<button class="whatsapp-cart-btn" id="sendCartWhatsapp" type="button">Tirar dúvida pelo WhatsApp</button>' +
-        '</div>' +
-      '</aside>'
-    ));
-  }
-
-  if (!$(".drawer-overlay")) {
-    document.body.appendChild(createElementFromHTML('<div class="drawer-overlay" id="drawerOverlay"></div>'));
-  }
-
   if (!$(".product-modal")) {
     document.body.appendChild(createElementFromHTML(
       '<div class="product-modal" id="productModal" aria-hidden="true">' +
@@ -246,6 +223,8 @@ function createBaseUIIfMissing() {
       '</div>'
     ));
   }
+   
+function bindHeader() {
    
 function bindHeader() {
   var menuToggle = $("#menuToggle");
