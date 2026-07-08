@@ -288,6 +288,7 @@ async function searchCep() {
 }
 }
 async function finishOrder(e) {
+	alert("Clique funcionou");
     e.preventDefault();
     const items = getCartItems();
     if (!items.length) {
