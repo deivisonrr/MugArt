@@ -436,3 +436,79 @@ td {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================
+   MugArt Admin - Upload de imagens
+   Adicione ao final de admin/css/admin.css
+========================================================== */
+
+.upload-box {
+  margin-top: 10px;
+  display: grid;
+  gap: 12px;
+}
+
+.image-preview-wrap {
+  min-height: 190px;
+  border-radius: 18px;
+  border: 1px dashed rgba(255,255,255,.22);
+  background: rgba(255,255,255,.045);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.image-preview-wrap img {
+  max-width: 100%;
+  max-height: 210px;
+  object-fit: contain;
+  display: none;
+}
+
+.image-preview-wrap span {
+  color: rgba(255,255,255,.58);
+  font-weight: 800;
+  text-align: center;
+  padding: 18px;
+}
+
+.upload-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.upload-btn,
+.upload-send-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: var(--yellow);
+  color: #111;
+}
+
+.upload-btn input {
+  display: none;
+}
+
+.upload-send-btn {
+  background: var(--cyan);
+  color: #001219;
+}
+
+.upload-send-btn:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+.upload-help {
+  color: rgba(255,255,255,.58);
+  line-height: 1.5;
+}
+
