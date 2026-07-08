@@ -288,8 +288,8 @@ async function searchCep() {
 }
 }
 async function finishOrder(e) {
+	e.preventDefault();
 	alert("Clique funcionou");
-    e.preventDefault();
     const items = getCartItems();
     if (!items.length) {
         toast("Seu carrinho está vazio.");
