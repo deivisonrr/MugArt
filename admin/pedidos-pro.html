@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>MugArt Admin | Pedidos Pro</title>
+
+  <link rel="icon" href="../assets/favicon.ico" sizes="any">
+  <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/pedidos-pro.css" />
+</head>
+
+<body class="admin-body">
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="dashboard.html">
+      <img src="../assets/logo.png" alt="MugArt" />
+    </a>
+
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="produtos-3.html">Produtos 3.0</a>
+      <a href="produtos.html">Produtos antigo</a>
+      <a href="categorias.html">Categorias</a>
+      <a class="active" href="pedidos-pro.html">Pedidos Pro</a>
+      <a href="pedidos.html">Pedidos antigo</a>
+      <a href="../loja.html">Ver Loja</a>
+    </nav>
+
+    <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
+  </aside>
+
+  <main class="admin-main orders-main">
+    <header class="orders-header">
+      <div>
+        <p class="eyebrow">Operação</p>
+        <h1>Pedidos</h1>
+        <p>Gerencie vendas, pagamentos, produção, entrega e histórico do pedido em um único lugar.</p>
+      </div>
+
+      <div class="orders-header-actions">
+        <button class="orders-secondary-btn" id="refreshOrdersBtn" type="button">Atualizar</button>
+        <button class="admin-action" id="newManualOrderBtn" type="button">Novo pedido</button>
+      </div>
+    </header>
+
+    <section class="orders-metrics">
+      <article>
+        <span>Pedidos hoje</span>
+        <strong id="ordersTodayMetric">0</strong>
+      </article>
+
+      <article>
+        <span>Faturamento hoje</span>
+        <strong id="revenueTodayMetric">R$ 0,00</strong>
+      </article>
+
+      <article>
+        <span>Aguardando pagamento</span>
+        <strong id="pendingPaymentMetric">0</strong>
+      </article>
+
+      <article>
+        <span>Em produção</span>
+        <strong id="productionMetric">0</strong>
+      </article>
+
+      <article>
+        <span>Ticket médio</span>
+        <strong id="averageTicketMetric">R$ 0,00</strong>
+      </article>
+    </section>
+
+    <section class="orders-toolbar">
+      <label class="orders-search">
+        Buscar
+        <input id="ordersSearch" type="search" placeholder="Pedido, cliente, telefone, e-mail..." />
+      </label>
+
+      <label>
+        Status
+        <select id="ordersStatusFilter">
+          <option value="todos">Todos</option>
+          <option value="pending">Aguardando pagamento</option>
+          <option value="paid">Pago</option>
+          <option value="art_approval">Arte em aprovação</option>
+          <option value="production">Produção</option>
+          <option value="quality">Controle de qualidade</option>
+          <option value="packing">Embalagem</option>
+          <option value="shipped">Enviado</option>
+          <option value="delivered">Entregue</option>
+          <option value="completed">Finalizado</option>
+          <option value="cancelled">Cancelado</option>
+          <option value="refunded">Reembolsado</option>
+        </select>
+      </label>
+
+      <label>
+        Pagamento
+        <select id="ordersPaymentFilter">
+          <option value="todos">Todos</option>
+          <option value="pending">Pendente</option>
+          <option value="paid">Pago</option>
+          <option value="failed">Falhou</option>
+          <option value="refunded">Reembolsado</option>
+        </select>
+      </label>
+
+      <label>
+        Período
+        <select id="ordersPeriodFilter">
+          <option value="todos">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="7days">Últimos 7 dias</option>
+          <option value="30days">Últimos 30 dias</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="orders-board" id="ordersBoard"></section>
+  </main>
+
+  <aside class="order-drawer" id="orderDrawer">
+    <div class="order-drawer-head">
+      <div>
+        <p class="eyebrow">Pedido</p>
+        <h2 id="orderDrawerTitle">Novo pedido</h2>
+        <span id="orderDrawerSubtitle"></span>
+      </div>
+      <button type="button" id="closeOrderDrawer">×</button>
+    </div>
+
+    <div class="order-tabs">
+      <button type="button" class="order-tab active" data-tab="summary">Resumo</button>
+      <button type="button" class="order-tab" data-tab="customer">Cliente</button>
+      <button type="button" class="order-tab" data-tab="items">Itens</button>
+      <button type="button" class="order-tab" data-tab="payment">Pagamento</button>
+      <button type="button" class="order-tab" data-tab="shipping">Entrega</button>
+      <button type="button" class="order-tab" data-tab="history">Histórico</button>
+    </div>
+
+    <form id="orderForm" class="order-form">
+      <input type="hidden" id="orderId" />
+
+      <section class="order-tab-panel active" id="order-tab-summary">
+        <div class="order-grid">
+          <label>
+            Número
+            <input id="orderNumber" placeholder="Gerado automaticamente" />
+          </label>
+
+          <label>
+            Status do pedido
+            <select id="orderStatus">
+              <option value="pending">Aguardando pagamento</option>
+              <option value="paid">Pago</option>
+              <option value="art_approval">Arte em aprovação</option>
+              <option value="production">Produção</option>
+              <option value="quality">Controle de qualidade</option>
+              <option value="packing">Embalagem</option>
+              <option value="shipped">Enviado</option>
+              <option value="delivered">Entregue</option>
+              <option value="completed">Finalizado</option>
+              <option value="cancelled">Cancelado</option>
+              <option value="refunded">Reembolsado</option>
+            </select>
+          </label>
+
+          <label>
+            Status produção
+            <select id="productionStatus">
+              <option value="not_started">Não iniciado</option>
+              <option value="queue">Fila</option>
+              <option value="printing">Impressão</option>
+              <option value="pressing">Prensagem</option>
+              <option value="quality">Qualidade</option>
+              <option value="ready">Pronto</option>
+            </select>
+          </label>
+
+          <label>
+            Observações
+            <input id="orderNotes" placeholder="Observações gerais" />
+          </label>
+
+          <label>
+            Cupom
+            <input id="orderCoupon" placeholder="Opcional" />
+          </label>
+
+          <label>
+            Desconto
+            <input id="orderDiscount" type="number" min="0" step="0.01" value="0" />
+          </label>
+
+          <label>
+            Frete
+            <input id="orderShipping" type="number" min="0" step="0.01" value="0" />
+          </label>
+        </div>
+
+        <div class="order-total-box">
+          <span>Subtotal</span>
+          <strong id="orderSubtotalPreview">R$ 0,00</strong>
+
+          <span>Total</span>
+          <strong id="orderTotalPreview">R$ 0,00</strong>
+        </div>
+      </section>
+
+      <section class="order-tab-panel" id="order-tab-customer">
+        <div class="order-grid">
+          <label>
+            Nome
+            <input id="customerName" required placeholder="Nome do cliente" />
+          </label>
+
+          <label>
+            Telefone
+            <input id="customerPhone" placeholder="(11) 99999-9999" />
+          </label>
+
+          <label>
+            E-mail
+            <input id="customerEmail" type="email" placeholder="cliente@email.com" />
+          </label>
+
+          <label>
+            CPF/CNPJ
+            <input id="customerDocument" placeholder="Opcional" />
+          </label>
+        </div>
+      </section>
+
+      <section class="order-tab-panel" id="order-tab-items">
+        <div class="order-add-item">
+          <label>
+            Produto
+            <select id="orderProductSelect"></select>
+          </label>
+
+          <label>
+            Quantidade
+            <input id="orderItemQty" type="number" min="1" value="1" />
+          </label>
+
+          <button type="button" id="addOrderItemBtn">Adicionar item</button>
+        </div>
+
+        <div id="orderItemsList" class="order-items-list"></div>
+      </section>
+
+      <section class="order-tab-panel" id="order-tab-payment">
+        <div class="order-grid">
+          <label>
+            Método
+            <select id="paymentMethod">
+              <option value="pix">Pix</option>
+              <option value="credit_card">Cartão de crédito</option>
+              <option value="debit_card">Cartão de débito</option>
+              <option value="cash">Dinheiro</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+
+          <label>
+            Status pagamento
+            <select id="paymentStatus">
+              <option value="pending">Pendente</option>
+              <option value="paid">Pago</option>
+              <option value="failed">Falhou</option>
+              <option value="refunded">Reembolsado</option>
+            </select>
+          </label>
+
+          <label>
+            Transação
+            <input id="paymentTransactionId" placeholder="ID Mercado Pago ou manual" />
+          </label>
+        </div>
+      </section>
+
+      <section class="order-tab-panel" id="order-tab-shipping">
+        <div class="order-grid">
+          <label>
+            CEP
+            <input id="shippingZip" placeholder="00000-000" />
+          </label>
+
+          <label>
+            Rua
+            <input id="shippingStreet" placeholder="Rua" />
+          </label>
+
+          <label>
+            Número
+            <input id="shippingNumber" placeholder="Número" />
+          </label>
+
+          <label>
+            Complemento
+            <input id="shippingComplement" placeholder="Complemento" />
+          </label>
+
+          <label>
+            Bairro
+            <input id="shippingNeighborhood" placeholder="Bairro" />
+          </label>
+
+          <label>
+            Cidade
+            <input id="shippingCity" placeholder="Cidade" />
+          </label>
+
+          <label>
+            Estado
+            <input id="shippingState" placeholder="SP" />
+          </label>
+
+          <label>
+            Transportadora
+            <input id="shippingCarrier" placeholder="Correios, Jadlog, Melhor Envio..." />
+          </label>
+
+          <label>
+            Código de rastreio
+            <input id="trackingCode" placeholder="Opcional" />
+          </label>
+
+          <label>
+            Status entrega
+            <select id="shippingStatus">
+              <option value="not_shipped">Não enviado</option>
+              <option value="preparing">Preparando</option>
+              <option value="shipped">Enviado</option>
+              <option value="delivered">Entregue</option>
+              <option value="returned">Devolvido</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="order-tab-panel" id="order-tab-history">
+        <div class="order-note-box">
+          <label>
+            Nova observação interna
+            <textarea id="internalNote" rows="3" placeholder="Escreva uma observação interna"></textarea>
+          </label>
+          <button type="button" id="addInternalNoteBtn">Adicionar observação</button>
+        </div>
+
+        <div id="orderHistoryList" class="order-history-list"></div>
+      </section>
+
+      <div class="order-form-footer">
+        <button type="button" class="orders-secondary-btn" id="cancelOrderBtn">Cancelar</button>
+        <button type="submit" class="admin-action">Salvar pedido</button>
+      </div>
+    </form>
+  </aside>
+
+  <div class="order-overlay" id="orderOverlay"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/pedidos/pedidos-pro.js"></script>
+</body>
+</html>
