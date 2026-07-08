@@ -252,11 +252,12 @@ async function searchCep() {
         qs("#shippingNumber").focus();
         saveDraft();
         updateProgress()
-    } catch (e) {
+        } catch (e) {
         console.error(e);
         toast("Erro ao buscar CEP.")
     }
-	
+}
+
 async function iniciarPagamentoMercadoPago(order){
   const { data, error } = await mugartSupabase.functions.invoke("create-payment", {
     body:{
