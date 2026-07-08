@@ -976,7 +976,6 @@ document.body.appendChild(createElementFromHTML('<div class="drawer-overlay" id=
   }
 }
 
-function bindHeader() {
 
 function bindHeader() {
 var menuToggle = $("#menuToggle");
