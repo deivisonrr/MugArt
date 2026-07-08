@@ -115,6 +115,69 @@ function bindOrderEvents() {
   ["#orderDiscount", "#orderShipping"].forEach((selector) => {
     po(selector)?.addEventListener("input", updateOrderTotalPreview);
   });
+
+  po("#shippingZip")?.addEventListener("input", handleCepInput);
+  po("#shippingZip")?.addEventListener("blur", searchCepAndFillAddress);
+}
+
+function onlyNumbers(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function formatCep(value) {
+  const numbers = onlyNumbers(value).slice(0, 8);
+
+  if (numbers.length > 5) {
+    return numbers.slice(0, 5) + "-" + numbers.slice(5);
+  }
+
+  return numbers;
+}
+
+function handleCepInput(event) {
+  event.target.value = formatCep(event.target.value);
+
+  const cep = onlyNumbers(event.target.value);
+
+  if (cep.length === 8) {
+    searchCepAndFillAddress();
+  }
+}
+
+async function searchCepAndFillAddress() {
+  const zipInput = po("#shippingZip");
+  const cep = onlyNumbers(zipInput?.value);
+
+  if (!cep || cep.length !== 8) return;
+
+  const oldPlaceholder = zipInput.placeholder;
+  zipInput.placeholder = "Buscando CEP...";
+
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const data = await response.json();
+
+    if (data.erro) {
+      alert("CEP não encontrado.");
+      return;
+    }
+
+    po("#shippingStreet").value = data.logradouro || "";
+    po("#shippingNeighborhood").value = data.bairro || "";
+    po("#shippingCity").value = data.localidade || "";
+    po("#shippingState").value = data.uf || "";
+
+    if (po("#shippingComplement") && data.complemento) {
+      po("#shippingComplement").value = data.complemento;
+    }
+
+    po("#shippingNumber")?.focus();
+  } catch (error) {
+    console.error("Erro ao buscar CEP:", error);
+    alert("Não foi possível buscar o CEP agora.");
+  } finally {
+    zipInput.placeholder = oldPlaceholder || "00000-000";
+  }
 }
 
 async function loadOrdersData() {
