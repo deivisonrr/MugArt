@@ -3,15 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Checkout | MugArt</title>
+
   <link rel="icon" href="assets/favicon.ico" sizes="any">
   <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="css/checkout.css" />
 </head>
+
 <body>
   <header class="checkout-topbar">
-    <a class="checkout-logo" href="loja.html"><img src="assets/logo.png" alt="MugArt" /></a>
-    <div class="checkout-secure">🔒 Checkout seguro MugArt</div>
+    <a class="checkout-logo" href="loja.html">
+      <img src="assets/logo.png" alt="MugArt" />
+    </a>
+
+    <div class="checkout-secure">
+      🔒 Checkout seguro com Mercado Pago
+    </div>
   </header>
 
   <main class="checkout-shell">
@@ -35,6 +43,7 @@
 
         <section class="checkout-card">
           <div class="section-head"><span>👤</span><div><p>Etapa 2</p><h2>Dados do cliente</h2></div></div>
+
           <div class="form-grid">
             <label class="full">Nome completo<input id="customerName" required placeholder="Seu nome completo" autocomplete="name" /></label>
             <label>WhatsApp<input id="customerPhone" required placeholder="(11) 99999-9999" autocomplete="tel" /></label>
@@ -45,6 +54,7 @@
 
         <section class="checkout-card">
           <div class="section-head"><span>📍</span><div><p>Etapa 3</p><h2>Endereço de entrega</h2></div></div>
+
           <div class="form-grid">
             <label>CEP<input id="shippingZip" required placeholder="00000-000" autocomplete="postal-code" /></label>
             <label>Número<input id="shippingNumber" required placeholder="123" /></label>
@@ -58,43 +68,76 @@
 
         <section class="checkout-card">
           <div class="section-head"><span>🚚</span><div><p>Etapa 4</p><h2>Entrega</h2></div></div>
+
           <div class="shipping-options">
-            <label class="option-card active"><input type="radio" name="shippingMethod" value="pickup" data-price="0" checked /><div><strong>Retirada / combinar pelo WhatsApp</strong><span>Frete será combinado no atendimento.</span></div><b>R$ 0,00</b></label>
-            <label class="option-card"><input type="radio" name="shippingMethod" value="local_delivery" data-price="15" /><div><strong>Entrega local</strong><span>Valor inicial. Frete automático entra depois.</span></div><b>R$ 15,00</b></label>
+            <label class="option-card active">
+              <input type="radio" name="shippingMethod" value="pickup" data-price="0" checked />
+              <div><strong>Retirada / combinar pelo WhatsApp</strong><span>Frete será combinado no atendimento.</span></div>
+              <b>R$ 0,00</b>
+            </label>
+
+            <label class="option-card">
+              <input type="radio" name="shippingMethod" value="local_delivery" data-price="15" />
+              <div><strong>Entrega local</strong><span>Valor inicial. Cálculo automático de frete entra depois.</span></div>
+              <b>R$ 15,00</b>
+            </label>
           </div>
         </section>
 
         <section class="checkout-card">
           <div class="section-head"><span>💳</span><div><p>Etapa 5</p><h2>Pagamento</h2></div></div>
+
           <div class="payment-options">
-            <label class="option-card active"><input type="radio" name="paymentMethod" value="pix" checked /><div><strong>Pix</strong><span>Pedido criado como aguardando pagamento.</span></div></label>
-            <label class="option-card"><input type="radio" name="paymentMethod" value="credit_card" /><div><strong>Cartão de crédito</strong><span>Mercado Pago entra na próxima etapa.</span></div></label>
-            <label class="option-card"><input type="radio" name="paymentMethod" value="manual" /><div><strong>Pagamento combinado</strong><span>Ideal para pedido via WhatsApp.</span></div></label>
+            <label class="option-card active">
+              <input type="radio" name="paymentMethod" value="pix" checked />
+              <div><strong>Pix via Mercado Pago</strong><span>Você será redirecionado para finalizar o pagamento com segurança.</span></div>
+            </label>
+
+            <label class="option-card">
+              <input type="radio" name="paymentMethod" value="credit_card" />
+              <div><strong>Cartão via Mercado Pago</strong><span>Pagamento seguro por cartão de crédito.</span></div>
+            </label>
+
+            <label class="option-card">
+              <input type="radio" name="paymentMethod" value="manual" />
+              <div><strong>Pagamento combinado</strong><span>Use apenas para pedidos manuais ou atendimento especial.</span></div>
+            </label>
           </div>
         </section>
 
-        <button class="finish-mobile" type="submit">Finalizar pedido</button>
+        <button class="finish-mobile" type="submit">Ir para pagamento</button>
       </form>
     </section>
 
     <aside class="checkout-summary">
       <div class="summary-card">
         <h2>Resumo do pedido</h2>
+
         <div id="summaryItems" class="summary-items"></div>
-        <div class="coupon-box"><input id="couponCode" placeholder="Cupom de desconto" /><button id="applyCouponBtn" type="button">Aplicar</button></div>
+
+        <div class="coupon-box">
+          <input id="couponCode" placeholder="Cupom de desconto" />
+          <button id="applyCouponBtn" type="button">Aplicar</button>
+        </div>
+
         <div class="summary-lines">
           <div><span>Subtotal</span><strong id="summarySubtotal">R$ 0,00</strong></div>
           <div><span>Desconto</span><strong id="summaryDiscount">R$ 0,00</strong></div>
           <div><span>Frete</span><strong id="summaryShipping">R$ 0,00</strong></div>
           <div class="total"><span>Total</span><strong id="summaryTotal">R$ 0,00</strong></div>
         </div>
-        <button id="finishOrderBtn" class="finish-btn" type="button">Finalizar pedido</button>
-        <p class="summary-note">Ao finalizar, o pedido será criado no painel MugArt e você irá para o WhatsApp.</p>
+
+        <button id="finishOrderBtn" class="finish-btn" type="button">Ir para pagamento</button>
+
+        <p class="summary-note">
+          Ao continuar, seu pedido será criado no painel MugArt e você será enviado ao Mercado Pago.
+        </p>
       </div>
     </aside>
   </main>
 
   <div class="checkout-toast" id="checkoutToast"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/checkout/checkout.js"></script>
