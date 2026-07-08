@@ -1,5 +1,5 @@
 /* ==========================================================
-   MugArt Loja v2 - Front-end
+   MugArt Loja + Supabase
    Arquivo: js/loja.js
 ========================================================== */
 
@@ -15,212 +15,28 @@ var MUGART_CONFIG = {
   }
 };
 
-var PRODUCTS = [
-  {
-    id: "caneca-comum-branca-001",
-    sku: "MC-COM-BRANCA-001",
-    name: "Caneca Branca Personalizada",
-    category: "Caneca Comum",
-    color: "Branca",
-    price: 29.90,
-    oldPrice: 39.90,
-    stock: 12,
-    image: "assets/caneca-branca.png",
-    description: "Caneca branca pronta entrega, ideal para presentes personalizados, lembranças e uso diário.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["pronta entrega", "branca", "presente"],
-    active: true,
-    featured: true
-  },
-  {
-    id: "caneca-magica-001",
-    sku: "MC-MAG-PRETA-001",
-    name: "Caneca Mágica",
-    category: "Caneca Mágica",
-    color: "Preta",
-    price: 49.90,
-    oldPrice: 59.90,
-    stock: 6,
-    image: "assets/caneca_magica.png",
-    description: "Caneca mágica preta que revela a arte ao entrar em contato com líquido quente.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Termossensível", personalizacao: "Sublimação" },
-    tags: ["mágica", "preta", "presente especial"],
-    active: true,
-    featured: true
-  },
-  {
-    id: "caneca-coracao-vermelha-001",
-    sku: "MC-COR-VERM-001",
-    name: "Caneca Coração Vermelha",
-    category: "Caneca Coração",
-    color: "Vermelha",
-    price: 44.90,
-    oldPrice: 54.90,
-    stock: 8,
-    image: "assets/caneca_coracao_vermelho.jpeg",
-    description: "Caneca com alça em formato de coração, perfeita para datas românticas e presentes especiais.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["coração", "vermelha", "romântica"],
-    active: true,
-    featured: true
-  },
-  {
-    id: "caneca-coracao-azul-001",
-    sku: "MC-COR-AZUL-001",
-    name: "Caneca Coração Azul",
-    category: "Caneca Coração",
-    color: "Azul",
-    price: 44.90,
-    oldPrice: 54.90,
-    stock: 5,
-    image: "assets/caneca_coracao_azul.jpeg",
-    description: "Modelo delicado com alça coração azul, pronto para personalização.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["coração", "azul", "presente"],
-    active: true,
-    featured: false
-  },
-  {
-    id: "caneca-coracao-amarela-001",
-    sku: "MC-COR-AMARELA-001",
-    name: "Caneca Coração Amarela",
-    category: "Caneca Coração",
-    color: "Amarela",
-    price: 44.90,
-    oldPrice: 54.90,
-    stock: 7,
-    image: "assets/caneca_coracao_amarelo.jpeg",
-    description: "Caneca coração amarela, alegre e perfeita para presentes criativos.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["coração", "amarela", "presente"],
-    active: true,
-    featured: false
-  },
-  {
-    id: "caneca-coracao-marrom-001",
-    sku: "MC-COR-MARROM-001",
-    name: "Caneca Coração Marrom",
-    category: "Caneca Coração",
-    color: "Marrom",
-    price: 44.90,
-    oldPrice: 54.90,
-    stock: 4,
-    image: "assets/caneca_coracao_marrom.jpeg",
-    description: "Caneca coração marrom, charmosa e ideal para presentes especiais.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["coração", "marrom", "presente"],
-    active: true,
-    featured: false
-  },
-  {
-    id: "caneca-comum-roxa-001",
-    sku: "MC-COM-ROXA-001",
-    name: "Caneca Comum Roxa",
-    category: "Caneca Comum",
-    color: "Roxa",
-    price: 34.90,
-    oldPrice: 44.90,
-    stock: 10,
-    image: "assets/caneca_comum_roxo.png",
-    description: "Caneca comum com interior e alça roxa, moderna e criativa.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["roxa", "colorida", "pronta entrega"],
-    active: true,
-    featured: false
-  },
-  {
-    id: "caneca-comum-verde-001",
-    sku: "MC-COM-VERDE-001",
-    name: "Caneca Comum Verde",
-    category: "Caneca Comum",
-    color: "Verde",
-    price: 34.90,
-    oldPrice: 44.90,
-    stock: 9,
-    image: "assets/caneca_comum_verde.png",
-    description: "Caneca comum com interior e alça verde, pronta para personalizar.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["verde", "colorida", "pronta entrega"],
-    active: true,
-    featured: false
-  },
-  {
-    id: "caneca-comum-laranja-001",
-    sku: "MC-COM-LARANJA-001",
-    name: "Caneca Comum Laranja",
-    category: "Caneca Comum",
-    color: "Laranja",
-    price: 34.90,
-    oldPrice: 44.90,
-    stock: 7,
-    image: "assets/caneca_comum_laranja.png",
-    description: "Caneca comum laranja, divertida, vibrante e perfeita para artes criativas.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["laranja", "colorida", "criativa"],
-    active: true,
-    featured: false
-  },
-  {
-    id: "caneca-comum-amarela-001",
-    sku: "MC-COM-AMARELA-001",
-    name: "Caneca Comum Amarela",
-    category: "Caneca Comum",
-    color: "Amarela",
-    price: 34.90,
-    oldPrice: 44.90,
-    stock: 11,
-    image: "assets/caneca_comum_amarelo.png",
-    description: "Caneca comum amarela, alegre e ideal para presentes personalizados.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["amarela", "colorida", "alegre"],
-    active: true,
-    featured: false
-  },
-  {
-    id: "caneca-comum-vermelha-001",
-    sku: "MC-COM-VERMELHA-001",
-    name: "Caneca Comum Vermelha",
-    category: "Caneca Comum",
-    color: "Vermelha",
-    price: 34.90,
-    oldPrice: 44.90,
-    stock: 4,
-    image: "assets/caneca_comum_vermelho.png",
-    description: "Caneca comum vermelha, marcante e perfeita para datas especiais.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["vermelha", "colorida", "presente"],
-    active: true,
-    featured: false
-  },
-  {
-    id: "caneca-comum-marrom-001",
-    sku: "MC-COM-MARROM-001",
-    name: "Caneca Comum Marrom",
-    category: "Caneca Comum",
-    color: "Marrom",
-    price: 34.90,
-    oldPrice: 44.90,
-    stock: 5,
-    image: "assets/caneca_comum_marrom.png",
-    description: "Caneca comum marrom, elegante e pronta para personalização.",
-    specs: { capacidade: "325ml", material: "Cerâmica", acabamento: "Brilhante", personalizacao: "Sublimação" },
-    tags: ["marrom", "colorida", "presente"],
-    active: true,
-    featured: false
-  }
-];
-
 var StoreState = {
-  products: PRODUCTS.filter(function(product) { return product.active; }),
+  products: [],
   cart: [],
   favorites: [],
   currentPage: 1,
-  filters: { search: "", category: "todos", color: "todos", sort: "featured", maxPrice: 80 },
+  filters: {
+    search: "",
+    category: "todos",
+    color: "todos",
+    sort: "featured",
+    maxPrice: 9999
+  },
   selectedProduct: null
 };
 
-function $(selector) { return document.querySelector(selector); }
-function $all(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }
+function $(selector) {
+  return document.querySelector(selector);
+}
+
+function $all(selector) {
+  return Array.prototype.slice.call(document.querySelectorAll(selector));
+}
 
 function formatMoney(value) {
   return new Intl.NumberFormat(MUGART_CONFIG.locale, {
@@ -230,7 +46,10 @@ function formatMoney(value) {
 }
 
 function normalizeText(value) {
-  return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function saveToStorage(key, value) {
@@ -276,12 +95,16 @@ function createElementFromHTML(html) {
   return template.content.firstElementChild;
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
   restoreState();
   createBaseUIIfMissing();
   bindHeader();
   bindFilters();
   bindCartActions();
+
+  await loadProductsFromSupabase();
+
+  configureMaxPriceFilter();
   renderCategories();
   renderColors();
   renderFeaturedProducts();
@@ -300,6 +123,94 @@ document.addEventListener("DOMContentLoaded", function() {
 function restoreState() {
   StoreState.cart = loadFromStorage(MUGART_CONFIG.storageKeys.cart, []);
   StoreState.favorites = loadFromStorage(MUGART_CONFIG.storageKeys.favorites, []);
+}
+
+async function loadProductsFromSupabase() {
+  if (!window.mugartSupabase) {
+    showToast("Supabase não carregou na loja. Verifique js/supabase-config.js.", "error");
+    StoreState.products = [];
+    return;
+  }
+
+  var result = await mugartSupabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      sku,
+      description,
+      color,
+      price,
+      old_price,
+      stock,
+      image_url,
+      active,
+      featured,
+      created_at,
+      categories (
+        id,
+        name,
+        slug
+      )
+    `)
+    .eq("active", true)
+    .order("featured", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (result.error) {
+    console.error(result.error);
+    showToast("Erro ao carregar produtos da loja.", "error");
+    StoreState.products = [];
+    return;
+  }
+
+  StoreState.products = (result.data || []).map(function(product) {
+    return {
+      id: product.id,
+      sku: product.sku || product.id,
+      name: product.name || "Produto sem nome",
+      category: product.categories ? product.categories.name : "Sem categoria",
+      categoryId: product.categories ? product.categories.id : null,
+      color: product.color || "Não informado",
+      price: Number(product.price || 0),
+      oldPrice: Number(product.old_price || 0),
+      stock: Number(product.stock || 0),
+      image: product.image_url || "assets/hero-caneca.png",
+      description: product.description || "Produto MugArt pronta entrega.",
+      active: product.active,
+      featured: product.featured,
+      specs: {
+        capacidade: "325ml",
+        material: "Cerâmica",
+        acabamento: "Brilhante",
+        personalizacao: "Sublimação"
+      },
+      tags: [
+        product.name || "",
+        product.color || "",
+        product.categories ? product.categories.name : ""
+      ]
+    };
+  });
+}
+
+function configureMaxPriceFilter() {
+  var priceMax = $("#priceMaxFilter");
+  var label = $("#priceMaxLabel");
+
+  if (!priceMax) return;
+
+  var highestPrice = StoreState.products.reduce(function(max, product) {
+    return Math.max(max, Number(product.price || 0));
+  }, 80);
+
+  var roundedMax = Math.max(80, Math.ceil(highestPrice / 10) * 10);
+
+  priceMax.max = String(roundedMax);
+  priceMax.value = String(roundedMax);
+  StoreState.filters.maxPrice = roundedMax;
+
+  if (label) label.textContent = formatMoney(roundedMax);
 }
 
 function createBaseUIIfMissing() {
@@ -342,7 +253,7 @@ function createBaseUIIfMissing() {
         '<div class="checkout-card">' +
           '<button class="modal-close" id="checkoutClose" type="button">×</button>' +
           '<h2>Finalizar compra</h2>' +
-          '<p class="checkout-subtitle">Pagamento real será conectado no backend.</p>' +
+          '<p class="checkout-subtitle">Pedido salvo no Supabase e enviado para atendimento. O pagamento real entra na próxima etapa.</p>' +
           '<form id="checkoutForm" class="checkout-form">' +
             '<div class="checkout-grid">' +
               '<label>Nome completo<input name="name" required placeholder="Seu nome" /></label>' +
@@ -440,20 +351,25 @@ function bindFilters() {
       updatePriceLabel();
       renderProducts();
     });
-    updatePriceLabel();
   }
 
   if (clearFilters) {
     clearFilters.addEventListener("click", function() {
-      StoreState.filters = { search: "", category: "todos", color: "todos", sort: "featured", maxPrice: 80 };
-      StoreState.currentPage = 1;
+      StoreState.filters.search = "";
+      StoreState.filters.category = "todos";
+      StoreState.filters.color = "todos";
+      StoreState.filters.sort = "featured";
 
       if (searchInput) searchInput.value = "";
       if (categorySelect) categorySelect.value = "todos";
       if (colorSelect) colorSelect.value = "todos";
       if (sortSelect) sortSelect.value = "featured";
-      if (priceMax) priceMax.value = "80";
+      if (priceMax) {
+        priceMax.value = priceMax.max;
+        StoreState.filters.maxPrice = Number(priceMax.max);
+      }
 
+      StoreState.currentPage = 1;
       updatePriceLabel();
       renderCategories();
       renderProducts();
@@ -580,7 +496,7 @@ function renderProducts() {
   if (count) count.textContent = products.length + " produto" + (products.length === 1 ? "" : "s");
 
   if (!products.length) {
-    grid.innerHTML = '<div class="empty-products"><h3>Nenhuma caneca encontrada</h3><p>Tente limpar os filtros ou buscar outro modelo.</p></div>';
+    grid.innerHTML = '<div class="empty-products"><h3>Nenhuma caneca encontrada</h3><p>Cadastre produtos ativos no painel administrativo ou limpe os filtros.</p></div>';
     renderPagination(products.length);
     return;
   }
@@ -597,6 +513,11 @@ function renderFeaturedProducts() {
   var featured = StoreState.products.filter(function(product) {
     return product.featured;
   }).slice(0, 4);
+
+  if (!featured.length) {
+    container.innerHTML = '<div class="empty-products"><p>Nenhum produto em destaque ainda.</p></div>';
+    return;
+  }
 
   container.innerHTML = featured.map(productCardTemplate).join("");
   bindProductCards();
@@ -1021,7 +942,7 @@ function closeCheckout() {
   modal.setAttribute("aria-hidden", "true");
 }
 
-function handleCheckoutSubmit(event) {
+async function handleCheckoutSubmit(event) {
   event.preventDefault();
 
   var formData = new FormData(event.target);
@@ -1032,30 +953,92 @@ function handleCheckoutSubmit(event) {
 
   saveToStorage(MUGART_CONFIG.storageKeys.customer, customer);
 
-  var fakeOrderId = "MUG-" + Date.now();
+  var orderNumber = "MUG-" + Date.now();
+  var subtotal = getCartSubtotal();
+
+  if (window.mugartSupabase) {
+    var customerResult = await mugartSupabase
+      .from("customers")
+      .insert({
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone
+      })
+      .select()
+      .single();
+
+    if (customerResult.error) {
+      console.error(customerResult.error);
+      showToast("Erro ao criar cliente.", "error");
+      return;
+    }
+
+    var orderResult = await mugartSupabase
+      .from("orders")
+      .insert({
+        order_number: orderNumber,
+        customer_id: customerResult.data.id,
+        status: "pending",
+        payment_method: customer.payment,
+        payment_status: "pending",
+        total: subtotal
+      })
+      .select()
+      .single();
+
+    if (orderResult.error) {
+      console.error(orderResult.error);
+      showToast("Erro ao criar pedido.", "error");
+      return;
+    }
+
+    var orderItems = getCartItemsDetailed().map(function(item) {
+      return {
+        order_id: orderResult.data.id,
+        product_id: item.product.id,
+        quantity: item.quantity,
+        unit_price: item.product.price,
+        total: item.subtotal
+      };
+    });
+
+    var itemsResult = await mugartSupabase
+      .from("order_items")
+      .insert(orderItems);
+
+    if (itemsResult.error) {
+      console.error(itemsResult.error);
+      showToast("Erro ao criar itens do pedido.", "error");
+      return;
+    }
+  }
 
   pushDataLayer({
     event: "generate_order_frontend",
-    order_id: fakeOrderId,
+    order_id: orderNumber,
     payment_method: customer.payment,
     ecommerce: {
-      transaction_id: fakeOrderId,
+      transaction_id: orderNumber,
       currency: MUGART_CONFIG.currency,
-      value: getCartSubtotal(),
+      value: subtotal,
       items: getCartItemsDetailed().map(function(item) {
         return Object.assign({}, ga4Item(item.product), { quantity: item.quantity });
       })
     }
   });
 
-  showToast("Pedido visual gerado. O pagamento real entra na próxima etapa.", "success");
+  showToast("Pedido gerado com sucesso.", "success");
 
-  var message = buildCheckoutWhatsappMessage(fakeOrderId, customer);
+  var message = buildCheckoutWhatsappMessage(orderNumber, customer);
 
   setTimeout(function() {
     window.open("https://wa.me/" + MUGART_CONFIG.whatsapp + "?text=" + encodeURIComponent(message), "_blank");
   }, 400);
 
+  StoreState.cart = [];
+  persistCart();
+  renderCart();
+  updateCounters();
   closeCheckout();
 }
 

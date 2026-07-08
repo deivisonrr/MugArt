@@ -1,3 +1,8 @@
+/* ==========================================================
+   MugArt Supabase Config
+   Arquivo: js/supabase-config.js
+========================================================== */
+
 window.MUGART_SUPABASE_URL = "https://qtchckrcwnsmcsbehjkq.supabase.co";
 window.MUGART_SUPABASE_KEY = "sb_publishable_Fqy0ZA9hRugZqT3QtFMKJA_T8FnbixR";
 
