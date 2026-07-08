@@ -438,80 +438,6 @@ td {
 }
 
 /* ==========================================================
-   MugArt Admin - Upload de imagens
-   Adicione ao final de admin/css/admin.css
-========================================================== */
-
-.upload-box {
-  margin-top: 10px;
-  display: grid;
-  gap: 12px;
-}
-
-.image-preview-wrap {
-  min-height: 190px;
-  border-radius: 18px;
-  border: 1px dashed rgba(255,255,255,.22);
-  background: rgba(255,255,255,.045);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.image-preview-wrap img {
-  max-width: 100%;
-  max-height: 210px;
-  object-fit: contain;
-  display: none;
-}
-
-.image-preview-wrap span {
-  color: rgba(255,255,255,.58);
-  font-weight: 800;
-  text-align: center;
-  padding: 18px;
-}
-
-.upload-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.upload-btn,
-.upload-send-btn {
-  border: 0;
-  border-radius: 999px;
-  padding: 12px 18px;
-  font-family: "Barlow Condensed", sans-serif;
-  font-size: 17px;
-  font-weight: 900;
-  text-transform: uppercase;
-  cursor: pointer;
-  background: var(--yellow);
-  color: #111;
-}
-
-.upload-btn input {
-  display: none;
-}
-
-.upload-send-btn {
-  background: var(--cyan);
-  color: #001219;
-}
-
-.upload-send-btn:disabled {
-  opacity: .65;
-  cursor: not-allowed;
-}
-
-.upload-help {
-  color: rgba(255,255,255,.58);
-  line-height: 1.5;
-}
-/* ==========================================================
    Upload de imagens - Produtos
    Cole no final de admin/css/admin.css
 ========================================================== */
@@ -901,19 +827,66 @@ td {
     width: 100%;
   }
 }
-/* Aumenta a área da lista de produtos */
+
+/* ==========================================================
+   MugArt Admin - Layout Produtos Profissional
+   Atualização final: cadastro, catálogo e lista com largura total
+========================================================== */
+
+/* Em vez de duas colunas apertadas, usa blocos empilhados */
 .admin-grid-2 {
-  grid-template-columns: 0.75fr 1.8fr;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
 }
 
-/* Dá mais espaço para a tabela */
-.admin-grid-2 > .admin-panel:last-child {
-  min-width: 0;
+/* Produto cadastrado ocupa toda a largura */
+.admin-grid-2 > .admin-panel {
+  width: 100%;
 }
 
-/* Em telas menores, volta para uma coluna */
-@media (max-width: 1200px) {
-  .admin-grid-2 {
-    grid-template-columns: 1fr;
+/* Tabela de produtos com mais espaço */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Tabela maior e mais confortável */
+table {
+  min-width: 920px;
+}
+
+/* Campo de busca com tamanho melhor na lista */
+.table-search {
+  max-width: 340px;
+}
+
+/* Catálogo Pro sempre em largura total */
+#professionalCatalogPanel {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+/* Mais espaço interno para telas grandes */
+@media (min-width: 1280px) {
+  .admin-main {
+    padding: 38px 46px;
+  }
+
+  .admin-panel {
+    padding: 28px;
+  }
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  table {
+    min-width: 780px;
+  }
+}
+
+@media (max-width: 720px) {
+  .table-search {
+    max-width: 100%;
   }
 }
