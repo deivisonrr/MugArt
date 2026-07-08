@@ -901,4 +901,19 @@ td {
     width: 100%;
   }
 }
+/* Aumenta a área da lista de produtos */
+.admin-grid-2 {
+  grid-template-columns: 0.75fr 1.8fr;
+}
 
+/* Dá mais espaço para a tabela */
+.admin-grid-2 > .admin-panel:last-child {
+  min-width: 0;
+}
+
+/* Em telas menores, volta para uma coluna */
+@media (max-width: 1200px) {
+  .admin-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
