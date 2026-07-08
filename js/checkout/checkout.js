@@ -384,11 +384,10 @@ async function finishOrder(e) {
         note: "Pedido criado automaticamente pelo Checkout 3.0.",
         created_by: "checkout"
     });
-    localStorage.removeItem(CHECKOUT_KEYS.cart);
-    localStorage.removeItem(CHECKOUT_KEYS.draft);
-    toast("Pedido criado com sucesso!");
-    setTimeout(() => {
-        const msg = `Olá! Finalizei um pedido na loja da MugArt.\n\nPedido: ${orderNumber}\nNome: ${qs("#customerName").value}\nTotal: ${money(total)}\nPagamento escolhido: ${CheckoutState.selectedPayment}\n\nGostaria de continuar o atendimento.`;
-        window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
-    }, 900)
+    await iniciarPagamentoMercadoPago({
+    id:orderId,
+    customer_name:customerPayload.name,
+    customer_email:customerPayload.email,
+    items:rows
+});
 }
