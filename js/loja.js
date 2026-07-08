@@ -246,38 +246,7 @@ function createBaseUIIfMissing() {
       '</div>'
     ));
   }
-
-  if (!$(".checkout-modal")) {
-    document.body.appendChild(createElementFromHTML(
-      '<div class="checkout-modal" id="checkoutModal" aria-hidden="true">' +
-        '<div class="checkout-card">' +
-          '<button class="modal-close" id="checkoutClose" type="button">×</button>' +
-          '<h2>Finalizar compra</h2>' +
-          '<p class="checkout-subtitle">Pedido salvo no Supabase e enviado para atendimento. O pagamento real entra na próxima etapa.</p>' +
-          '<form id="checkoutForm" class="checkout-form">' +
-            '<div class="checkout-grid">' +
-              '<label>Nome completo<input name="name" required placeholder="Seu nome" /></label>' +
-              '<label>WhatsApp<input name="phone" required placeholder="(11) 99999-9999" /></label>' +
-              '<label>E-mail<input name="email" type="email" required placeholder="seuemail@email.com" /></label>' +
-              '<label>CEP<input name="zip" required placeholder="00000-000" /></label>' +
-              '<label class="full">Endereço<input name="address" required placeholder="Rua, número, complemento" /></label>' +
-              '<label>Cidade<input name="city" required placeholder="São Paulo" /></label>' +
-              '<label>Estado<input name="state" required placeholder="SP" /></label>' +
-            '</div>' +
-            '<div class="payment-options">' +
-              '<label><input type="radio" name="payment" value="pix" checked /> Pix</label>' +
-              '<label><input type="radio" name="payment" value="credit_card" /> Cartão de crédito</label>' +
-              '<label><input type="radio" name="payment" value="debit_card" /> Cartão de débito</label>' +
-            '</div>' +
-            '<div class="checkout-total"><span>Total do pedido</span><strong id="checkoutTotal">R$ 0,00</strong></div>' +
-            '<button class="checkout-submit" type="submit">Gerar pedido</button>' +
-          '</form>' +
-        '</div>' +
-      '</div>'
-    ));
-  }
-}
-
+   
 function bindHeader() {
   var menuToggle = $("#menuToggle");
   var nav = $("#nav");
@@ -855,14 +824,15 @@ function bindCartItemButtons() {
 
 function bindCartActions() {
   var checkoutBtn = $("#checkoutBtn");
-  var checkoutClose = $("#checkoutClose");
   var sendCartWhatsapp = $("#sendCartWhatsapp");
-  var checkoutForm = $("#checkoutForm");
 
-  if (checkoutBtn) checkoutBtn.addEventListener("click", openCheckout);
-  if (checkoutClose) checkoutClose.addEventListener("click", closeCheckout);
-  if (sendCartWhatsapp) sendCartWhatsapp.addEventListener("click", sendCartToWhatsapp);
-  if (checkoutForm) checkoutForm.addEventListener("submit", handleCheckoutSubmit);
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener("click", openCheckout);
+  }
+
+  if (sendCartWhatsapp) {
+    sendCartWhatsapp.addEventListener("click", sendCartToWhatsapp);
+  }
 }
 
 function openCart() {
@@ -913,16 +883,6 @@ function openCheckout() {
 
   closeCart();
 
-  var modal = $("#checkoutModal");
-  var total = $("#checkoutTotal");
-
-  if (total) total.textContent = formatMoney(getCartSubtotal());
-
-  if (modal) {
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
-  }
-
   pushDataLayer({
     event: "begin_checkout",
     ecommerce: {
@@ -933,113 +893,12 @@ function openCheckout() {
       })
     }
   });
+
+  window.location.href = "checkout.html";
 }
 
 function closeCheckout() {
-  var modal = $("#checkoutModal");
-  if (!modal) return;
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-}
-
-async function handleCheckoutSubmit(event) {
-  event.preventDefault();
-
-  var formData = new FormData(event.target);
-  var customer = {};
-  formData.forEach(function(value, key) {
-    customer[key] = value;
-  });
-
-  saveToStorage(MUGART_CONFIG.storageKeys.customer, customer);
-
-  var orderNumber = "MUG-" + Date.now();
-  var subtotal = getCartSubtotal();
-
-  if (window.mugartSupabase) {
-    var customerResult = await mugartSupabase
-      .from("customers")
-      .insert({
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone
-      })
-      .select()
-      .single();
-
-    if (customerResult.error) {
-      console.error(customerResult.error);
-      showToast("Erro ao criar cliente.", "error");
-      return;
-    }
-
-    var orderResult = await mugartSupabase
-      .from("orders")
-      .insert({
-        order_number: orderNumber,
-        customer_id: customerResult.data.id,
-        status: "pending",
-        payment_method: customer.payment,
-        payment_status: "pending",
-        total: subtotal
-      })
-      .select()
-      .single();
-
-    if (orderResult.error) {
-      console.error(orderResult.error);
-      showToast("Erro ao criar pedido.", "error");
-      return;
-    }
-
-    var orderItems = getCartItemsDetailed().map(function(item) {
-      return {
-        order_id: orderResult.data.id,
-        product_id: item.product.id,
-        quantity: item.quantity,
-        unit_price: item.product.price,
-        total: item.subtotal
-      };
-    });
-
-    var itemsResult = await mugartSupabase
-      .from("order_items")
-      .insert(orderItems);
-
-    if (itemsResult.error) {
-      console.error(itemsResult.error);
-      showToast("Erro ao criar itens do pedido.", "error");
-      return;
-    }
-  }
-
-  pushDataLayer({
-    event: "generate_order_frontend",
-    order_id: orderNumber,
-    payment_method: customer.payment,
-    ecommerce: {
-      transaction_id: orderNumber,
-      currency: MUGART_CONFIG.currency,
-      value: subtotal,
-      items: getCartItemsDetailed().map(function(item) {
-        return Object.assign({}, ga4Item(item.product), { quantity: item.quantity });
-      })
-    }
-  });
-
-  showToast("Pedido gerado com sucesso.", "success");
-
-  var message = buildCheckoutWhatsappMessage(orderNumber, customer);
-
-  setTimeout(function() {
-    window.open("https://wa.me/" + MUGART_CONFIG.whatsapp + "?text=" + encodeURIComponent(message), "_blank");
-  }, 400);
-
-  StoreState.cart = [];
-  persistCart();
-  renderCart();
-  updateCounters();
-  closeCheckout();
+  // Checkout antigo removido.
 }
 
 function sendProductToWhatsapp(productId) {
