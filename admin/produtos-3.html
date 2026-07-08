@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>MugArt Admin | Produtos 3.0</title>
+
+  <link rel="icon" href="../assets/favicon.ico" sizes="any">
+  <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+
+<body class="admin-body">
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="dashboard.html">
+      <img src="../assets/logo.png" alt="MugArt" />
+    </a>
+
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a class="active" href="produtos-3.html">Produtos 3.0</a>
+      <a href="produtos.html">Produtos antigo</a>
+      <a href="categorias.html">Categorias</a>
+      <a href="pedidos.html">Pedidos</a>
+      <a href="../loja.html">Ver Loja</a>
+    </nav>
+
+    <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
+  </aside>
+
+  <main class="admin-main admin3-main">
+    <header class="admin3-header">
+      <div>
+        <p class="eyebrow">Catálogo</p>
+        <h1>Produtos</h1>
+        <p>Gerencie produtos, imagens, preços, estoque, variações, tags e SEO da loja MugArt.</p>
+      </div>
+
+      <div class="admin3-header-actions">
+        <a class="admin3-secondary-btn" href="../loja.html" target="_blank">Ver loja</a>
+        <button class="admin-action" id="openProductDrawer" type="button">Novo produto</button>
+      </div>
+    </header>
+
+    <section class="admin3-metrics">
+      <article>
+        <span>Produtos ativos</span>
+        <strong id="admin3ActiveProducts">0</strong>
+      </article>
+
+      <article>
+        <span>Estoque total</span>
+        <strong id="admin3TotalStock">0</strong>
+      </article>
+
+      <article>
+        <span>Estoque baixo</span>
+        <strong id="admin3LowStock">0</strong>
+      </article>
+
+      <article>
+        <span>Em destaque</span>
+        <strong id="admin3Featured">0</strong>
+      </article>
+    </section>
+
+    <section class="admin3-toolbar">
+      <label class="admin3-search">
+        <span>Buscar produto</span>
+        <input id="admin3Search" type="search" placeholder="Nome, SKU, cor ou categoria..." />
+      </label>
+
+      <label>
+        Categoria
+        <select id="admin3CategoryFilter">
+          <option value="todos">Todas</option>
+        </select>
+      </label>
+
+      <label>
+        Status
+        <select id="admin3StatusFilter">
+          <option value="todos">Todos</option>
+          <option value="ativo">Ativos</option>
+          <option value="inativo">Inativos</option>
+          <option value="baixo">Estoque baixo</option>
+          <option value="destaque">Destaques</option>
+        </select>
+      </label>
+
+      <label>
+        Visualização
+        <select id="admin3ViewMode">
+          <option value="cards">Cards</option>
+          <option value="list">Lista</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="admin3-products" id="admin3Products"></section>
+  </main>
+
+  <aside class="admin3-drawer" id="admin3Drawer">
+    <div class="admin3-drawer-head">
+      <div>
+        <p class="eyebrow">Produto</p>
+        <h2 id="admin3DrawerTitle">Novo produto</h2>
+      </div>
+      <button type="button" id="closeProductDrawer">×</button>
+    </div>
+
+    <form id="admin3ProductForm" class="admin3-form">
+      <input type="hidden" id="admin3ProductId" />
+
+      <div class="admin3-tabs">
+        <button type="button" class="admin3-tab active" data-tab="info">Informações</button>
+        <button type="button" class="admin3-tab" data-tab="media">Imagens</button>
+        <button type="button" class="admin3-tab" data-tab="variants">Variações</button>
+        <button type="button" class="admin3-tab" data-tab="seo">SEO</button>
+      </div>
+
+      <section class="admin3-tab-panel active" id="admin3-tab-info">
+        <div class="admin3-grid">
+          <label class="full">
+            Nome
+            <input id="admin3Name" required placeholder="Caneca Coração Vermelha" />
+          </label>
+
+          <label>
+            SKU
+            <input id="admin3Sku" required placeholder="MC-COR-VERM-001" />
+          </label>
+
+          <label>
+            Categoria
+            <select id="admin3Category" required></select>
+          </label>
+
+          <label>
+            Cor
+            <input id="admin3Color" required placeholder="Vermelha" />
+          </label>
+
+          <label>
+            Preço
+            <input id="admin3Price" type="number" min="0" step="0.01" required placeholder="44.90" />
+          </label>
+
+          <label>
+            Preço promocional
+            <input id="admin3OldPrice" type="number" min="0" step="0.01" placeholder="54.90" />
+          </label>
+
+          <label>
+            Estoque
+            <input id="admin3Stock" type="number" min="0" step="1" required placeholder="10" />
+          </label>
+
+          <label>
+            Produto ativo
+            <select id="admin3Active">
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </label>
+
+          <label>
+            Destaque
+            <select id="admin3FeaturedField">
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </label>
+
+          <label class="full">
+            Descrição
+            <textarea id="admin3Description" rows="5" required placeholder="Descrição do produto"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="admin3-tab-panel" id="admin3-tab-media">
+        <label>
+          URL da imagem principal
+          <input id="admin3ImageUrl" placeholder="URL preenchida automaticamente após upload" />
+        </label>
+
+        <div class="admin3-upload">
+          <div class="admin3-upload-preview">
+            <img id="admin3ImagePreview" alt="Preview" />
+            <span id="admin3ImagePlaceholder">Nenhuma imagem selecionada</span>
+          </div>
+
+          <div class="admin3-upload-actions">
+            <label class="admin3-secondary-btn">
+              Escolher imagem
+              <input id="admin3ImageFile" type="file" accept="image/png,image/jpeg,image/webp" />
+            </label>
+
+            <button type="button" id="admin3UploadImageBtn">Enviar imagem</button>
+            <button type="button" id="admin3AddGalleryBtn">Adicionar à galeria</button>
+          </div>
+        </div>
+
+        <div class="admin3-gallery" id="admin3Gallery"></div>
+      </section>
+
+      <section class="admin3-tab-panel" id="admin3-tab-variants">
+        <div class="admin3-grid">
+          <label>
+            Cor
+            <input id="admin3VariantColor" placeholder="Azul" />
+          </label>
+
+          <label>
+            SKU
+            <input id="admin3VariantSku" placeholder="MC-COR-AZUL-001" />
+          </label>
+
+          <label>
+            Preço
+            <input id="admin3VariantPrice" type="number" min="0" step="0.01" />
+          </label>
+
+          <label>
+            Preço promocional
+            <input id="admin3VariantOldPrice" type="number" min="0" step="0.01" />
+          </label>
+
+          <label>
+            Estoque
+            <input id="admin3VariantStock" type="number" min="0" step="1" />
+          </label>
+
+          <label>
+            URL da imagem
+            <input id="admin3VariantImageUrl" placeholder="Opcional" />
+          </label>
+        </div>
+
+        <button type="button" id="admin3AddVariantBtn">Adicionar variação</button>
+
+        <div class="admin3-variants-list" id="admin3Variants"></div>
+      </section>
+
+      <section class="admin3-tab-panel" id="admin3-tab-seo">
+        <div class="admin3-grid">
+          <label>
+            Slug
+            <input id="admin3Slug" placeholder="caneca-coracao-vermelha" />
+          </label>
+
+          <label>
+            Título SEO
+            <input id="admin3SeoTitle" placeholder="Caneca Coração Vermelha | MugArt" />
+          </label>
+
+          <label class="full">
+            Descrição SEO
+            <textarea id="admin3SeoDescription" rows="4" placeholder="Descrição para buscadores"></textarea>
+          </label>
+        </div>
+
+        <button type="button" id="admin3GenerateSeoBtn">Gerar SEO automático</button>
+
+        <div class="admin3-seo-preview">
+          <span id="admin3SeoUrlPreview">mugart.com.br/produto/...</span>
+          <strong id="admin3SeoTitlePreview">Título SEO</strong>
+          <p id="admin3SeoDescPreview">Descrição SEO</p>
+        </div>
+      </section>
+
+      <div class="admin3-form-footer">
+        <button type="button" class="admin3-secondary-btn" id="admin3Cancel">Cancelar</button>
+        <button type="submit" class="admin-action">Salvar produto</button>
+      </div>
+    </form>
+  </aside>
+
+  <div class="admin3-overlay" id="admin3Overlay"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/produtos-3.js"></script>
+</body>
+</html>
