@@ -48,23 +48,56 @@
             <label class="full">Nome completo<input id="customerName" required placeholder="Seu nome completo" autocomplete="name" /></label>
             <label>WhatsApp<input id="customerPhone" type="tel" required maxlength="15" placeholder="(11) 99999-9999" autocomplete="tel"/></label>
             <label>E-mail<input id="customerEmail" type="email" required autocomplete="email" placeholder="nome@empresa.com.br"/></label>
-            <label>CPF/CNPJ<input id="customerDocument" required placeholder="CPF ou CNPJ"/></label>
+            <label>CPF/CNPJ<input id="customerDocument" required placeholder="CPF ou CNPJ" /></label>
           </div>
         </section>
 
         <section class="checkout-card">
-          <div class="section-head"><span>📍</span><div><p>Etapa 3</p><h2>Endereço de entrega</h2></div></div>
+  <div class="section-head">
+    <span>📍</span>
+    <div>
+      <p>Etapa 3</p>
+      <h2>Endereço de entrega</h2>
+    </div>
+  </div>
 
-          <div class="form-grid">
-            <label>CEP<input id="shippingZip" required placeholder="00000-000" autocomplete="postal-code" /></label>
-            <label>Número<input id="shippingNumber" required placeholder="123" /></label>
-            <input id="shippingStreet" required placeholder="Rua" readonly />
-            <input id="shippingNeighborhood" required placeholder="Bairro" readonly />
-            <label>Complemento<input id="shippingComplement" placeholder="Apto, bloco, referência..." /></label>
-            <input id="shippingCity" required placeholder="Cidade" readonly />
-            <input id="shippingState" required placeholder="UF" maxlength="2" readonly />
-          </div>
-        </section>
+  <div class="form-grid">
+    <label>
+      CEP
+      <input id="shippingZip" required placeholder="00000-000" autocomplete="postal-code" />
+    </label>
+
+    <label>
+      Número
+      <input id="shippingNumber" required placeholder="123" />
+    </label>
+
+    <label class="full">
+      Rua
+      <input id="shippingStreet" required placeholder="Rua" readonly />
+    </label>
+
+    <label>
+      Bairro
+      <input id="shippingNeighborhood" required placeholder="Bairro" readonly />
+    </label>
+
+    <label>
+      Complemento
+      <input id="shippingComplement" placeholder="Apto, bloco, referência..." />
+    </label>
+
+    <label>
+      Cidade
+      <input id="shippingCity" required placeholder="Cidade" readonly />
+    </label>
+
+    <label>
+      Estado
+      <input id="shippingState" required placeholder="UF" maxlength="2" readonly />
+    </label>
+  </div>
+</section>
 
         <section class="checkout-card">
             <div class="section-head">
