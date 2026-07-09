@@ -11,6 +11,9 @@ const CheckoutState = {
     coupon: "",
     selectedShipping: "pickup",
     selectedPayment: "pix"
+    selectedShippingCompany: "",
+    selectedShippingService: "",
+    selectedShippingDeliveryTime: 0,
 };
 
 function qs(s) {
@@ -742,18 +745,21 @@ async function calculateShipping() {
             <b>${money(option.price)}</b>
         `;
 
-        label.querySelector("input").addEventListener("change", () => {
+       label.querySelector("input").addEventListener("change", () => {
 
-            CheckoutState.shipping =
-                Number(option.price);
-
-            updateOptionCards();
-
-            renderSummary();
-
-            saveDraft();
-
-        });
+                CheckoutState.selectedShipping = option.id;
+                CheckoutState.selectedShippingCompany = option.company;
+                CheckoutState.selectedShippingService = option.name;
+                CheckoutState.selectedShippingDeliveryTime = option.delivery_time;
+                CheckoutState.shipping = Number(option.price);
+            
+                updateOptionCards();
+            
+                renderSummary();
+            
+                saveDraft();
+            
+            });
 
         shippingOptions.appendChild(label);
 
