@@ -10,10 +10,10 @@ const CheckoutState = {
     shipping: 0,
     coupon: "",
     selectedShipping: "pickup",
-    selectedPayment: "pix"
+    selectedPayment: "pix",
     selectedShippingCompany: "",
     selectedShippingService: "",
-    selectedShippingDeliveryTime: 0,
+    selectedShippingDeliveryTime: 0
 };
 
 function qs(s) {
