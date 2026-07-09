@@ -869,21 +869,29 @@ async function finishOrder(e) {
         customer_email: customerPayload.email,
         customer_phone: customerPayload.phone,
         cpf_cnpj: customerPayload.cpf_cnpj,
+    
         status: "pending",
         production_status: "not_started",
+    
         payment_method: CheckoutState.selectedPayment,
         payment_status: "pending",
+    
         shipping_status: "not_shipped",
+    
         subtotal: subtotal,
         discount: CheckoutState.discount,
         shipping: CheckoutState.shipping,
-        total: total,
-        coupon: CheckoutState.coupon,
-        notes: "Pedido criado pelo Checkout 3.0"
+    
         shipping_method: CheckoutState.selectedShipping,
         shipping_company: CheckoutState.selectedShippingCompany,
         shipping_service: CheckoutState.selectedShippingService,
         shipping_delivery_time: CheckoutState.selectedShippingDeliveryTime,
+    
+        total: total,
+    
+        coupon: CheckoutState.coupon,
+    
+        notes: "Pedido criado pelo Checkout 3.0"
     };
 
     const or = await mugartSupabase
