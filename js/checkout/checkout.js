@@ -666,7 +666,7 @@ async function searchCep() {
 
         toast("Endereço preenchido automaticamente.");
 
-        await calculateShipping();
+        //await calculateShipping();
         
     } catch (e) {
         console.error(e);
