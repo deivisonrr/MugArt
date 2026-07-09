@@ -880,6 +880,10 @@ async function finishOrder(e) {
         total: total,
         coupon: CheckoutState.coupon,
         notes: "Pedido criado pelo Checkout 3.0"
+        shipping_method: CheckoutState.selectedShipping,
+        shipping_company: CheckoutState.selectedShippingCompany,
+        shipping_service: CheckoutState.selectedShippingService,
+        shipping_delivery_time: CheckoutState.selectedShippingDeliveryTime,
     };
 
     const or = await mugartSupabase
