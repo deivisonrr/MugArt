@@ -881,7 +881,6 @@ async function finishOrder(e) {
         subtotal: subtotal,
         discount: CheckoutState.discount,
         shipping: CheckoutState.shipping,
-    
         shipping_method: CheckoutState.selectedShipping,
         shipping_company: CheckoutState.selectedShippingCompany,
         shipping_service: CheckoutState.selectedShippingService,
