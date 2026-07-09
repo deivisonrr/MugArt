@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Entrar | MugArt</title>
+
+<link rel="icon" href="../assets/favicon.ico">
+
+<link rel="stylesheet" href="../css/account.css">
+
+</head>
+
+<body>
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <img
+            src="../assets/logo.png"
+            class="auth-logo"
+        >
+
+        <h1>Entrar</h1>
+
+        <p>
+            Acesse sua conta para acompanhar seus pedidos.
+        </p>
+
+        <form id="loginForm">
+
+            <input
+                id="email"
+                type="email"
+                placeholder="Seu e-mail"
+                required
+            >
+
+            <input
+                id="password"
+                type="password"
+                placeholder="Sua senha"
+                required
+            >
+
+            <button>
+
+                Entrar
+
+            </button>
+
+        </form>
+
+        <div class="auth-links">
+
+            <a href="#" id="showRegister">
+
+                Criar conta
+
+            </a>
+
+            <a href="#" id="showReset">
+
+                Esqueci minha senha
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="../js/supabase-config.js"></script>
+
+<script src="../js/account/auth.js"></script>
+
+</body>
+
+</html>
