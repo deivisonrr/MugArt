@@ -665,10 +665,109 @@ async function searchCep() {
         updateProgress();
 
         toast("Endereço preenchido automaticamente.");
+
+        await calculateShipping();
+        
     } catch (e) {
         console.error(e);
         toast("Erro ao buscar CEP.");
     }
+}
+
+async function calculateShipping() {
+
+    const cep = onlyNumbers(qs("#shippingZip").value);
+
+    if (cep.length !== 8) return;
+
+    const shippingOptions = qs("#shippingOptions");
+    const shippingLoading = qs("#shippingLoading");
+
+    shippingLoading.style.display = "block";
+    shippingOptions.innerHTML = "";
+
+    const items = getCartItems();
+
+    const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
+
+    const { data, error } = await mugartSupabase.functions.invoke(
+        "calculate-shipping",
+        {
+            body: {
+                to_zip: cep,
+                quantity: items.reduce((s, i) => s + i.quantity, 0),
+                insurance_value: subtotal
+            }
+        }
+    );
+
+    shippingLoading.style.display = "none";
+
+    if (error || !data.success) {
+
+        shippingOptions.innerHTML =
+            "<p>Não foi possível calcular o frete.</p>";
+
+        return;
+    }
+
+    shippingOptions.innerHTML = "";
+
+    data.options.forEach((option, index) => {
+
+        const label = document.createElement("label");
+
+        label.className =
+            "option-card" + (index == 0 ? " active" : "");
+
+        label.innerHTML = `
+            <input
+                type="radio"
+                name="shippingMethod"
+                value="${option.id}"
+                data-price="${option.price}"
+                ${index == 0 ? "checked" : ""}
+            >
+
+            <div>
+
+                <strong>${option.company}</strong>
+
+                <span>${option.name}</span>
+
+                <small>
+                    ${option.delivery_time} dias úteis
+                </small>
+
+            </div>
+
+            <b>${money(option.price)}</b>
+        `;
+
+        label.querySelector("input").addEventListener("change", () => {
+
+            CheckoutState.shipping =
+                Number(option.price);
+
+            updateOptionCards();
+
+            renderSummary();
+
+            saveDraft();
+
+        });
+
+        shippingOptions.appendChild(label);
+
+    });
+
+    CheckoutState.shipping =
+        Number(data.options[0].price);
+
+    renderSummary();
+
+    saveDraft();
+
 }
 
 async function iniciarPagamentoMercadoPago(order) {
