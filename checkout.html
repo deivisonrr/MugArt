@@ -67,21 +67,22 @@
         </section>
 
         <section class="checkout-card">
-          <div class="section-head"><span>🚚</span><div><p>Etapa 4</p><h2>Entrega</h2></div></div>
-
-          <div class="shipping-options">
-            <label class="option-card active">
-              <input type="radio" name="shippingMethod" value="pickup" data-price="0" checked />
-              <div><strong>Retirada / combinar pelo WhatsApp</strong><span>Frete será combinado no atendimento.</span></div>
-              <b>R$ 0,00</b>
-            </label>
-
-            <label class="option-card">
-              <input type="radio" name="shippingMethod" value="local_delivery" data-price="15" />
-              <div><strong>Entrega local</strong><span>Valor inicial. Cálculo automático de frete entra depois.</span></div>
-              <b>R$ 15,00</b>
-            </label>
-          </div>
+            <div class="section-head">
+                <span>🚚</span>
+                <div>
+                    <p>Etapa 4</p>
+                    <h2>Entrega</h2>
+                </div>
+            </div>
+        
+            <div id="shippingLoading" style="display:none;margin-bottom:15px;">
+                🔄 Calculando frete...
+            </div>
+        
+            <div
+                id="shippingOptions"
+                class="shipping-options">
+            </div>
         </section>
 
         <section class="checkout-card">
