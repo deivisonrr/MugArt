@@ -213,6 +213,31 @@ function configureMaxPriceFilter() {
   if (label) label.textContent = formatMoney(roundedMax);
 }
 
+function createBaseUIIfMissing() {
+  if (!$(".cart-drawer")) {
+    document.body.appendChild(createElementFromHTML(
+      '<aside class="cart-drawer" id="cartDrawer">' +
+        '<div class="cart-header">' +
+          '<div><span class="cart-label">Seu carrinho</span><h3>Produtos selecionados</h3></div>' +
+          '<button class="cart-close" id="cartClose" type="button">×</button>' +
+        '</div>' +
+        '<div class="cart-items" id="cartItems"></div>' +
+        '<div class="cart-footer">' +
+          '<div class="cart-summary-line"><span>Subtotal</span><strong id="cartSubtotal">R$ 0,00</strong></div>' +
+          '<div class="cart-summary-line"><span>Frete</span><strong>A calcular</strong></div>' +
+          '<button class="checkout-btn" id="checkoutBtn" type="button">Finalizar compra</button>' +
+          '<button class="whatsapp-cart-btn" id="sendCartWhatsapp" type="button">Tirar dúvida pelo WhatsApp</button>' +
+        '</div>' +
+      '</aside>'
+    ));
+  }
+
+  if (!$(".drawer-overlay")) {
+    document.body.appendChild(createElementFromHTML(
+      '<div class="drawer-overlay" id="drawerOverlay"></div>'
+    ));
+  }
+
   if (!$(".product-modal")) {
     document.body.appendChild(createElementFromHTML(
       '<div class="product-modal" id="productModal" aria-hidden="true">' +
@@ -221,196 +246,9 @@ function configureMaxPriceFilter() {
           '<div id="modalContent"></div>' +
         '</div>' +
       '</div>'
-    ));ChatGPT
-
-
-
-
-
-Texto colado.txt
-Documento
-monta o datalayer nesse html
-
-
-
-Texto colado(1).txt
-Documento
-
-
-Texto colado(2).txt
-Documento
-
-
-Texto colado(3).txt
-Documento
-
-Texto colado (2).txt
-Documento
-const menuToggle = document.getElementById("menuToggle");
-const nav = document.getElementById("nav");
-const cards = [...document.querySelectorAll(".model-card")];
-const colors = [...document.querySelectorAll(".color")];
-const selectedModelText = document.getElementById("selectedModelText");
-const selectedArtText = document.getElementById("selectedArtText");
-const artInput = document.getElementById("artInput");
-const artPreview = document.getElementById("artPreview");
-const placeholderText = document.getElementById("placeholderText");
-const clearArt = document.getElementById("clearArt");
-const sendWhatsapp = document.getElementById("sendWhatsapp");
-const modelsTrack = document.getElementById("modelsTrack");
-
-let selectedModel = "Caneca Branca";
-let selectedColor = "branca";
-let selectedFileName = "";
-let selectedFileType = "";
-let selectedFileExtension = "";
-let selectedFileSizeKb = 0;
-let hasArt = false;
-
-menuToggle?.addEventListener("click", () => nav.classList.toggle("open"));
-
-document.querySelectorAll(".nav a").forEach((link) => {
-  link.addEventListener("click", () => nav.classList.remove("open"));
-});
-
-function selectCard(card) {
-  cards.forEach((item) => item.classList.remove("active"));
-  card.classList.add("active");
-
-  selectedModel =
-    card.dataset.modelo ||
-    card.querySelector("h3")?.innerText ||
-    "Caneca Branca";
-
-  selectedColor = card.dataset.cor || "";
-
-  selectedModelText.textContent = selectedModel;
-
-  colors.forEach((color) => {
-    color.classList.toggle(
-      "selected",
-      color.dataset.target === selectedModel
-    );
-  });
+    ));
+  }
 }
-
-cards.forEach((card) => {
-  card.addEventListener("click", () => selectCard(card));
-});
-
-colors.forEach((color) => {
-  color.addEventListener("click", () => {
-    colors.forEach((item) => item.classList.remove("selected"));
-    color.classList.add("selected");
-
-    const index = color.dataset.card;
-
-    if (index !== undefined && cards[index]) {
-      selectCard(cards[index]);
-
-      cards[index].scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
-      });
-    }
-  });
-});
-
-document.querySelector(".arrow.left")?.addEventListener("click", () => {
-  modelsTrack.scrollBy({
-    left: -260,
-    behavior: "smooth",
-  });
-});
-
-document.querySelector(".arrow.right")?.addEventListener("click", () => {
-  modelsTrack.scrollBy({
-    left: 260,
-    behavior: "smooth",
-  });
-});
-
-artInput.addEventListener("change", (event) => {
-  const file = event.target.files?.[0];
-
-  if (!file) return;
-
-  selectedFileName = file.name;
-  selectedFileType = file.type;
-  selectedFileExtension = file.name.split(".").pop().toLowerCase();
-  selectedFileSizeKb = Math.round(file.size / 1024);
-  hasArt = true;
-
-  selectedArtText.textContent = file.name;
-
-  const reader = new FileReader();
-
-  reader.onload = (e) => {
-    if (artPreview) {
-      artPreview.src = e.target.result;
-      artPreview.style.display = "block";
-    }
-
-    if (placeholderText) {
-      placeholderText.style.display = "none";
-    }
-  };
-
-  reader.readAsDataURL(file);
-});
-
-clearArt.addEventListener("click", () => {
-  artInput.value = "";
-  hasArt = false;
-  selectedFileName = "";
-  selectedFileType = "";
-  selectedFileExtension = "";
-  selectedFileSizeKb = 0;
-
-  selectedArtText.textContent = "Nenhuma";
-
-  if (artPreview) {
-    artPreview.removeAttribute("src");
-    artPreview.style.display = "none";
-  }
-
-  if (placeholderText) {
-    placeholderText.style.display = "block";
-  }
-});
-
-sendWhatsapp.addEventListener("click", () => {
-  const name =
-    document.getElementById("customerName").value.trim() ||
-    "Não informado";
-
-  const note =
-    document.getElementById("customerNote").value.trim() ||
-    "Sem observações";
-
-  window.dataLayer = window.dataLayer || [];
-
-  window.dataLayer.push({
-    event: "pedido_whatsapp",
-
-    mug_model: selectedModel,
-    mug_color: selectedColor,
-
-    artwork_uploaded: hasArt,
-    artwork_name: hasArt ? selectedFileName : "",
-    artwork_type: hasArt ? selectedFileType : "",
-    artwork_extension: hasArt ? selectedFileExtension : "",
-    artwork_size_kb: hasArt ? selectedFileSizeKb : 0,
-
-    customer_name_filled: name !== "Não informado",
-    customer_note_filled: note !== "Sem observações",
-
-    page_title: document.title,
-    page_location: window.location.href,
-    page_path: window.location.pathname
-  });
-
   const message = Olá, vim pelo site da MugArt e gostaria de solicitar um orçamento.
 
 Resumo do pedido:
@@ -611,7 +449,7 @@ function buildCartWhatsappMessage() {
     return "- " + item.quantity + "x " + item.product.name + " (" + item.product.color + ") - " + formatMoney(item.subtotal);
   }).join("\n");
 
-  return "Olá! Vim pela loja da MugArt e gostaria de finalizar este pedido:\n\n" +
+  return "Olá! Vim pela loja da MugArt e gostaria de tirar uma dúvida sobre estes produtos:\n\n" +
     lines + "\n\n" +
     "Total: " + formatMoney(getCartSubtotal()) + "\n\n" +
     "Gostaria de continuar pelo WhatsApp.";
@@ -1716,12 +1554,6 @@ price: product.price
 }
 
 
-Fechar
-
-  }
-   
-function bindHeader() {
-   
 function bindHeader() {
   var menuToggle = $("#menuToggle");
   var nav = $("#nav");
@@ -1989,7 +1821,13 @@ function renderPagination(totalProducts) {
     button.addEventListener("click", function() {
       StoreState.currentPage = Number(button.dataset.page);
       renderProducts();
-      document.getElementById("produtos").scrollIntoView({ behavior: "smooth" });
+      var produtos = document.getElementById("produtos");
+
+if (produtos) {
+  produtos.scrollIntoView({
+    behavior: "smooth"
+  });
+}
     });
   });
 }
@@ -2426,28 +2264,6 @@ function buildCartWhatsappMessage() {
     lines + "\n\n" +
     "Total: " + formatMoney(getCartSubtotal()) + "\n\n" +
     "Gostaria de continuar pelo WhatsApp.";
-}
-
-function buildCheckoutWhatsappMessage(orderId, customer) {
-  var items = getCartItemsDetailed();
-
-  var lines = items.map(function(item) {
-    return "- " + item.quantity + "x " + item.product.name + " (" + item.product.color + ") - " + formatMoney(item.subtotal);
-  }).join("\n");
-
-  return "Olá! Pedido gerado pela loja da MugArt.\n\n" +
-    "Pedido: " + orderId + "\n\n" +
-    "Dados do cliente:\n" +
-    "Nome: " + customer.name + "\n" +
-    "WhatsApp: " + customer.phone + "\n" +
-    "E-mail: " + customer.email + "\n" +
-    "Endereço: " + customer.address + "\n" +
-    "Cidade/UF: " + customer.city + " - " + customer.state + "\n" +
-    "CEP: " + customer.zip + "\n" +
-    "Pagamento escolhido: " + customer.payment + "\n\n" +
-    "Itens:\n" + lines + "\n\n" +
-    "Total: " + formatMoney(getCartSubtotal()) + "\n\n" +
-    "Aguardando confirmação de pagamento.";
 }
 
 function ga4Item(product) {
