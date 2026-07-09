@@ -58,11 +58,11 @@
           <div class="form-grid">
             <label>CEP<input id="shippingZip" required placeholder="00000-000" autocomplete="postal-code" /></label>
             <label>Número<input id="shippingNumber" required placeholder="123" /></label>
-            <label class="full">Rua<input id="shippingStreet" required placeholder="Rua" /></label>
-            <label>Bairro<input id="shippingNeighborhood" required placeholder="Bairro" /></label>
+            <input id="shippingStreet" required placeholder="Rua" readonly />
+            <input id="shippingNeighborhood" required placeholder="Bairro" readonly />
             <label>Complemento<input id="shippingComplement" placeholder="Apto, bloco, referência..." /></label>
-            <label>Cidade<input id="shippingCity" required placeholder="Cidade" /></label>
-            <label>Estado<input id="shippingState" required placeholder="SP" maxlength="2" /></label>
+            <input id="shippingCity" required placeholder="Cidade" readonly />
+            <input id="shippingState" required placeholder="UF" maxlength="2" readonly />
           </div>
         </section>
 
