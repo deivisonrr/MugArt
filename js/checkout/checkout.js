@@ -264,27 +264,41 @@ async function searchCep() {
 
 async function iniciarPagamentoMercadoPago(order) {
     const response = await mugartSupabase.functions.invoke("create-payment", {
-        console.log("Resposta completa:", response);
+        body: {
+            order_id: order.id,
+            customer_name: order.customer_name,
+            customer_email: order.customer_email,
+            items: order.items.map(item => ({
+                id: item.product_id,
+                title: item.product_name,
+                quantity: Number(item.quantity),
+                currency_id: "BRL",
+                unit_price: Number(item.unit_price)
+            }))
+        }
+    });
 
-const { data, error } = response;
+    console.log("Resposta completa:", response);
 
-if (error) {
-    console.error("ERRO COMPLETO:", error);
-    console.error("CONTEXT:", response);
+    const { data, error } = response;
 
-    toast(error.message || "Erro ao iniciar pagamento.");
-    return;
+    if (error) {
+        console.error("ERRO COMPLETO:", error);
+        console.error("CONTEXT:", response);
+        toast(error.message || "Erro ao iniciar pagamento.");
+        return;
+    }
+
+    console.log("DATA:", data);
+
+    if (!data || !data.init_point) {
+        console.error("Resposta inválida:", data);
+        toast("Mercado Pago não retornou o link.");
+        return;
+    }
+
+    window.location.href = data.init_point;
 }
-
-console.log("DATA:", data);
-
-if (!data || !data.init_point) {
-    console.error(data);
-    toast("Mercado Pago não retornou o link.");
-    return;
-}
-
-window.location.href = data.init_point;
 
 async function finishOrder(e) {
     e.preventDefault();
