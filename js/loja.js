@@ -988,7 +988,6 @@ item_variant: product.color,
 price: product.price
 };
 }
-/
 
 function bindHeader() {
   var menuToggle = $("#menuToggle");
