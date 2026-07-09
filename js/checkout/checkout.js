@@ -1,3 +1,5 @@
+let shippingValue = 0;
+
 const CHECKOUT_KEYS = {
     cart: "mugart_cart",
     draft: "mugart_checkout_draft"
