@@ -263,28 +263,32 @@ async function searchCep() {
 }
 
 async function iniciarPagamentoMercadoPago(order) {
-    const response = await mugartSupabase.functions.invoke("create-payment", {
-        body: {
-            order_id: order.id,
-            customer_name: order.customer_name,
-            customer_email: order.customer_email,
-            items: order.items.map(item => ({
-                id: item.product_id,
-                title: item.product_name,
-                quantity: Number(item.quantity),
-                currency_id: "BRL",
-                unit_price: Number(item.unit_price)
-            }))
+
+    const response = await mugartSupabase.functions.invoke(
+        "create-payment",
+        {
+            body: {
+                order_id: order.id,
+                customer_name: order.customer_name,
+                customer_email: order.customer_email,
+                items: order.items.map(item => ({
+                    id: item.product_id,
+                    title: item.product_name,
+                    quantity: Number(item.quantity),
+                    currency_id: "BRL",
+                    unit_price: Number(item.unit_price)
+                }))
+            }
         }
-    });
+    );
 
     console.log("Resposta completa:", response);
 
     const { data, error } = response;
 
     if (error) {
-        console.error("ERRO COMPLETO:", error);
-        console.error("CONTEXT:", response);
+        console.error("ERRO:", error);
+        console.error("RESPOSTA:", response);
         toast(error.message || "Erro ao iniciar pagamento.");
         return;
     }
@@ -299,7 +303,6 @@ async function iniciarPagamentoMercadoPago(order) {
 
     window.location.href = data.init_point;
 }
-
 async function finishOrder(e) {
     e.preventDefault();
 
