@@ -425,3 +425,95 @@ async function finishOrder(e) {
         items: rows
     });
 }
+
+function somenteNumeros(valor) {
+  return valor.replace(/\D/g, "");
+}
+
+function formatarTelefone(valor) {
+  valor = somenteNumeros(valor).slice(0, 11);
+
+  if (valor.length <= 10) {
+    return valor.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+  }
+
+  return valor.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, "($1) $2-$3");
+}
+
+function formatarCpfCnpj(valor) {
+  valor = somenteNumeros(valor).slice(0, 14);
+
+  if (valor.length <= 11) {
+    return valor
+      .replace(/^(\d{3})(\d)/, "$1.$2")
+      .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/\.(\d{3})(\d)/, ".$1-$2");
+  }
+
+  return valor
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/\.(\d{3})(\d)/, ".$1/$2")
+    .replace(/(\d{4})(\d)/, "$1-$2");
+}
+
+function formatarCep(valor) {
+  valor = somenteNumeros(valor).slice(0, 8);
+  return valor.replace(/^(\d{5})(\d)/, "$1-$2");
+}
+
+async function buscarEnderecoPorCep(cep) {
+  cep = somenteNumeros(cep);
+
+  if (cep.length !== 8) return;
+
+  try {
+    const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const dados = await resposta.json();
+
+    if (dados.erro) {
+      alert("CEP não encontrado.");
+      return;
+    }
+
+    document.getElementById("endereco").value = dados.logradouro || "";
+    document.getElementById("bairro").value = dados.bairro || "";
+    document.getElementById("cidade").value = dados.localidade || "";
+    document.getElementById("estado").value = dados.uf || "";
+
+    const numero = document.getElementById("numero");
+    if (numero) numero.focus();
+
+  } catch (erro) {
+    console.error("Erro ao buscar CEP:", erro);
+    alert("Erro ao buscar endereço pelo CEP.");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const telefone = document.getElementById("telefone");
+  const documento = document.getElementById("documento");
+  const cep = document.getElementById("cep");
+
+  if (telefone) {
+    telefone.addEventListener("input", () => {
+      telefone.value = formatarTelefone(telefone.value);
+    });
+  }
+
+  if (documento) {
+    documento.addEventListener("input", () => {
+      documento.value = formatarCpfCnpj(documento.value);
+    });
+  }
+
+  if (cep) {
+    cep.addEventListener("input", () => {
+      cep.value = formatarCep(cep.value);
+    });
+
+    cep.addEventListener("blur", () => {
+      buscarEnderecoPorCep(cep.value);
+    });
+  }
+});
