@@ -1,0 +1,250 @@
+.header-account {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.header-account-button {
+  min-height: 48px;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+
+  font-family: Inter, sans-serif;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.header-account-button:hover,
+.header-account.open .header-account-button {
+  border-color: rgba(255, 212, 0, 0.55);
+  background: rgba(255, 212, 0, 0.1);
+}
+
+.header-account-avatar {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+  background: #ffd400;
+  color: #111;
+
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.header-account-info {
+  display: grid;
+  gap: 1px;
+  text-align: left;
+}
+
+.header-account-info small {
+  max-width: 115px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.header-account-info strong {
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.header-account-arrow {
+  color: #ffd400;
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.header-account.open .header-account-arrow {
+  transform: rotate(180deg);
+}
+
+.header-account-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 500;
+
+  width: 270px;
+  padding: 12px;
+  display: none;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+
+  background: #0a0b0e;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.6);
+}
+
+.header-account.open .header-account-dropdown {
+  display: block;
+}
+
+.header-account-guest {
+  display: grid;
+  gap: 10px;
+}
+
+.header-account-guest > strong {
+  color: #fff;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+.header-account-guest p {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.header-account-primary {
+  display: block;
+  margin-top: 4px;
+  padding: 12px 15px;
+
+  border-radius: 999px;
+  background: #ffd400;
+  color: #111 !important;
+
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.header-account-logged {
+  display: grid;
+  gap: 4px;
+}
+
+.header-account-customer {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+
+  padding: 6px 6px 13px;
+  margin-bottom: 5px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.header-account-customer > span {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 14px;
+  background: #ffd400;
+  color: #111;
+
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 23px;
+  font-weight: 900;
+}
+
+.header-account-customer small {
+  display: block;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.header-account-customer strong {
+  display: block;
+  margin-top: 2px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #fff;
+  font-size: 13px;
+}
+
+.header-account-logged a,
+.header-account-logged button {
+  width: 100%;
+  padding: 11px 12px;
+
+  display: block;
+  border: 0;
+  border-radius: 12px;
+
+  background: transparent;
+  color: rgba(255, 255, 255, 0.88);
+
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.header-account-logged a:hover,
+.header-account-logged button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.header-account-logged button {
+  color: #ff7777;
+}
+
+.header-account .hidden {
+  display: none !important;
+}
+
+@media (max-width: 1000px) {
+  .header-account-info,
+  .header-account-arrow {
+    display: none;
+  }
+
+  .header-account-button {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .header-account-dropdown {
+    right: -8px;
+  }
+}
+
+@media (max-width: 520px) {
+  .header-account-dropdown {
+    position: fixed;
+    top: 76px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+}
