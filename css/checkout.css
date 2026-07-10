@@ -471,3 +471,15 @@ input[readonly] {
   opacity: 0.85;
   cursor: not-allowed;
 }
+
+.checkout-readonly {
+    cursor: not-allowed;
+    opacity: 0.78;
+    background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.checkout-readonly:focus {
+    box-shadow: none !important;
+}
+
+
