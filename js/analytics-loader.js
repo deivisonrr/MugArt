@@ -3,7 +3,9 @@
 
   async function carregarConfiguracoesAnalytics() {
     try {
-      if (!window.supabaseClient) {
+      const supabase = window.mugartSupabase || window.supabaseClient;
+
+      if (!supabase) {
         console.warn(
           "[Analytics] Supabase ainda não está disponível. Verifique se supabase-config.js foi carregado antes."
         );
