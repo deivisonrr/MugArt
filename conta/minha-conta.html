@@ -1,11 +1,749 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!DOCTYPE html>
+<html lang="pt-BR">
 
-<script src="../js/supabase-config.js"></script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="../js/account/common.js?v=1"></script>
+  <title>Minha Conta | MugArt</title>
 
-<script src="../js/account/account.js?v=1"></script>
-<script src="../js/account/orders.js?v=1"></script>
-<script src="../js/account/addresses.js?v=1"></script>
-<script src="../js/account/profile.js?v=1"></script>
-<script src="../js/account/security.js?v=1"></script>
+  <link rel="icon" href="../assets/favicon.ico">
+  <link rel="stylesheet" href="../css/account.css?v=6">
+</head>
+
+<body class="account-page">
+
+  <div id="accountLoading" class="account-loading">
+    <div class="account-spinner"></div>
+    <p>Carregando sua conta...</p>
+  </div>
+
+  <div id="accountApp" class="account-app hidden">
+
+    <header class="account-topbar">
+
+      <a href="../loja.html" class="account-logo">
+        <img src="../assets/logo.png" alt="MugArt">
+      </a>
+
+      <div class="account-user-header">
+
+        <div>
+          <span>Bem-vindo</span>
+          <strong id="headerCustomerName">Cliente MugArt</strong>
+        </div>
+
+        <button
+          id="headerLogoutButton"
+          class="account-logout-small"
+          type="button"
+        >
+          Sair
+        </button>
+
+      </div>
+
+    </header>
+
+    <main class="account-shell">
+
+      <aside class="account-sidebar">
+
+        <div class="account-profile-card">
+
+          <div class="account-avatar" id="accountAvatar">
+            M
+          </div>
+
+          <div>
+            <span>Minha conta</span>
+            <h2 id="sidebarCustomerName">Cliente</h2>
+            <p id="sidebarCustomerEmail">cliente@email.com</p>
+          </div>
+
+        </div>
+
+        <nav class="account-menu">
+
+          <button
+            class="account-menu-button active"
+            type="button"
+            data-account-section="dashboard"
+          >
+            <span>🏠</span>
+            Visão geral
+          </button>
+
+          <button
+            class="account-menu-button"
+            type="button"
+            data-account-section="orders"
+          >
+            <span>📦</span>
+            Meus pedidos
+          </button>
+
+          <button
+            class="account-menu-button"
+            type="button"
+            data-account-section="addresses"
+          >
+            <span>📍</span>
+            Meus endereços
+          </button>
+
+          <button
+            class="account-menu-button"
+            type="button"
+            data-account-section="profile"
+          >
+            <span>👤</span>
+            Meus dados
+          </button>
+
+          <button
+            class="account-menu-button"
+            type="button"
+            data-account-section="security"
+          >
+            <span>🔒</span>
+            Segurança
+          </button>
+
+          <button
+            id="sidebarLogoutButton"
+            class="account-menu-button logout"
+            type="button"
+          >
+            <span>🚪</span>
+            Sair
+          </button>
+
+        </nav>
+
+        <a href="../loja.html" class="account-back-store">
+          ← Voltar para a loja
+        </a>
+
+      </aside>
+
+      <section class="account-content">
+
+        <div id="accountMessage" class="account-message"></div>
+
+                <!-- VISÃO GERAL -->
+        <section
+          id="sectionDashboard"
+          class="account-section active"
+          data-section-name="dashboard"
+        >
+
+          <div class="account-section-header">
+            <div>
+              <span>Área do cliente</span>
+              <h1 id="dashboardGreeting">Olá 👋</h1>
+              <p>
+                Acompanhe seus pedidos e gerencie seus dados.
+              </p>
+            </div>
+          </div>
+
+          <div class="account-summary-grid">
+
+            <button
+              class="account-summary-card"
+              type="button"
+              data-open-section="orders"
+            >
+              <span class="account-summary-icon">📦</span>
+
+              <div>
+                <small>Pedidos</small>
+                <strong id="dashboardOrdersCount">0</strong>
+                <p>Acompanhe suas compras</p>
+              </div>
+            </button>
+
+            <button
+              class="account-summary-card"
+              type="button"
+              data-open-section="addresses"
+            >
+              <span class="account-summary-icon">📍</span>
+
+              <div>
+                <small>Endereços</small>
+                <strong id="dashboardAddressesCount">0</strong>
+                <p>Gerencie suas entregas</p>
+              </div>
+            </button>
+
+            <button
+              class="account-summary-card"
+              type="button"
+              data-open-section="profile"
+            >
+              <span class="account-summary-icon">👤</span>
+
+              <div>
+                <small>Cadastro</small>
+                <strong>Dados</strong>
+                <p>Atualize suas informações</p>
+              </div>
+            </button>
+
+            <button
+              class="account-summary-card"
+              type="button"
+              data-open-section="security"
+            >
+              <span class="account-summary-icon">🔒</span>
+
+              <div>
+                <small>Segurança</small>
+                <strong>Senha</strong>
+                <p>Proteja sua conta</p>
+              </div>
+            </button>
+
+          </div>
+
+          <div class="account-panel">
+
+            <div class="account-panel-header">
+
+              <div>
+                <span>Compra mais recente</span>
+                <h2>Último pedido</h2>
+              </div>
+
+              <button
+                id="viewAllOrdersButton"
+                class="account-text-button"
+                type="button"
+              >
+                Ver todos
+              </button>
+
+            </div>
+
+            <div
+              id="latestOrderContainer"
+              class="latest-order-container"
+            >
+
+              <div class="account-empty-state">
+                <span>📦</span>
+                <h3>Nenhum pedido encontrado</h3>
+                <p>Seus pedidos aparecerão aqui.</p>
+
+                <a href="../loja.html">
+                  Ir para a loja
+                </a>
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+                <!-- PEDIDOS -->
+        <section
+          id="sectionOrders"
+          class="account-section"
+          data-section-name="orders"
+        >
+
+          <div class="account-section-header">
+            <div>
+              <span>Histórico</span>
+              <h1>Meus pedidos</h1>
+              <p>
+                Consulte pagamentos, produção, entrega e rastreamento.
+              </p>
+            </div>
+          </div>
+
+          <div class="account-toolbar">
+
+            <input
+              id="ordersSearch"
+              type="search"
+              placeholder="Pesquisar pelo número do pedido"
+            >
+
+            <select id="ordersStatusFilter">
+              <option value="">Todos os pedidos</option>
+              <option value="pending">Pendentes</option>
+              <option value="approved">Pagos</option>
+              <option value="production">Em produção</option>
+              <option value="sent">Enviados</option>
+              <option value="delivered">Entregues</option>
+              <option value="canceled">Cancelados</option>
+            </select>
+
+          </div>
+
+          <div
+            id="ordersList"
+            class="account-orders-list"
+          ></div>
+
+        </section>
+
+                <!-- ENDEREÇOS -->
+        <section
+          id="sectionAddresses"
+          class="account-section"
+          data-section-name="addresses"
+        >
+
+          <div class="account-section-header with-action">
+
+            <div>
+              <span>Entrega</span>
+              <h1>Meus endereços</h1>
+              <p>
+                Cadastre seus endereços e escolha um como padrão.
+              </p>
+            </div>
+
+            <button
+              id="newAddressButton"
+              class="account-primary-button"
+              type="button"
+            >
+              + Novo endereço
+            </button>
+
+          </div>
+
+          <div
+            id="addressesList"
+            class="account-addresses-grid"
+          >
+
+            <div class="account-empty-state">
+
+              <span>📍</span>
+
+              <h3>Nenhum endereço cadastrado</h3>
+
+              <p>
+                Cadastre um endereço para agilizar
+                suas próximas compras.
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+                <!-- MEUS DADOS -->
+        <section
+          id="sectionProfile"
+          class="account-section"
+          data-section-name="profile"
+        >
+
+          <div class="account-section-header">
+
+            <div>
+              <span>Cadastro</span>
+              <h1>Meus dados</h1>
+
+              <p>
+                Atualize suas informações pessoais.
+              </p>
+            </div>
+
+          </div>
+
+          <form
+            id="profileForm"
+            class="account-form account-panel"
+          >
+
+            <div class="account-form-grid">
+
+              <label class="full">
+
+                Nome completo
+
+                <input
+                  id="profileName"
+                  type="text"
+                  required
+                >
+
+              </label>
+
+              <label>
+
+                WhatsApp
+
+                <input
+                  id="profilePhone"
+                  type="tel"
+                  maxlength="15"
+                  placeholder="(11) 99999-9999"
+                  required
+                >
+
+              </label>
+
+              <label>
+
+                CPF/CNPJ
+
+                <input
+                  id="profileDocument"
+                  type="text"
+                  maxlength="18"
+                  placeholder="000.000.000-00"
+                  required
+                >
+
+              </label>
+
+              <label class="full">
+
+                E-mail
+
+                <input
+                  id="profileEmail"
+                  type="email"
+                  required
+                >
+
+              </label>
+
+            </div>
+
+            <div class="account-form-actions">
+
+              <button
+                id="saveProfileButton"
+                class="account-primary-button"
+                type="submit"
+              >
+                Salvar alterações
+              </button>
+
+            </div>
+
+          </form>
+
+        </section>
+
+        <!-- SEGURANÇA -->
+        <section
+          id="sectionSecurity"
+          class="account-section"
+          data-section-name="security"
+        >
+
+          <div class="account-section-header">
+
+            <div>
+              <span>Proteção da conta</span>
+
+              <h1>Segurança</h1>
+
+              <p>
+                Altere sua senha de acesso.
+              </p>
+
+            </div>
+
+          </div>
+
+          <form
+            id="passwordForm"
+            class="account-form account-panel"
+          >
+
+            <div class="account-form-grid">
+
+              <label class="full">
+
+                Nova senha
+
+                <input
+                  id="newPassword"
+                  type="password"
+                  minlength="6"
+                  required
+                >
+
+              </label>
+
+              <label class="full">
+
+                Confirmar nova senha
+
+                <input
+                  id="confirmNewPassword"
+                  type="password"
+                  minlength="6"
+                  required
+                >
+
+              </label>
+
+            </div>
+
+            <div class="account-form-actions">
+
+              <button
+                id="savePasswordButton"
+                class="account-primary-button"
+                type="submit"
+              >
+                Alterar senha
+              </button>
+
+            </div>
+
+          </form>
+
+        </section>
+
+      </section>
+
+    </main>
+
+  </div>
+
+    <!-- MODAL DE ENDEREÇO -->
+  <div
+    id="addressModal"
+    class="account-modal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="account-modal-overlay"
+      data-close-address-modal
+    ></div>
+
+    <div class="account-modal-card">
+
+      <button
+        class="account-modal-close"
+        type="button"
+        data-close-address-modal
+      >
+        ×
+      </button>
+
+      <div class="account-modal-header">
+        <span>Entrega</span>
+        <h2 id="addressModalTitle">Novo endereço</h2>
+      </div>
+
+      <form
+        id="addressForm"
+        class="account-form"
+      >
+
+        <input
+          id="addressId"
+          type="hidden"
+        >
+
+        <div class="account-form-grid">
+
+          <label>
+            Identificação
+
+            <input
+              id="addressLabel"
+              type="text"
+              placeholder="Casa, Trabalho..."
+              required
+            >
+          </label>
+
+          <label>
+            CEP
+
+            <input
+              id="addressZip"
+              type="text"
+              maxlength="9"
+              placeholder="00000-000"
+              required
+            >
+          </label>
+
+          <label class="full">
+            Nome do destinatário
+
+            <input
+              id="addressRecipient"
+              type="text"
+              required
+            >
+          </label>
+
+          <label>
+            Telefone
+
+            <input
+              id="addressPhone"
+              type="tel"
+              maxlength="15"
+              placeholder="(11) 99999-9999"
+              required
+            >
+          </label>
+
+          <label>
+            Número
+
+            <input
+              id="addressNumber"
+              type="text"
+              placeholder="123"
+              required
+            >
+          </label>
+
+          <label class="full">
+            Rua
+
+            <input
+              id="addressStreet"
+              type="text"
+              required
+            >
+          </label>
+
+          <label>
+            Bairro
+
+            <input
+              id="addressNeighborhood"
+              type="text"
+              required
+            >
+          </label>
+
+          <label>
+            Complemento
+
+            <input
+              id="addressComplement"
+              type="text"
+              placeholder="Apto, bloco..."
+            >
+          </label>
+
+          <label>
+            Cidade
+
+            <input
+              id="addressCity"
+              type="text"
+              required
+            >
+          </label>
+
+          <label>
+            Estado
+
+            <input
+              id="addressState"
+              type="text"
+              maxlength="2"
+              placeholder="SP"
+              required
+            >
+          </label>
+
+          <label class="account-checkbox full">
+
+            <input
+              id="addressDefault"
+              type="checkbox"
+            >
+
+            <span>
+              Usar como endereço padrão
+            </span>
+
+          </label>
+
+        </div>
+
+        <div class="account-form-actions">
+
+          <button
+            class="account-secondary-button"
+            type="button"
+            data-close-address-modal
+          >
+            Cancelar
+          </button>
+
+          <button
+            id="saveAddressButton"
+            class="account-primary-button"
+            type="submit"
+          >
+            Salvar endereço
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL DO PEDIDO -->
+  <div
+    id="orderModal"
+    class="account-modal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="account-modal-overlay"
+      data-close-order-modal
+    ></div>
+
+    <div
+      class="account-modal-card account-order-modal-card"
+    >
+
+      <button
+        class="account-modal-close"
+        type="button"
+        data-close-order-modal
+      >
+        ×
+      </button>
+
+      <div id="orderModalContent"></div>
+
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="../js/supabase-config.js?v=2"></script>
+
+  <script src="../js/account/common.js?v=2"></script>
+  <script src="../js/account/account.js?v=2"></script>
+  <script src="../js/account/orders.js?v=2"></script>
+  <script src="../js/account/addresses.js?v=2"></script>
+  <script src="../js/account/profile.js?v=2"></script>
+  <script src="../js/account/security.js?v=2"></script>
+
+</body>
+</html>
