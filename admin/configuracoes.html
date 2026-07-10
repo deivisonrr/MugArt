@@ -1,1 +1,349 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>MugArt Admin | Configurações</title>
+
+  <link
+    rel="icon"
+    href="../assets/favicon.ico"
+    sizes="any"
+  />
+
+  <link
+    rel="shortcut icon"
+    href="../assets/favicon.ico"
+    type="image/x-icon"
+  />
+
+  <link
+    rel="stylesheet"
+    href="css/admin.css"
+  />
+</head>
+
+<body class="admin-body">
+
+  <aside class="admin-sidebar">
+
+    <a
+      class="admin-brand"
+      href="dashboard.html"
+    >
+      <img
+        src="../assets/logo.png"
+        alt="MugArt"
+      />
+    </a>
+
+    <nav>
+      <a href="dashboard.html">
+        Dashboard
+      </a>
+
+      <a href="produtos.html">
+        Produtos
+      </a>
+
+      <a href="categorias.html">
+        Categorias
+      </a>
+
+      <a href="pedidos.html">
+        Pedidos
+      </a>
+
+      <a
+        class="active"
+        href="configuracoes.html"
+      >
+        Configurações
+      </a>
+
+      <a href="../loja.html">
+        Ver Loja
+      </a>
+    </nav>
+
+    <button
+      id="logoutBtn"
+      class="logout-btn"
+      type="button"
+    >
+      Sair
+    </button>
+
+  </aside>
+
+  <main class="admin-main">
+
+    <header class="admin-header">
+
+      <div>
+        <p class="eyebrow">
+          Integrações
+        </p>
+
+        <h1>
+          Configurações
+        </h1>
+
+        <p class="admin-page-description">
+          Configure o Google Tag Manager e o Google Analytics
+          utilizados em todas as páginas da MugArt.
+        </p>
+      </div>
+
+    </header>
+
+    <section class="analytics-info-card">
+
+      <div class="analytics-info-icon">
+        GTM
+      </div>
+
+      <div>
+        <h2>
+          Rastreamento global
+        </h2>
+
+        <p>
+          As configurações salvas aqui serão consultadas
+          automaticamente pelo arquivo
+          <strong>analytics-loader.js</strong>.
+        </p>
+
+        <p>
+          Para evitar eventos duplicados, prefira configurar o
+          GA4 dentro do Google Tag Manager.
+        </p>
+      </div>
+
+    </section>
+
+    <form
+      id="analyticsSettingsForm"
+      class="analytics-settings-form"
+    >
+
+      <section class="admin-panel analytics-integration-card">
+
+        <div class="panel-head analytics-panel-head">
+
+          <div>
+            <p class="eyebrow">
+              Google
+            </p>
+
+            <h2>
+              Google Tag Manager
+            </h2>
+          </div>
+
+          <span
+            id="gtmIntegrationStatus"
+            class="integration-status inactive"
+          >
+            Inativo
+          </span>
+
+        </div>
+
+        <div class="analytics-form-grid">
+
+          <label class="analytics-field">
+
+            <span>
+              ID do Google Tag Manager
+            </span>
+
+            <input
+              id="googleTagManagerId"
+              name="googleTagManagerId"
+              type="text"
+              placeholder="GTM-XXXXXXX"
+              autocomplete="off"
+              spellcheck="false"
+            />
+
+            <small>
+              Informe o código do contêiner no formato
+              GTM-XXXXXXX.
+            </small>
+
+          </label>
+
+          <label class="analytics-switch-field">
+
+            <div>
+              <strong>
+                Ativar Google Tag Manager
+              </strong>
+
+              <small>
+                Quando ativado, o contêiner será carregado nas
+                páginas que usam o analytics-loader.js.
+              </small>
+            </div>
+
+            <span class="admin-switch">
+
+              <input
+                id="googleTagManagerActive"
+                name="googleTagManagerActive"
+                type="checkbox"
+              />
+
+              <span class="admin-switch-slider"></span>
+
+            </span>
+
+          </label>
+
+        </div>
+
+      </section>
+
+      <section class="admin-panel analytics-integration-card">
+
+        <div class="panel-head analytics-panel-head">
+
+          <div>
+            <p class="eyebrow">
+              Google
+            </p>
+
+            <h2>
+              Google Analytics 4
+            </h2>
+          </div>
+
+          <span
+            id="ga4IntegrationStatus"
+            class="integration-status inactive"
+          >
+            Inativo
+          </span>
+
+        </div>
+
+        <div class="analytics-form-grid">
+
+          <label class="analytics-field">
+
+            <span>
+              ID de métricas do GA4
+            </span>
+
+            <input
+              id="googleAnalyticsId"
+              name="googleAnalyticsId"
+              type="text"
+              placeholder="G-XXXXXXXXXX"
+              autocomplete="off"
+              spellcheck="false"
+            />
+
+            <small>
+              Informe o código da propriedade no formato
+              G-XXXXXXXXXX.
+            </small>
+
+          </label>
+
+          <label class="analytics-switch-field">
+
+            <div>
+              <strong>
+                Ativar Google Analytics diretamente
+              </strong>
+
+              <small>
+                Deixe desativado caso o GA4 já esteja configurado
+                dentro do Google Tag Manager.
+              </small>
+            </div>
+
+            <span class="admin-switch">
+
+              <input
+                id="googleAnalyticsActive"
+                name="googleAnalyticsActive"
+                type="checkbox"
+              />
+
+              <span class="admin-switch-slider"></span>
+
+            </span>
+
+          </label>
+
+        </div>
+
+      </section>
+
+      <section class="admin-panel analytics-warning-card">
+
+        <div class="analytics-warning-icon">
+          !
+        </div>
+
+        <div>
+          <h3>
+            Atenção à duplicidade
+          </h3>
+
+          <p>
+            Se o GA4 estiver configurado dentro do Google Tag
+            Manager, mantenha a integração direta do Google
+            Analytics desativada.
+          </p>
+
+          <p>
+            Ativar as duas formas pode gerar duas visualizações
+            de página para o mesmo acesso.
+          </p>
+        </div>
+
+      </section>
+
+      <div class="analytics-settings-actions">
+
+        <div
+          id="analyticsSettingsStatus"
+          class="settings-status"
+          role="status"
+          aria-live="polite"
+        >
+          Aguardando carregamento...
+        </div>
+
+        <button
+          id="saveAnalyticsSettings"
+          class="admin-action analytics-save-button"
+          type="submit"
+        >
+          Salvar configurações
+        </button>
+
+      </div>
+
+    </form>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="js/supabase-config.js"></script>
+
+  <script src="js/admin.js"></script>
+
+</body>
+</html>
