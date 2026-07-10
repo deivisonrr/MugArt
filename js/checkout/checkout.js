@@ -1201,7 +1201,10 @@ async function finishOrder(e) {
 
     const customerPayload = {
         name: qs("#customerName").value.trim(),
-        email: qs("#customerEmail").value.trim(),
+        email: qs("#customerEmail")
+            .value
+            .trim()
+            .toLowerCase(),
         phone: qs("#customerPhone").value.trim(),
         cpf_cnpj: qs("#customerDocument").value.trim(),
         zip: qs("#shippingZip").value.trim(),
