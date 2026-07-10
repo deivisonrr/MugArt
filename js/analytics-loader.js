@@ -12,7 +12,7 @@
         return;
       }
 
-      const { data, error } = await window.supabaseClient
+      const { data, error } = await supabase
         .from("site_settings")
         .select("setting_key, setting_value, is_active")
         .in("setting_key", [
