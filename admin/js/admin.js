@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("#productForm")) initProductsPage();
   if ($("#categoryForm")) initCategoriesPage();
   if ($("#ordersTable")) initOrdersPage();
+  if ($("#analyticsSettingsForm")) initAnalyticsSettingsPage();
 });
 
 /* LOGIN TEMPORÁRIO */
@@ -667,3 +668,280 @@ window.deleteOrder = async function(id) {
 
   await renderOrdersTable();
 };
+
+/* ==========================
+   CONFIGURAÇÕES DE ANALYTICS
+========================== */
+
+async function initAnalyticsSettingsPage() {
+  await loadAnalyticsSettings();
+
+  const form = $("#analyticsSettingsForm");
+
+  if (!form) return;
+
+  form.addEventListener("submit", saveAnalyticsSettings);
+}
+
+async function loadAnalyticsSettings() {
+  const gtmIdInput = $("#googleTagManagerId");
+  const ga4IdInput = $("#googleAnalyticsId");
+  const gtmActiveInput = $("#googleTagManagerActive");
+  const ga4ActiveInput = $("#googleAnalyticsActive");
+  const statusElement = $("#analyticsSettingsStatus");
+
+  if (
+    !gtmIdInput ||
+    !ga4IdInput ||
+    !gtmActiveInput ||
+    !ga4ActiveInput
+  ) {
+    return;
+  }
+
+  if (statusElement) {
+    statusElement.textContent = "Carregando configurações...";
+    statusElement.className = "settings-status loading";
+  }
+
+  const result = await mugartSupabase
+    .from("site_settings")
+    .select("setting_key, setting_value, is_active")
+    .in("setting_key", [
+      "google_tag_manager_id",
+      "google_analytics_id"
+    ]);
+
+  if (result.error) {
+    console.error(
+      "Erro ao carregar configurações de Analytics:",
+      result.error
+    );
+
+    if (statusElement) {
+      statusElement.textContent =
+        "Não foi possível carregar as configurações.";
+
+      statusElement.className = "settings-status error";
+    }
+
+    return;
+  }
+
+  const settings = {};
+
+  for (const item of result.data || []) {
+    settings[item.setting_key] = item;
+  }
+
+  const gtmSetting = settings.google_tag_manager_id;
+  const ga4Setting = settings.google_analytics_id;
+
+  gtmIdInput.value = gtmSetting?.setting_value || "";
+  ga4IdInput.value = ga4Setting?.setting_value || "";
+
+  gtmActiveInput.checked = gtmSetting?.is_active === true;
+  ga4ActiveInput.checked = ga4Setting?.is_active === true;
+
+  updateAnalyticsStatusCards();
+
+  if (statusElement) {
+    statusElement.textContent = "Configurações carregadas.";
+    statusElement.className = "settings-status success";
+  }
+}
+
+async function saveAnalyticsSettings(event) {
+  event.preventDefault();
+
+  const gtmId = $("#googleTagManagerId")
+    .value
+    .trim()
+    .toUpperCase();
+
+  const ga4Id = $("#googleAnalyticsId")
+    .value
+    .trim()
+    .toUpperCase();
+
+  const gtmActive = $("#googleTagManagerActive").checked;
+  const ga4Active = $("#googleAnalyticsActive").checked;
+
+  const saveButton = $("#saveAnalyticsSettings");
+  const statusElement = $("#analyticsSettingsStatus");
+
+  if (gtmId && !validateGtmId(gtmId)) {
+    alert(
+      "O ID do Google Tag Manager deve seguir o formato GTM-XXXXXXX."
+    );
+
+    $("#googleTagManagerId").focus();
+    return;
+  }
+
+  if (ga4Id && !validateGa4Id(ga4Id)) {
+    alert(
+      "O ID do Google Analytics deve seguir o formato G-XXXXXXXXXX."
+    );
+
+    $("#googleAnalyticsId").focus();
+    return;
+  }
+
+  if (gtmActive && !gtmId) {
+    alert(
+      "Informe o ID do Google Tag Manager antes de ativá-lo."
+    );
+
+    $("#googleTagManagerId").focus();
+    return;
+  }
+
+  if (ga4Active && !ga4Id) {
+    alert(
+      "Informe o ID do Google Analytics antes de ativá-lo."
+    );
+
+    $("#googleAnalyticsId").focus();
+    return;
+  }
+
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent = "Salvando...";
+  }
+
+  if (statusElement) {
+    statusElement.textContent = "Salvando configurações...";
+    statusElement.className = "settings-status loading";
+  }
+
+  const settings = [
+    {
+      setting_key: "google_tag_manager_id",
+      setting_value: gtmId,
+      is_active: gtmActive,
+      updated_at: new Date().toISOString()
+    },
+    {
+      setting_key: "google_analytics_id",
+      setting_value: ga4Id,
+      is_active: ga4Active,
+      updated_at: new Date().toISOString()
+    }
+  ];
+
+  const result = await mugartSupabase
+    .from("site_settings")
+    .upsert(settings, {
+      onConflict: "setting_key"
+    });
+
+  if (saveButton) {
+    saveButton.disabled = false;
+    saveButton.textContent = "Salvar configurações";
+  }
+
+  if (result.error) {
+    console.error(
+      "Erro ao salvar configurações de Analytics:",
+      result.error
+    );
+
+    if (statusElement) {
+      statusElement.textContent =
+        "Erro ao salvar as configurações.";
+
+      statusElement.className = "settings-status error";
+    }
+
+    alert(
+      "Erro ao salvar configurações: " +
+      result.error.message
+    );
+
+    return;
+  }
+
+  updateAnalyticsStatusCards();
+
+  if (statusElement) {
+    statusElement.textContent =
+      "Configurações salvas com sucesso.";
+
+    statusElement.className = "settings-status success";
+  }
+
+  alert(
+    "Configurações de Google Tag Manager e Google Analytics salvas."
+  );
+}
+
+function validateGtmId(value) {
+  if (!value) return true;
+
+  return /^GTM-[A-Z0-9]+$/i.test(value);
+}
+
+function validateGa4Id(value) {
+  if (!value) return true;
+
+  return /^G-[A-Z0-9]+$/i.test(value);
+}
+
+function updateAnalyticsStatusCards() {
+  const gtmId = $("#googleTagManagerId")?.value.trim();
+  const ga4Id = $("#googleAnalyticsId")?.value.trim();
+
+  const gtmActive = $("#googleTagManagerActive")?.checked;
+  const ga4Active = $("#googleAnalyticsActive")?.checked;
+
+  updateIntegrationStatus(
+    "#gtmIntegrationStatus",
+    gtmActive,
+    gtmId
+  );
+
+  updateIntegrationStatus(
+    "#ga4IntegrationStatus",
+    ga4Active,
+    ga4Id
+  );
+}
+
+function updateIntegrationStatus(
+  selector,
+  isActive,
+  integrationId
+) {
+  const element = $(selector);
+
+  if (!element) return;
+
+  if (isActive && integrationId) {
+    element.textContent = "Ativo";
+    element.className = "integration-status active";
+    return;
+  }
+
+  element.textContent = "Inativo";
+  element.className = "integration-status inactive";
+}
+
+document.addEventListener("change", (event) => {
+  if (
+    event.target.matches("#googleTagManagerActive") ||
+    event.target.matches("#googleAnalyticsActive")
+  ) {
+    updateAnalyticsStatusCards();
+  }
+});
+
+document.addEventListener("input", (event) => {
+  if (
+    event.target.matches("#googleTagManagerId") ||
+    event.target.matches("#googleAnalyticsId")
+  ) {
+    updateAnalyticsStatusCards();
+  }
+});
