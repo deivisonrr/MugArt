@@ -980,116 +980,127 @@ async function searchCep() {
 }
 
 async function calculateShipping() {
-
-    const cep = onlyNumbers(qs("#shippingZip").value);
+    const cep = onlyNumbers(qs("#shippingZip")?.value || "");
 
     if (cep.length !== 8) return;
 
     const shippingOptions = qs("#shippingOptions");
     const shippingLoading = qs("#shippingLoading");
 
+    if (!shippingOptions || !shippingLoading) return;
+
     shippingLoading.style.display = "block";
     shippingOptions.innerHTML = "";
 
     const items = getCartItems();
+    const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
 
-    const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
-
-    const { data, error } = await mugartSupabase.functions.invoke(
-        "calculate-shipping",
-        {
-            body: {
-                to_zip: cep,
-                quantity: items.reduce((s, i) => s + i.quantity, 0),
-                insurance_value: subtotal
+    try {
+        const { data, error } = await mugartSupabase.functions.invoke(
+            "calculate-shipping",
+            {
+                body: {
+                    to_zip: cep,
+                    quantity: items.reduce(
+                        (sum, item) => sum + item.quantity,
+                        0
+                    ),
+                    insurance_value: subtotal
+                }
             }
+        );
+
+        if (
+            error ||
+            !data?.success ||
+            !Array.isArray(data.options) ||
+            !data.options.length
+        ) {
+            console.error("Erro ao calcular frete:", error || data);
+
+            shippingOptions.innerHTML =
+                "<p>Não foi possível calcular o frete.</p>";
+
+            CheckoutState.shipping = 0;
+            CheckoutState.selectedShipping = "";
+            CheckoutState.selectedShippingCompany = "";
+            CheckoutState.selectedShippingService = "";
+            CheckoutState.selectedShippingDeliveryTime = 0;
+
+            renderSummary();
+            saveDraft();
+            return;
         }
-    );
 
-    shippingLoading.style.display = "none";
+        shippingOptions.innerHTML = "";
 
-    if (error || !data.success) {
+        data.options.forEach((option, index) => {
+            const label = document.createElement("label");
+
+            label.className =
+                "option-card" + (index === 0 ? " active" : "");
+
+            label.innerHTML = `
+                <input
+                    type="radio"
+                    name="shippingMethod"
+                    value="${option.id}"
+                    data-price="${option.price}"
+                    ${index === 0 ? "checked" : ""}
+                >
+
+                <div>
+                    <strong>${option.company}</strong>
+                    <span>${option.name}</span>
+                    <small>${option.delivery_time} dias úteis</small>
+                </div>
+
+                <b>${money(option.price)}</b>
+            `;
+
+            const input = label.querySelector("input");
+
+            input?.addEventListener("change", () => {
+                CheckoutState.selectedShipping = option.id;
+                CheckoutState.selectedShippingCompany = option.company || "";
+                CheckoutState.selectedShippingService = option.name || "";
+                CheckoutState.selectedShippingDeliveryTime =
+                    Number(option.delivery_time || 0);
+                CheckoutState.shipping = Number(option.price || 0);
+
+                updateOptionCards();
+                renderSummary();
+                saveDraft();
+            });
+
+            shippingOptions.appendChild(label);
+        });
+
+        const primeiraOpcao = data.options[0];
+
+        CheckoutState.selectedShipping = primeiraOpcao.id;
+        CheckoutState.selectedShippingCompany = primeiraOpcao.company || "";
+        CheckoutState.selectedShippingService = primeiraOpcao.name || "";
+        CheckoutState.selectedShippingDeliveryTime =
+            Number(primeiraOpcao.delivery_time || 0);
+        CheckoutState.shipping = Number(primeiraOpcao.price || 0);
+
+        updateOptionCards();
+        renderSummary();
+        saveDraft();
+
+    } catch (error) {
+        console.error("Erro inesperado ao calcular frete:", error);
 
         shippingOptions.innerHTML =
             "<p>Não foi possível calcular o frete.</p>";
 
-        return;
+        CheckoutState.shipping = 0;
+        renderSummary();
+
+    } finally {
+        shippingLoading.style.display = "none";
     }
-
-    shippingOptions.innerHTML = "";
-
-    data.options.forEach((option, index) => {
-
-        const label = document.createElement("label");
-
-        label.className =
-            "option-card" + (index == 0 ? " active" : "");
-
-        label.innerHTML = `
-            <input
-                type="radio"
-                name="shippingMethod"
-                value="${option.id}"
-                data-price="${option.price}"
-                ${index == 0 ? "checked" : ""}
-            >
-
-            <div>
-
-                <strong>${option.company}</strong>
-
-                <span>${option.name}</span>
-
-                <small>
-                    ${option.delivery_time} dias úteis
-                </small>
-
-            </div>
-
-            <b>${money(option.price)}</b>
-        `;
-
-       label.querySelector("input").addEventListener("change", () => {
-
-                CheckoutState.selectedShipping = option.id;
-                CheckoutState.selectedShippingCompany = option.company;
-                CheckoutState.selectedShippingService = option.name;
-                CheckoutState.selectedShippingDeliveryTime = option.delivery_time;
-               const primeiraOpcao = data.options[0];
-               if (primeiraOpcao) {
-                    CheckoutState.selectedShipping =
-                        primeiraOpcao.id;
-                
-                    CheckoutState.selectedShippingCompany =
-                        primeiraOpcao.company || "";
-                
-                    CheckoutState.selectedShippingService =
-                        primeiraOpcao.name || "";
-                
-                    CheckoutState.selectedShippingDeliveryTime =
-                        Number(primeiraOpcao.delivery_time || 0);
-                
-                    CheckoutState.shipping =
-                        Number(primeiraOpcao.price || 0);
-                }
-                
-                updateOptionCards();
-                renderSummary();
-                saveDraft();
-            
-            });
-
-        shippingOptions.appendChild(label);
-
-    });
-
-    CheckoutState.shipping =
-        Number(data.options[0].price);
-
-    renderSummary();
-
-    saveDraft();
-
 }
 async function iniciarPagamentoMercadoPago(order) {
     const paymentItems = (order.items || []).map(
@@ -1183,257 +1194,7 @@ async function iniciarPagamentoMercadoPago(order) {
         data.init_point;
 }
 
-async function obterOuCriarCliente(customerPayload) {
-    const emailNormalizado = String(customerPayload.email || "")
-        .trim()
-        .toLowerCase();
 
-    const payloadAtualizado = {
-        ...customerPayload,
-        email: emailNormalizado
-    };
-
-    /*
-     * Verifica se existe usuário autenticado.
-     */
-    const {
-        data: sessionData,
-        error: sessionError
-    } = await mugartSupabase.auth.getSession();
-
-    if (sessionError) {
-        console.error(
-            "Erro ao verificar sessão no checkout:",
-            sessionError
-        );
-    }
-
-    const usuario = sessionData?.session?.user || null;
-
-    /*
-     * 1. Usuário está logado:
-     * procura primeiro pelo auth_user_id.
-     */
-    if (usuario) {
-        const {
-            data: clienteAutenticado,
-            error: erroClienteAutenticado
-        } = await mugartSupabase
-            .from("customers")
-            .select("*")
-            .eq("auth_user_id", usuario.id)
-            .maybeSingle();
-
-        if (erroClienteAutenticado) {
-            console.error(
-                "Erro ao buscar cliente autenticado:",
-                erroClienteAutenticado
-            );
-
-            throw new Error(
-                "Não foi possível localizar sua conta de cliente."
-            );
-        }
-
-        /*
-         * Cliente da conta já existe:
-         * apenas atualiza os dados informados no checkout.
-         */
-        if (clienteAutenticado) {
-            const {
-                data: clienteAtualizado,
-                error: erroAtualizacao
-            } = await mugartSupabase
-                .from("customers")
-                .update(payloadAtualizado)
-                .eq("id", clienteAutenticado.id)
-                .select()
-                .single();
-
-            if (erroAtualizacao) {
-                console.error(
-                    "Erro ao atualizar cliente:",
-                    erroAtualizacao
-                );
-
-                throw new Error(
-                    "Não foi possível atualizar seus dados."
-                );
-            }
-
-            return clienteAtualizado;
-        }
-
-        /*
-         * Não encontrou pelo auth_user_id.
-         * Procura um cadastro antigo pelo e-mail.
-         */
-        const {
-            data: clientesMesmoEmail,
-            error: erroBuscaEmail
-        } = await mugartSupabase
-            .from("customers")
-            .select("*")
-            .eq("email", emailNormalizado)
-            .limit(10);
-
-        if (erroBuscaEmail) {
-            console.error(
-                "Erro ao buscar cliente pelo e-mail:",
-                erroBuscaEmail
-            );
-
-            throw new Error(
-                "Não foi possível consultar seu cadastro."
-            );
-        }
-
-        /*
-         * Só vincula um cadastro pelo e-mail quando ele ainda
-         * não pertence a outro usuário autenticado.
-         */
-        const clienteSemVinculo = (clientesMesmoEmail || []).find(
-            cliente => !cliente.auth_user_id
-        );
-
-        if (clienteSemVinculo) {
-            const {
-                data: clienteVinculado,
-                error: erroVinculo
-            } = await mugartSupabase
-                .from("customers")
-                .update({
-                    ...payloadAtualizado,
-                    auth_user_id: usuario.id
-                })
-                .eq("id", clienteSemVinculo.id)
-                .select()
-                .single();
-
-            if (erroVinculo) {
-                console.error(
-                    "Erro ao vincular cliente à conta:",
-                    erroVinculo
-                );
-
-                throw new Error(
-                    "Não foi possível vincular seu cadastro."
-                );
-            }
-
-            return clienteVinculado;
-        }
-
-        /*
-         * Nenhum cliente utilizável foi encontrado.
-         * Cria um novo já ligado à conta autenticada.
-         */
-        const {
-            data: novoCliente,
-            error: erroCriacao
-        } = await mugartSupabase
-            .from("customers")
-            .insert({
-                ...payloadAtualizado,
-                auth_user_id: usuario.id
-            })
-            .select()
-            .single();
-
-        if (erroCriacao) {
-            console.error(
-                "Erro ao criar cliente autenticado:",
-                erroCriacao
-            );
-
-            throw new Error(
-                "Não foi possível criar seu cadastro de cliente."
-            );
-        }
-
-        return novoCliente;
-    }
-
-    /*
-     * 2. Compra sem login:
-     * procura um cliente já existente pelo e-mail.
-     */
-    const {
-        data: clientesPorEmail,
-        error: erroClientePorEmail
-    } = await mugartSupabase
-        .from("customers")
-        .select("*")
-        .eq("email", emailNormalizado)
-        .limit(1);
-
-    if (erroClientePorEmail) {
-        console.error(
-            "Erro ao buscar cliente visitante:",
-            erroClientePorEmail
-        );
-
-        throw new Error(
-            "Não foi possível consultar os dados do cliente."
-        );
-    }
-
-    const clienteExistente = clientesPorEmail?.[0];
-
-    /*
-     * Se já existe, atualiza e reutiliza.
-     */
-    if (clienteExistente) {
-        const {
-            data: clienteAtualizado,
-            error: erroAtualizacaoVisitante
-        } = await mugartSupabase
-            .from("customers")
-            .update(payloadAtualizado)
-            .eq("id", clienteExistente.id)
-            .select()
-            .single();
-
-        if (erroAtualizacaoVisitante) {
-            console.error(
-                "Erro ao atualizar cliente visitante:",
-                erroAtualizacaoVisitante
-            );
-
-            throw new Error(
-                "Não foi possível atualizar os dados do cliente."
-            );
-        }
-
-        return clienteAtualizado;
-    }
-
-    /*
-     * Não existe cliente com esse e-mail:
-     * cria um novo cadastro.
-     */
-    const {
-        data: novoClienteVisitante,
-        error: erroNovoVisitante
-    } = await mugartSupabase
-        .from("customers")
-        .insert(payloadAtualizado)
-        .select()
-        .single();
-
-    if (erroNovoVisitante) {
-        console.error(
-            "Erro ao criar cliente visitante:",
-            erroNovoVisitante
-        );
-
-        throw new Error(
-            "Não foi possível salvar os dados do cliente."
-        );
-    }
-
-    return novoClienteVisitante;
-}
 
 async function criarPedidoPelaEdgeFunction(payload) {
     const { data, error } =
@@ -1667,144 +1428,4 @@ async function finishOrder(e) {
                 originalButtonText;
         }
     }
-}
-
-    const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
-    const total = Math.max(0, subtotal - CheckoutState.discount + CheckoutState.shipping);
-
-    const customerPayload = {
-        name: qs("#customerName").value.trim(),
-        email: qs("#customerEmail")
-            .value
-            .trim()
-            .toLowerCase(),
-        phone: qs("#customerPhone").value.trim(),
-        cpf_cnpj: qs("#customerDocument").value.trim(),
-        zip: qs("#shippingZip").value.trim(),
-        address: qs("#shippingStreet").value.trim(),
-        city: qs("#shippingCity").value.trim(),
-        state: qs("#shippingState").value.trim()
-    };
-
-    let customer;
-
-        try {
-            customer = await obterOuCriarCliente(customerPayload);
-        } catch (error) {
-            console.error("Erro ao preparar cliente:", error);
-        
-            toast(
-                error.message ||
-                "Não foi possível preparar os dados do cliente."
-            );
-        
-            return;
-        }
-
-    const orderNumber = "MUG-" + Date.now();
-
-    const orderPayload = {
-        order_number: orderNumber,
-        customer_id: customer.id,
-        customer_name: customerPayload.name,
-        customer_email: customerPayload.email,
-        customer_phone: customerPayload.phone,
-        cpf_cnpj: customerPayload.cpf_cnpj,
-    
-        status: "pending",
-        production_status: "not_started",
-    
-        payment_method: CheckoutState.selectedPayment,
-        payment_status: "pending",
-    
-        shipping_status: "not_shipped",
-    
-        subtotal: subtotal,
-        discount: CheckoutState.discount,
-        shipping: CheckoutState.shipping,
-        shipping_method: CheckoutState.selectedShipping,
-        shipping_company: CheckoutState.selectedShippingCompany,
-        shipping_service: CheckoutState.selectedShippingService,
-        shipping_delivery_time: CheckoutState.selectedShippingDeliveryTime,
-    
-        total: total,
-    
-        coupon: CheckoutState.coupon,
-    
-        notes: "Pedido criado pelo Checkout 3.0"
-    };
-
-    const or = await mugartSupabase
-        .from("orders")
-        .insert(orderPayload)
-        .select()
-        .single();
-
-    if (or.error) {
-        console.error(or.error);
-        toast("Erro ao criar pedido.");
-        return;
-    }
-
-    const orderId = or.data.id;
-
-    const rows = items.map(i => ({
-        order_id: orderId,
-        product_id: i.product.id,
-        product_name: i.product.name,
-        sku: i.product.sku,
-        color: i.product.color,
-        image_url: i.product.image_url,
-        quantity: i.quantity,
-        unit_price: Number(i.product.price || 0),
-        discount: 0,
-        total: i.subtotal
-    }));
-
-    const ir = await mugartSupabase
-        .from("order_items")
-        .insert(rows);
-
-    if (ir.error) {
-        console.error(ir.error);
-        toast("Erro ao salvar itens.");
-        return;
-    }
-
-    await mugartSupabase.from("order_addresses").insert({
-        order_id: orderId,
-        recipient_name: customerPayload.name,
-        phone: customerPayload.phone,
-        zip: qs("#shippingZip").value.trim(),
-        street: qs("#shippingStreet").value.trim(),
-        number: qs("#shippingNumber").value.trim(),
-        complement: qs("#shippingComplement").value.trim(),
-        neighborhood: qs("#shippingNeighborhood").value.trim(),
-        city: qs("#shippingCity").value.trim(),
-        state: qs("#shippingState").value.trim(),
-        country: "Brasil"
-    });
-
-    await mugartSupabase.from("payments").insert({
-        order_id: orderId,
-        provider: "mercadopago",
-        method: CheckoutState.selectedPayment,
-        status: "pending",
-        amount: total
-    });
-
-    await mugartSupabase.from("order_history").insert({
-        order_id: orderId,
-        event_type: "created",
-        new_value: "pending",
-        note: "Pedido criado automaticamente pelo Checkout 3.0.",
-        created_by: "checkout"
-    });
-
-    await iniciarPagamentoMercadoPago({
-        id: orderId,
-        customer_name: customerPayload.name,
-        customer_email: customerPayload.email,
-        items: rows
-    });
 }
