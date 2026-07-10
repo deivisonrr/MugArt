@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Redefinir senha | MugArt</title>
+
+  <link rel="icon" href="../assets/favicon.ico">
+  <link rel="stylesheet" href="../css/account.css?v=7">
+</head>
+
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+
+      <img
+        src="../assets/logo.png"
+        class="auth-logo"
+        alt="MugArt"
+      >
+
+      <form id="newPasswordForm" class="auth-form">
+
+        <h2>Nova senha</h2>
+
+        <p>
+          Digite e confirme sua nova senha de acesso.
+        </p>
+
+        <div id="authMessage" class="auth-message"></div>
+
+        <div class="auth-field">
+          <label for="newPassword">Nova senha</label>
+
+          <input
+            id="newPassword"
+            type="password"
+            minlength="6"
+            autocomplete="new-password"
+            placeholder="Mínimo de 6 caracteres"
+            required
+          >
+        </div>
+
+        <div class="auth-field">
+          <label for="confirmPassword">Confirmar senha</label>
+
+          <input
+            id="confirmPassword"
+            type="password"
+            minlength="6"
+            autocomplete="new-password"
+            placeholder="Repita a nova senha"
+            required
+          >
+        </div>
+
+        <button id="savePasswordButton" type="submit">
+          Salvar nova senha
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js?v=3"></script>
+  <script src="../js/account/reset-password.js?v=1"></script>
+</body>
+</html>
