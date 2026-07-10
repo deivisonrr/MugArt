@@ -897,7 +897,6 @@ async function calculateShipping() {
     saveDraft();
 
 }
-
 async function iniciarPagamentoMercadoPago(order) {
     const paymentItems = (order.items || []).map(
         item => ({
