@@ -249,7 +249,8 @@ async function handleLogin(event) {
         .getElementById("loginPassword")
         .value;
 
-    const button = document.getElementById("loginButton");
+    const button =
+        document.getElementById("loginButton");
 
     if (!isValidEmail(email)) {
         showMessage("Digite um e-mail válido.");
@@ -257,55 +258,70 @@ async function handleLogin(event) {
     }
 
     if (password.length < 6) {
-        showMessage("A senha deve possuir pelo menos 6 caracteres.");
+        showMessage(
+            "A senha deve possuir pelo menos 6 caracteres."
+        );
         return;
     }
 
-    const { data, error } =
-    await mugartSupabase.auth.signInWithPassword({
-        email,
-        password
-    });
+    try {
+        setButtonLoading(button, true);
 
-if (error) {
-    console.error(
-        "Erro ao entrar:",
-        error
-    );
+        const { data, error } =
+            await mugartSupabase.auth
+                .signInWithPassword({
+                    email,
+                    password
+                });
 
-    AccountAuth.showMessage(
-        "E-mail ou senha inválidos.",
-        "error"
-    );
+        if (error) {
+            throw error;
+        }
 
-    return;
-}
+        if (!data?.session) {
+            throw new Error(
+                "Não foi possível iniciar sua sessão."
+            );
+        }
 
-const redirectParam =
-    new URLSearchParams(
-        window.location.search
-    ).get("redirect");
+        const redirectParam =
+            new URLSearchParams(
+                window.location.search
+            ).get("redirect");
 
-const savedRedirect =
-    localStorage.getItem(
-        "mugart_redirect_after_login"
-    );
+        const savedRedirect =
+            localStorage.getItem(
+                "mugart_redirect_after_login"
+            );
 
-const destino =
-    redirectParam ||
-    savedRedirect ||
-    "minha-conta.html";
+        const destino =
+            redirectParam ||
+            savedRedirect ||
+            "minha-conta.html";
 
-localStorage.removeItem(
-    "mugart_redirect_after_login"
-);
+        localStorage.removeItem(
+            "mugart_redirect_after_login"
+        );
 
-window.location.href = destino;
-        }, 500);
+        showMessage(
+            "Login realizado com sucesso.",
+            "success"
+        );
+
+        setTimeout(() => {
+            window.location.href = destino;
+        }, 400);
 
     } catch (error) {
-        console.error("Erro no login:", error);
-        showMessage(getErrorMessage(error));
+        console.error(
+            "Erro no login:",
+            error
+        );
+
+        showMessage(
+            getErrorMessage(error),
+            "error"
+        );
 
     } finally {
         setButtonLoading(button, false);
