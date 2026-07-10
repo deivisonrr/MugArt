@@ -1,7 +1,18 @@
 /* ==========================================================
    MugArt - Área do Cliente
-   account.js
+   common.js
 ========================================================== */
+
+window.Account = {
+    session: null,
+    user: null,
+    customer: null,
+    orders: [],
+    addresses: [],
+    currentSection: "dashboard"
+};
+
+const Account = window.Account;
 
 document.addEventListener("DOMContentLoaded", async () => {
     const loading = document.getElementById("accountLoading");
