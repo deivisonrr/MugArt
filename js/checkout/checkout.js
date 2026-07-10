@@ -253,16 +253,126 @@ function validarEndereco() {
     return ok;
 }
 
+async function preencherClienteLogadoNoCheckout() {
+    if (!window.mugartSupabase) {
+        return false;
+    }
+
+    const {
+        data: sessionData,
+        error: sessionError
+    } = await mugartSupabase.auth.getSession();
+
+    if (sessionError) {
+        console.error(
+            "Erro ao verificar sessão no checkout:",
+            sessionError
+        );
+
+        return false;
+    }
+
+    const user = sessionData?.session?.user;
+
+    if (!user) {
+        return false;
+    }
+
+    const {
+        data: customer,
+        error: customerError
+    } = await mugartSupabase
+        .from("customers")
+        .select(`
+            id,
+            name,
+            email,
+            phone,
+            document,
+            cpf_cnpj,
+            zip,
+            address,
+            city,
+            state
+        `)
+        .eq("auth_user_id", user.id)
+        .maybeSingle();
+
+    if (customerError) {
+        console.error(
+            "Erro ao carregar cliente no checkout:",
+            customerError
+        );
+
+        return false;
+    }
+
+    if (!customer) {
+        return false;
+    }
+
+    const nameInput = qs("#customerName");
+    const phoneInput = qs("#customerPhone");
+    const emailInput = qs("#customerEmail");
+    const documentInput = qs("#customerDocument");
+
+    if (nameInput) {
+        nameInput.value = customer.name || "";
+    }
+
+    if (phoneInput) {
+        phoneInput.value = formatPhone(
+            customer.phone || ""
+        );
+    }
+
+    if (emailInput) {
+        emailInput.value =
+            customer.email ||
+            user.email ||
+            "";
+
+        emailInput.readOnly = true;
+        emailInput.classList.add("checkout-readonly");
+        emailInput.title =
+            "O e-mail está vinculado à sua conta.";
+    }
+
+    if (documentInput) {
+        documentInput.value = formatCpfCnpj(
+            customer.cpf_cnpj ||
+            customer.document ||
+            ""
+        );
+    }
+
+    saveDraft();
+    updateProgress();
+
+    return true;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
-    CheckoutState.cart = loadStorage(CHECKOUT_KEYS.cart, []);
+    CheckoutState.cart = loadStorage(
+        CHECKOUT_KEYS.cart,
+        []
+    );
 
     await loadProducts();
 
     restoreDraft();
+
+    const clientePreenchido =
+        await preencherClienteLogadoNoCheckout();
+
     bindEvents();
     renderCheckout();
 
-    if (CheckoutState.cart.length) {
+    if (clientePreenchido) {
+        toast(
+            "Seus dados foram preenchidos automaticamente."
+        );
+    } else if (CheckoutState.cart.length) {
         toast("Seu carrinho foi carregado.");
     }
 });
