@@ -12,119 +12,233 @@ var Account = window.Account = {
     currentSection: "dashboard"
 };
 
-const Account = window.Account;
+/* ==========================================================
+   Mensagens
+========================================================== */
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const loading = document.getElementById("accountLoading");
-    const app = document.getElementById("accountApp");
+Account.showMessage = function (message, type = "success") {
+    const box = document.getElementById("accountMessage");
 
-    try {
-        if (!window.mugartSupabase) {
-            throw new Error("Supabase não carregou.");
-        }
+    if (!box) return;
 
-        const hasSession = await Account.loadSession();
+    box.className = `account-message ${type}`;
+    box.textContent = message;
+    box.style.display = "block";
 
-        if (!hasSession) return;
+    clearTimeout(box.timer);
 
-        const hasCustomer = await Account.loadCustomer();
+    box.timer = setTimeout(() => {
+        box.style.display = "none";
+    }, 4000);
+};
 
-        if (!hasCustomer) return;
+/* ==========================================================
+   Funções auxiliares
+========================================================== */
 
-        Account.updateHeader();
-        bindAccountNavigation();
-        bindAccountActions();
+Account.onlyNumbers = function (value) {
+    return String(value || "").replace(/\D/g, "");
+};
 
-        if (typeof Account.loadOrders === "function") {
-            await Account.loadOrders();
-        }
+Account.formatMoney = function (value) {
+    return Number(value || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    });
+};
 
-        if (typeof Account.loadAddresses === "function") {
-            await Account.loadAddresses();
-        }
+Account.formatDate = function (date) {
+    if (!date) return "-";
 
-        if (typeof Account.fillProfileForm === "function") {
-            Account.fillProfileForm();
-        }
+    return new Date(date).toLocaleDateString("pt-BR");
+};
 
-        Account.openSection("dashboard");
+Account.firstName = function () {
+    const name = String(Account.customer?.name || "").trim();
 
-        loading?.classList.add("hidden");
-        app?.classList.remove("hidden");
+    return name ? name.split(" ")[0] : "";
+};
 
-    } catch (error) {
-        console.error("Erro ao inicializar a área do cliente:", error);
+/* ==========================================================
+   Sessão
+========================================================== */
 
-        if (loading) {
-            loading.innerHTML = `
-                <div class="account-empty-state">
-                    <span>⚠️</span>
-                    <h3>Não foi possível carregar sua conta</h3>
-                    <p>${error.message || "Tente novamente em instantes."}</p>
-                    <a href="login.html">Voltar ao login</a>
-                </div>
-            `;
-        }
+Account.loadSession = async function () {
+    const { data, error } =
+        await mugartSupabase.auth.getSession();
+
+    if (error) {
+        console.error("Erro ao carregar sessão:", error);
+        window.location.href = "login.html";
+        return false;
     }
-});
 
-function bindAccountNavigation() {
+    if (!data?.session) {
+        window.location.href = "login.html";
+        return false;
+    }
+
+    Account.session = data.session;
+    Account.user = data.session.user;
+
+    return true;
+};
+
+/* ==========================================================
+   Cliente
+========================================================== */
+
+Account.loadCustomer = async function () {
+    const { data, error } = await mugartSupabase
+        .from("customers")
+        .select("*")
+        .eq("auth_user_id", Account.user.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Erro ao carregar cliente:", error);
+
+        Account.showMessage(
+            "Não foi possível carregar seus dados.",
+            "error"
+        );
+
+        return false;
+    }
+
+    if (!data) {
+        Account.showMessage(
+            "Cadastro de cliente não encontrado.",
+            "error"
+        );
+
+        return false;
+    }
+
+    Account.customer = data;
+
+    return true;
+};
+
+/* ==========================================================
+   Cabeçalho
+========================================================== */
+
+Account.updateHeader = function () {
+    if (!Account.customer) return;
+
+    const name = Account.customer.name || "Cliente";
+    const email =
+        Account.customer.email ||
+        Account.user?.email ||
+        "";
+
+    const avatar = name.charAt(0).toUpperCase() || "M";
+
+    const headerName =
+        document.getElementById("headerCustomerName");
+
+    const sidebarName =
+        document.getElementById("sidebarCustomerName");
+
+    const sidebarEmail =
+        document.getElementById("sidebarCustomerEmail");
+
+    const greeting =
+        document.getElementById("dashboardGreeting");
+
+    const avatarElement =
+        document.getElementById("accountAvatar");
+
+    if (headerName) headerName.textContent = name;
+    if (sidebarName) sidebarName.textContent = name;
+    if (sidebarEmail) sidebarEmail.textContent = email;
+    if (avatarElement) avatarElement.textContent = avatar;
+
+    if (greeting) {
+        greeting.textContent =
+            `Olá, ${Account.firstName()} 👋`;
+    }
+};
+
+/* ==========================================================
+   Logout
+========================================================== */
+
+Account.logout = async function () {
+    const { error } =
+        await mugartSupabase.auth.signOut();
+
+    if (error) {
+        console.error("Erro ao sair:", error);
+
+        Account.showMessage(
+            "Não foi possível encerrar a sessão.",
+            "error"
+        );
+
+        return;
+    }
+
+    window.location.href = "login.html";
+};
+
+/* ==========================================================
+   Menu
+========================================================== */
+
+Account.openSection = function (section) {
     document
-        .querySelectorAll("[data-account-section]")
-        .forEach(button => {
-            button.addEventListener("click", () => {
-                const section = button.dataset.accountSection;
-
-                Account.openSection(section);
-
-                if (
-                    section === "orders" &&
-                    typeof Account.renderOrders === "function"
-                ) {
-                    Account.renderOrders();
-                }
-
-                if (
-                    section === "addresses" &&
-                    typeof Account.renderAddresses === "function"
-                ) {
-                    Account.renderAddresses();
-                }
-
-                if (
-                    section === "profile" &&
-                    typeof Account.fillProfileForm === "function"
-                ) {
-                    Account.fillProfileForm();
-                }
-            });
+        .querySelectorAll(".account-menu-button")
+        .forEach((button) => {
+            button.classList.remove("active");
         });
 
     document
-        .querySelectorAll("[data-open-section]")
-        .forEach(button => {
-            button.addEventListener("click", () => {
-                Account.openSection(button.dataset.openSection);
-            });
+        .querySelectorAll(".account-section")
+        .forEach((element) => {
+            element.classList.remove("active");
         });
 
     document
-        .getElementById("viewAllOrdersButton")
-        ?.addEventListener("click", () => {
-            Account.openSection("orders");
-
-            if (typeof Account.renderOrders === "function") {
-                Account.renderOrders();
-            }
-        });
-}
-
-function bindAccountActions() {
-    document
-        .getElementById("headerLogoutButton")
-        ?.addEventListener("click", Account.logout);
+        .querySelector(
+            `[data-account-section="${section}"]`
+        )
+        ?.classList.add("active");
 
     document
-        .getElementById("sidebarLogoutButton")
-        ?.addEventListener("click", Account.logout);
-}
+        .querySelector(
+            `[data-section-name="${section}"]`
+        )
+        ?.classList.add("active");
+
+    Account.currentSection = section;
+};
+
+/* ==========================================================
+   ViaCEP
+========================================================== */
+
+Account.buscarCEP = async function (cep) {
+    const cleanCep = Account.onlyNumbers(cep);
+
+    if (cleanCep.length !== 8) {
+        return null;
+    }
+
+    const response = await fetch(
+        `https://viacep.com.br/ws/${cleanCep}/json/`
+    );
+
+    if (!response.ok) {
+        throw new Error("Erro ao consultar CEP.");
+    }
+
+    const data = await response.json();
+
+    if (data.erro) {
+        return null;
+    }
+
+    return data;
+};
