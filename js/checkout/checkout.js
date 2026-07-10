@@ -886,42 +886,95 @@ async function calculateShipping() {
 
 
 async function iniciarPagamentoMercadoPago(order) {
-    const response = await mugartSupabase.functions.invoke(
-        "create-payment",
-        {
-            body: {
-                order_id: order.id,
-                customer_name: order.customer_name,
-                customer_email: order.customer_email,
-                items: order.items.map(item => ({
-                    id: item.product_id,
-                    title: item.product_name,
-                    quantity: Number(item.quantity),
-                    currency_id: "BRL",
-                    unit_price: Number(item.unit_price)
-                }))
-            }
-        }
+    const paymentItems = (order.items || []).map(
+        item => ({
+            id:
+                item.product_id ||
+                item.id,
+
+            title:
+                item.product_name ||
+                item.title ||
+                "Produto MugArt",
+
+            quantity:
+                Number(item.quantity || 1),
+
+            currency_id: "BRL",
+
+            unit_price:
+                Number(item.unit_price || 0)
+        })
     );
 
-    console.log("Resposta completa:", response);
+    if (!paymentItems.length) {
+        throw new Error(
+            "O pedido foi criado, mas não possui itens para pagamento."
+        );
+    }
+
+    const response =
+        await mugartSupabase.functions.invoke(
+            "create-payment",
+            {
+                body: {
+                    order_id: order.id,
+                    customer_name:
+                        order.customer_name,
+
+                    customer_email:
+                        order.customer_email,
+
+                    items: paymentItems
+                }
+            }
+        );
+
+    console.log(
+        "Resposta do Mercado Pago:",
+        response
+    );
 
     const { data, error } = response;
 
     if (error) {
-        console.error("ERRO:", error);
-        console.error("RESPOSTA:", response);
-        toast(error.message || "Erro ao iniciar pagamento.");
-        return;
+        console.error(
+            "Erro na create-payment:",
+            error
+        );
+
+        throw new Error(
+            error.message ||
+            "Erro ao iniciar pagamento."
+        );
     }
 
-    if (!data || !data.init_point) {
-        console.error("Resposta inválida:", data);
-        toast("Mercado Pago não retornou o link.");
-        return;
+    if (!data?.init_point) {
+        console.error(
+            "Resposta inválida da create-payment:",
+            data
+        );
+
+        throw new Error(
+            data?.error ||
+            "Mercado Pago não retornou o link."
+        );
     }
 
-    window.location.href = data.init_point;
+    /*
+     * Limpa carrinho e rascunho somente depois
+     * que o Mercado Pago retorna o link.
+     */
+    localStorage.removeItem(
+        CHECKOUT_KEYS.cart
+    );
+
+    localStorage.removeItem(
+        CHECKOUT_KEYS.draft
+    );
+
+    window.location.href =
+        data.init_point;
 }
 
 async function obterOuCriarCliente(customerPayload) {
@@ -1176,8 +1229,64 @@ async function obterOuCriarCliente(customerPayload) {
     return novoClienteVisitante;
 }
 
+async function criarPedidoPelaEdgeFunction(payload) {
+    const { data, error } =
+        await mugartSupabase.functions.invoke(
+            "create-order",
+            {
+                body: payload
+            }
+        );
+
+    if (error) {
+        console.error(
+            "Erro ao chamar create-order:",
+            error
+        );
+
+        let message =
+            error.message ||
+            "Não foi possível criar o pedido.";
+
+        /*
+         * Em alguns erros de Edge Function, a resposta
+         * detalhada fica disponível no contexto.
+         */
+        try {
+            const responseBody =
+                await error.context?.json?.();
+
+            if (responseBody?.error) {
+                message = responseBody.error;
+            }
+        } catch {
+            // Mantém a mensagem original.
+        }
+
+        throw new Error(message);
+    }
+
+    if (!data?.success || !data?.data?.order_id) {
+        console.error(
+            "Resposta inválida da create-order:",
+            data
+        );
+
+        throw new Error(
+            data?.error ||
+            "A função não retornou o pedido criado."
+        );
+    }
+
+    return data.data;
+}
+
 async function finishOrder(e) {
     e.preventDefault();
+
+    const finishButton = qs("#finishOrderBtn");
+    const originalButtonText =
+        finishButton?.textContent || "Ir para pagamento";
 
     const items = getCartItems();
 
@@ -1187,7 +1296,9 @@ async function finishOrder(e) {
     }
 
     if (!validarCamposCliente()) {
-        toast("Confira nome, telefone, e-mail e CPF/CNPJ.");
+        toast(
+            "Confira nome, telefone, e-mail e CPF/CNPJ."
+        );
         return;
     }
 
@@ -1195,6 +1306,162 @@ async function finishOrder(e) {
         toast("Confira o endereço de entrega.");
         return;
     }
+
+    const customerPayload = {
+        name: qs("#customerName").value.trim(),
+
+        email: qs("#customerEmail")
+            .value
+            .trim()
+            .toLowerCase(),
+
+        phone: qs("#customerPhone").value.trim(),
+
+        cpf_cnpj:
+            qs("#customerDocument").value.trim(),
+
+        zip: qs("#shippingZip").value.trim(),
+
+        address:
+            qs("#shippingStreet").value.trim(),
+
+        city: qs("#shippingCity").value.trim(),
+
+        state:
+            qs("#shippingState")
+                .value
+                .trim()
+                .toUpperCase()
+    };
+
+    const addressPayload = {
+        recipient_name: customerPayload.name,
+        phone: customerPayload.phone,
+
+        zip: qs("#shippingZip").value.trim(),
+
+        street:
+            qs("#shippingStreet").value.trim(),
+
+        number:
+            qs("#shippingNumber").value.trim(),
+
+        complement:
+            qs("#shippingComplement").value.trim(),
+
+        neighborhood:
+            qs("#shippingNeighborhood").value.trim(),
+
+        city: qs("#shippingCity").value.trim(),
+
+        state:
+            qs("#shippingState")
+                .value
+                .trim()
+                .toUpperCase(),
+
+        country: "Brasil"
+    };
+
+    /*
+     * Enviamos apenas ID e quantidade.
+     * A Edge Function consulta nome, preço e estoque
+     * diretamente no banco.
+     */
+    const itemPayload = items.map(item => ({
+        product_id: item.product.id,
+        quantity: Number(item.quantity || 1)
+    }));
+
+    const createOrderPayload = {
+        customer: customerPayload,
+        address: addressPayload,
+        items: itemPayload,
+
+        payment_method:
+            CheckoutState.selectedPayment,
+
+        shipping:
+            Number(CheckoutState.shipping || 0),
+
+        shipping_method:
+            CheckoutState.selectedShipping || null,
+
+        shipping_company:
+            CheckoutState.selectedShippingCompany || null,
+
+        shipping_service:
+            CheckoutState.selectedShippingService || null,
+
+        shipping_delivery_time:
+            Number(
+                CheckoutState.selectedShippingDeliveryTime || 0
+            ),
+
+        coupon:
+            CheckoutState.coupon || "",
+
+        notes:
+            "Pedido criado pelo Checkout 3.0 via Edge Function."
+    };
+
+    try {
+        if (finishButton) {
+            finishButton.disabled = true;
+            finishButton.textContent =
+                "Criando pedido...";
+        }
+
+        toast("Criando seu pedido...");
+
+        const createdOrder =
+            await criarPedidoPelaEdgeFunction(
+                createOrderPayload
+            );
+
+        console.log(
+            "Pedido criado pela Edge Function:",
+            createdOrder
+        );
+
+        if (finishButton) {
+            finishButton.textContent =
+                "Abrindo pagamento...";
+        }
+
+        await iniciarPagamentoMercadoPago({
+            id: createdOrder.order_id,
+
+            customer_name:
+                createdOrder.customer_name ||
+                customerPayload.name,
+
+            customer_email:
+                createdOrder.customer_email ||
+                customerPayload.email,
+
+            items:
+                createdOrder.items || []
+        });
+
+    } catch (error) {
+        console.error(
+            "Erro ao finalizar pedido:",
+            error
+        );
+
+        toast(
+            error.message ||
+            "Não foi possível finalizar o pedido."
+        );
+
+        if (finishButton) {
+            finishButton.disabled = false;
+            finishButton.textContent =
+                originalButtonText;
+        }
+    }
+}
 
     const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
     const total = Math.max(0, subtotal - CheckoutState.discount + CheckoutState.shipping);
