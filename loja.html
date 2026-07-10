@@ -3,10 +3,15 @@
 <head>
   <!-- Google Tag Manager -->
   <script>
-    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    (function(w,d,s,l,i){
+      w[l]=w[l]||[];
+      w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),
+          dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true;
+      j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+      f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-NH94WCFS');
   </script>
   <!-- End Google Tag Manager -->
@@ -22,7 +27,8 @@
   <meta name="theme-color" content="#030406">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="css/loja.css" />
+  <link rel="stylesheet" href="css/loja.css?v=3">
+  <link rel="stylesheet" href="css/header-account.css?v=3">
 
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -38,17 +44,21 @@
 <body>
   <!-- Google Tag Manager (noscript) -->
   <noscript>
-    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NH94WCFS"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    <iframe
+      src="https://www.googletagmanager.com/ns.html?id=GTM-NH94WCFS"
+      height="0"
+      width="0"
+      style="display:none;visibility:hidden"
+    ></iframe>
   </noscript>
   <!-- End Google Tag Manager (noscript) -->
 
   <header class="topbar">
     <a class="brand" href="index.html#inicio" aria-label="MugArt">
-      <img src="assets/logo.png" alt="MugArt" />
+      <img src="assets/logo.png" alt="MugArt">
     </a>
 
-    <button class="menu-toggle" id="menuToggle" type="button">☰</button>
+    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu">☰</button>
 
     <nav class="nav" id="nav">
       <a href="index.html#inicio">Início</a>
@@ -56,49 +66,76 @@
       <a href="index.html#canecas">Canecas</a>
       <a href="index.html#personalize">Personalize</a>
       <a href="index.html#contato">Contato</a>
-      <link rel="stylesheet" href="css/header-account.css?v=1">
     </nav>
 
     <div class="top-actions">
-      <a class="icon-link insta" href="https://instagram.com/mugartsp" target="_blank" aria-label="Instagram">
+      <a class="icon-link insta" href="https://instagram.com/mugartsp" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
         <i class="fa-brands fa-instagram"></i>
       </a>
 
-      <a class="icon-link whats" href="https://wa.me/5511988849236" target="_blank" aria-label="WhatsApp">
+      <a class="icon-link whats" href="https://wa.me/5511988849236" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
         <i class="fa-brands fa-whatsapp"></i>
       </a>
 
-      <div class="account-menu-wrapper">
-  <button
-    id="accountMenuButton"
-    class="header-icon-button account-menu-button"
-    type="button"
-    aria-label="Minha conta"
-  >
-    <span class="account-menu-icon">👤</span>
+      <div class="header-account" id="headerAccount">
+        <button
+          id="headerAccountButton"
+          class="header-account-button"
+          type="button"
+          aria-label="Abrir menu da conta"
+          aria-expanded="false"
+        >
+          <span class="header-account-avatar" id="headerAccountAvatar">👤</span>
 
-    <span class="account-menu-text">
-      <small id="accountMenuLabel">Entrar</small>
-      <strong id="accountMenuName">Minha conta</strong>
-    </span>
-  </button>
+          <span class="header-account-info">
+            <small id="headerAccountGreeting">Olá, visitante</small>
+            <strong id="headerAccountTitle">Entrar</strong>
+          </span>
 
-  <div id="accountDropdown" class="account-dropdown">
-    <a id="accountLoginLink" href="conta/login.html">
-      Entrar ou criar conta
-    </a>
+          <i class="fa-solid fa-chevron-down header-account-arrow"></i>
+        </button>
 
-    <div id="accountLoggedOptions" class="account-logged-options hidden">
-      <a href="conta/minha-conta.html">Minha conta</a>
-      <a href="conta/minha-conta.html#orders">Meus pedidos</a>
-      <a href="conta/minha-conta.html#addresses">Meus endereços</a>
+        <div id="headerAccountDropdown" class="header-account-dropdown">
+          <div id="headerAccountGuest" class="header-account-guest">
+            <strong>Bem-vindo à MugArt</strong>
 
-      <button id="accountLogoutButton" type="button">
-        Sair
-      </button>
-    </div>
-  </div>
-</div>
+            <p>Faça login para acompanhar seus pedidos e usar seus endereços salvos.</p>
+
+            <a class="header-account-primary" href="conta/login.html">Entrar ou criar conta</a>
+          </div>
+
+          <div id="headerAccountLogged" class="header-account-logged hidden">
+            <div class="header-account-customer">
+              <span id="headerAccountInitial">M</span>
+
+              <div>
+                <small>Conta MugArt</small>
+                <strong id="headerAccountCustomerName">Cliente</strong>
+              </div>
+            </div>
+
+            <a href="conta/minha-conta.html">
+              <i class="fa-regular fa-user"></i>
+              Minha conta
+            </a>
+
+            <a href="conta/minha-conta.html#orders">
+              <i class="fa-solid fa-box"></i>
+              Meus pedidos
+            </a>
+
+            <a href="conta/minha-conta.html#addresses">
+              <i class="fa-solid fa-location-dot"></i>
+              Meus endereços
+            </a>
+
+            <button id="headerAccountLogout" type="button">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              Sair
+            </button>
+          </div>
+        </div>
+      </div>
 
       <button class="cart-top-btn" id="openCart" type="button">
         <i class="fa-solid fa-cart-shopping"></i>
@@ -126,7 +163,7 @@
 
       <div class="store-hero-card">
         <span class="hero-badge">Pronta entrega</span>
-        <img src="assets/hero-caneca.png" alt="Caneca MugArt" />
+        <img src="assets/hero-caneca.png" alt="Caneca MugArt">
         <div>
           <span>A partir de</span>
           <strong>R$ 29,90</strong>
@@ -138,13 +175,13 @@
       <article>
         <i class="fa-solid fa-truck-fast"></i>
         <strong>Envio para todo Brasil</strong>
-        <span>Frete será conectado depois no backend.</span>
+        <span>Frete calculado no checkout.</span>
       </article>
 
       <article>
         <i class="fa-solid fa-credit-card"></i>
         <strong>Pix e cartão</strong>
-        <span>Checkout visual preparado para pagamento no site.</span>
+        <span>Pagamento seguro pelo Mercado Pago.</span>
       </article>
 
       <article>
@@ -155,8 +192,8 @@
 
       <article>
         <i class="fa-solid fa-chart-line"></i>
-        <strong>DataLayer completo</strong>
-        <span>Eventos GA4 para funil de e-commerce.</span>
+        <strong>Compra segura</strong>
+        <span>Acompanhe seus pedidos pela sua conta.</span>
       </article>
     </section>
 
@@ -177,7 +214,7 @@
 
         <label class="search-box">
           Buscar produto
-          <input id="storeSearch" type="search" placeholder="Ex: mágica, coração, azul..." />
+          <input id="storeSearch" type="search" placeholder="Ex: mágica, coração, azul...">
         </label>
 
         <label>
@@ -220,7 +257,6 @@
         </div>
 
         <div class="products-grid" id="productsGrid"></div>
-
         <div class="pagination" id="pagination"></div>
       </section>
     </section>
@@ -228,7 +264,7 @@
 
   <footer>
     <div class="footer-brand">
-      <img src="assets/logo.png" alt="MugArt" />
+      <img src="assets/logo.png" alt="MugArt">
       <p>Transformamos ideias em canecas incríveis! Qualidade, criatividade e amor em cada detalhe.</p>
     </div>
 
@@ -251,10 +287,9 @@
 
   <div class="copyright">© 2026 MugArt — Todos os direitos reservados.</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/loja.js"></script>
-    <script src="js/header-account.js?v=1"></script>
-  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js?v=3"></script>
+  <script src="js/loja.js?v=3"></script>
+  <script src="js/header-account.js?v=3"></script>
 </body>
 </html>
