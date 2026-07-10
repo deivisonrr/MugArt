@@ -255,127 +255,314 @@ function validarEndereco() {
 
 async function preencherClienteLogadoNoCheckout() {
     if (!window.mugartSupabase) {
+        console.warn(
+            "[Checkout] Supabase não está disponível."
+        );
+
         return false;
     }
 
-    const {
-        data: sessionData,
-        error: sessionError
-    } = await mugartSupabase.auth.getSession();
+    try {
+        const {
+            data: sessionData,
+            error: sessionError
+        } = await mugartSupabase.auth.getSession();
 
-    if (sessionError) {
+        if (sessionError) {
+            console.error(
+                "[Checkout] Erro ao consultar sessão:",
+                sessionError
+            );
+
+            return false;
+        }
+
+        const user = sessionData?.session?.user;
+
+        if (!user) {
+            console.info(
+                "[Checkout] Cliente não está logado."
+            );
+
+            return false;
+        }
+
+        console.info(
+            "[Checkout] Usuário autenticado:",
+            user.email
+        );
+
+        const {
+            data: customer,
+            error: customerError
+        } = await mugartSupabase
+            .from("customers")
+            .select("*")
+            .eq("auth_user_id", user.id)
+            .maybeSingle();
+
+        if (customerError) {
+            console.error(
+                "[Checkout] Erro ao carregar cliente:",
+                customerError
+            );
+
+            return false;
+        }
+
+        if (!customer) {
+            console.warn(
+                "[Checkout] Cadastro de cliente não encontrado."
+            );
+
+            return false;
+        }
+
+        console.info(
+            "[Checkout] Cliente carregado:",
+            customer
+        );
+
+        preencherCampo(
+            "customerName",
+            customer.name
+        );
+
+        preencherCampo(
+            "customerPhone",
+            formatPhone(customer.phone || "")
+        );
+
+        preencherCampo(
+            "customerEmail",
+            customer.email || user.email || ""
+        );
+
+        preencherCampo(
+            "customerDocument",
+            formatCpfCnpj(
+                customer.cpf_cnpj ||
+                customer.document ||
+                ""
+            )
+        );
+
+        const emailInput = qs("#customerEmail");
+
+        if (emailInput) {
+            emailInput.readOnly = true;
+            emailInput.classList.add(
+                "checkout-readonly"
+            );
+
+            emailInput.title =
+                "Este e-mail está vinculado à sua conta.";
+        }
+
+        /*
+         * Preenche o endereço básico salvo no cadastro
+         * do cliente.
+         */
+        preencherCampo(
+            "shippingZip",
+            formatCep(customer.zip || "")
+        );
+
+        preencherCampo(
+            "shippingStreet",
+            customer.address || ""
+        );
+
+        preencherCampo(
+            "shippingCity",
+            customer.city || ""
+        );
+
+        preencherCampo(
+            "shippingState",
+            String(customer.state || "")
+                .toUpperCase()
+        );
+
+        /*
+         * Tenta carregar o endereço padrão da tabela
+         * customer_addresses, caso ela exista.
+         */
+        await preencherEnderecoPadraoDoCliente(
+            customer.id
+        );
+
+        saveDraft();
+        updateProgress();
+        renderSummary();
+
+        const cep = onlyNumbers(
+            qs("#shippingZip")?.value || ""
+        );
+
+        if (cep.length === 8) {
+            await calculateShipping();
+        }
+
+        return true;
+
+    } catch (error) {
         console.error(
-            "Erro ao verificar sessão no checkout:",
-            sessionError
+            "[Checkout] Falha ao preencher dados:",
+            error
         );
 
         return false;
     }
-
-    const user = sessionData?.session?.user;
-
-    if (!user) {
-        return false;
-    }
-
-    const {
-        data: customer,
-        error: customerError
-    } = await mugartSupabase
-        .from("customers")
-        .select(`
-            id,
-            name,
-            email,
-            phone,
-            document,
-            cpf_cnpj,
-            zip,
-            address,
-            city,
-            state
-        `)
-        .eq("auth_user_id", user.id)
-        .maybeSingle();
-
-    if (customerError) {
-        console.error(
-            "Erro ao carregar cliente no checkout:",
-            customerError
-        );
-
-        return false;
-    }
-
-    if (!customer) {
-        return false;
-    }
-
-    const nameInput = qs("#customerName");
-    const phoneInput = qs("#customerPhone");
-    const emailInput = qs("#customerEmail");
-    const documentInput = qs("#customerDocument");
-
-    if (nameInput) {
-        nameInput.value = customer.name || "";
-    }
-
-    if (phoneInput) {
-        phoneInput.value = formatPhone(
-            customer.phone || ""
-        );
-    }
-
-    if (emailInput) {
-        emailInput.value =
-            customer.email ||
-            user.email ||
-            "";
-
-        emailInput.readOnly = true;
-        emailInput.classList.add("checkout-readonly");
-        emailInput.title =
-            "O e-mail está vinculado à sua conta.";
-    }
-
-    if (documentInput) {
-        documentInput.value = formatCpfCnpj(
-            customer.cpf_cnpj ||
-            customer.document ||
-            ""
-        );
-    }
-
-    saveDraft();
-    updateProgress();
-
-    return true;
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-    CheckoutState.cart = loadStorage(
-        CHECKOUT_KEYS.cart,
-        []
-    );
+function preencherCampo(id, value) {
+    const field = qs("#" + id);
 
-    await loadProducts();
-
-    restoreDraft();
-
-    const clientePreenchido =
-        await preencherClienteLogadoNoCheckout();
-
-    bindEvents();
-    renderCheckout();
-
-    if (clientePreenchido) {
-        toast(
-            "Seus dados foram preenchidos automaticamente."
+    if (!field) {
+        console.warn(
+            `[Checkout] Campo não encontrado: #${id}`
         );
-    } else if (CheckoutState.cart.length) {
-        toast("Seu carrinho foi carregado.");
+
+        return;
     }
-});
+
+    if (
+        value !== null &&
+        value !== undefined &&
+        String(value).trim() !== ""
+    ) {
+        field.value = value;
+    }
+}
+
+async function preencherEnderecoPadraoDoCliente(
+    customerId
+) {
+    try {
+        const {
+            data: addresses,
+            error
+        } = await mugartSupabase
+            .from("customer_addresses")
+            .select("*")
+            .eq("customer_id", customerId)
+            .order("is_default", {
+                ascending: false
+            })
+            .order("created_at", {
+                ascending: false
+            })
+            .limit(1);
+
+        if (error) {
+            /*
+             * Por enquanto não interrompe o checkout caso
+             * a tabela ainda não exista ou tenha outro nome.
+             */
+            console.warn(
+                "[Checkout] Endereço salvo não carregado:",
+                error.message
+            );
+
+            return false;
+        }
+
+        const address = addresses?.[0];
+
+        if (!address) {
+            console.info(
+                "[Checkout] Cliente ainda não possui endereço salvo."
+            );
+
+            return false;
+        }
+
+        console.info(
+            "[Checkout] Endereço padrão carregado:",
+            address
+        );
+
+        preencherCampo(
+            "shippingZip",
+            formatCep(
+                address.zip ||
+                address.postal_code ||
+                ""
+            )
+        );
+
+        preencherCampo(
+            "shippingStreet",
+            address.street ||
+            address.address ||
+            ""
+        );
+
+        preencherCampo(
+            "shippingNumber",
+            address.number || ""
+        );
+
+        preencherCampo(
+            "shippingComplement",
+            address.complement || ""
+        );
+
+        preencherCampo(
+            "shippingNeighborhood",
+            address.neighborhood || ""
+        );
+
+        preencherCampo(
+            "shippingCity",
+            address.city || ""
+        );
+
+        preencherCampo(
+            "shippingState",
+            String(address.state || "")
+                .toUpperCase()
+        );
+
+        return true;
+
+    } catch (error) {
+        console.warn(
+            "[Checkout] Não foi possível carregar o endereço padrão:",
+            error
+        );
+
+        return false;
+    }
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+        CheckoutState.cart = loadStorage(
+            CHECKOUT_KEYS.cart,
+            []
+        );
+
+        await loadProducts();
+
+        restoreDraft();
+        bindEvents();
+        renderCheckout();
+
+        const clientePreenchido =
+            await preencherClienteLogadoNoCheckout();
+
+        if (clientePreenchido) {
+            toast(
+                "Seus dados foram preenchidos automaticamente."
+            );
+        } else if (CheckoutState.cart.length) {
+            toast("Seu carrinho foi carregado.");
+        }
+    }
+);
 
 async function loadProducts() {
     if (!window.mugartSupabase) {
