@@ -3,7 +3,7 @@
    common.js
 ========================================================== */
 
-window.Account = {
+var Account = window.Account = {
     session: null,
     user: null,
     customer: null,
