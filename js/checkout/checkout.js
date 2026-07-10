@@ -814,6 +814,258 @@ async function iniciarPagamentoMercadoPago(order) {
     window.location.href = data.init_point;
 }
 
+async function obterOuCriarCliente(customerPayload) {
+    const emailNormalizado = String(customerPayload.email || "")
+        .trim()
+        .toLowerCase();
+
+    const payloadAtualizado = {
+        ...customerPayload,
+        email: emailNormalizado
+    };
+
+    /*
+     * Verifica se existe usuário autenticado.
+     */
+    const {
+        data: sessionData,
+        error: sessionError
+    } = await mugartSupabase.auth.getSession();
+
+    if (sessionError) {
+        console.error(
+            "Erro ao verificar sessão no checkout:",
+            sessionError
+        );
+    }
+
+    const usuario = sessionData?.session?.user || null;
+
+    /*
+     * 1. Usuário está logado:
+     * procura primeiro pelo auth_user_id.
+     */
+    if (usuario) {
+        const {
+            data: clienteAutenticado,
+            error: erroClienteAutenticado
+        } = await mugartSupabase
+            .from("customers")
+            .select("*")
+            .eq("auth_user_id", usuario.id)
+            .maybeSingle();
+
+        if (erroClienteAutenticado) {
+            console.error(
+                "Erro ao buscar cliente autenticado:",
+                erroClienteAutenticado
+            );
+
+            throw new Error(
+                "Não foi possível localizar sua conta de cliente."
+            );
+        }
+
+        /*
+         * Cliente da conta já existe:
+         * apenas atualiza os dados informados no checkout.
+         */
+        if (clienteAutenticado) {
+            const {
+                data: clienteAtualizado,
+                error: erroAtualizacao
+            } = await mugartSupabase
+                .from("customers")
+                .update(payloadAtualizado)
+                .eq("id", clienteAutenticado.id)
+                .select()
+                .single();
+
+            if (erroAtualizacao) {
+                console.error(
+                    "Erro ao atualizar cliente:",
+                    erroAtualizacao
+                );
+
+                throw new Error(
+                    "Não foi possível atualizar seus dados."
+                );
+            }
+
+            return clienteAtualizado;
+        }
+
+        /*
+         * Não encontrou pelo auth_user_id.
+         * Procura um cadastro antigo pelo e-mail.
+         */
+        const {
+            data: clientesMesmoEmail,
+            error: erroBuscaEmail
+        } = await mugartSupabase
+            .from("customers")
+            .select("*")
+            .eq("email", emailNormalizado)
+            .limit(10);
+
+        if (erroBuscaEmail) {
+            console.error(
+                "Erro ao buscar cliente pelo e-mail:",
+                erroBuscaEmail
+            );
+
+            throw new Error(
+                "Não foi possível consultar seu cadastro."
+            );
+        }
+
+        /*
+         * Só vincula um cadastro pelo e-mail quando ele ainda
+         * não pertence a outro usuário autenticado.
+         */
+        const clienteSemVinculo = (clientesMesmoEmail || []).find(
+            cliente => !cliente.auth_user_id
+        );
+
+        if (clienteSemVinculo) {
+            const {
+                data: clienteVinculado,
+                error: erroVinculo
+            } = await mugartSupabase
+                .from("customers")
+                .update({
+                    ...payloadAtualizado,
+                    auth_user_id: usuario.id
+                })
+                .eq("id", clienteSemVinculo.id)
+                .select()
+                .single();
+
+            if (erroVinculo) {
+                console.error(
+                    "Erro ao vincular cliente à conta:",
+                    erroVinculo
+                );
+
+                throw new Error(
+                    "Não foi possível vincular seu cadastro."
+                );
+            }
+
+            return clienteVinculado;
+        }
+
+        /*
+         * Nenhum cliente utilizável foi encontrado.
+         * Cria um novo já ligado à conta autenticada.
+         */
+        const {
+            data: novoCliente,
+            error: erroCriacao
+        } = await mugartSupabase
+            .from("customers")
+            .insert({
+                ...payloadAtualizado,
+                auth_user_id: usuario.id
+            })
+            .select()
+            .single();
+
+        if (erroCriacao) {
+            console.error(
+                "Erro ao criar cliente autenticado:",
+                erroCriacao
+            );
+
+            throw new Error(
+                "Não foi possível criar seu cadastro de cliente."
+            );
+        }
+
+        return novoCliente;
+    }
+
+    /*
+     * 2. Compra sem login:
+     * procura um cliente já existente pelo e-mail.
+     */
+    const {
+        data: clientesPorEmail,
+        error: erroClientePorEmail
+    } = await mugartSupabase
+        .from("customers")
+        .select("*")
+        .eq("email", emailNormalizado)
+        .limit(1);
+
+    if (erroClientePorEmail) {
+        console.error(
+            "Erro ao buscar cliente visitante:",
+            erroClientePorEmail
+        );
+
+        throw new Error(
+            "Não foi possível consultar os dados do cliente."
+        );
+    }
+
+    const clienteExistente = clientesPorEmail?.[0];
+
+    /*
+     * Se já existe, atualiza e reutiliza.
+     */
+    if (clienteExistente) {
+        const {
+            data: clienteAtualizado,
+            error: erroAtualizacaoVisitante
+        } = await mugartSupabase
+            .from("customers")
+            .update(payloadAtualizado)
+            .eq("id", clienteExistente.id)
+            .select()
+            .single();
+
+        if (erroAtualizacaoVisitante) {
+            console.error(
+                "Erro ao atualizar cliente visitante:",
+                erroAtualizacaoVisitante
+            );
+
+            throw new Error(
+                "Não foi possível atualizar os dados do cliente."
+            );
+        }
+
+        return clienteAtualizado;
+    }
+
+    /*
+     * Não existe cliente com esse e-mail:
+     * cria um novo cadastro.
+     */
+    const {
+        data: novoClienteVisitante,
+        error: erroNovoVisitante
+    } = await mugartSupabase
+        .from("customers")
+        .insert(payloadAtualizado)
+        .select()
+        .single();
+
+    if (erroNovoVisitante) {
+        console.error(
+            "Erro ao criar cliente visitante:",
+            erroNovoVisitante
+        );
+
+        throw new Error(
+            "Não foi possível salvar os dados do cliente."
+        );
+    }
+
+    return novoClienteVisitante;
+}
+
 async function finishOrder(e) {
     e.preventDefault();
 
@@ -848,23 +1100,26 @@ async function finishOrder(e) {
         state: qs("#shippingState").value.trim()
     };
 
-    const cr = await mugartSupabase
-        .from("customers")
-        .insert(customerPayload)
-        .select()
-        .single();
+    let customer;
 
-    if (cr.error) {
-        console.error(cr.error);
-        toast("Erro ao salvar cliente.");
-        return;
-    }
+        try {
+            customer = await obterOuCriarCliente(customerPayload);
+        } catch (error) {
+            console.error("Erro ao preparar cliente:", error);
+        
+            toast(
+                error.message ||
+                "Não foi possível preparar os dados do cliente."
+            );
+        
+            return;
+        }
 
     const orderNumber = "MUG-" + Date.now();
 
     const orderPayload = {
         order_number: orderNumber,
-        customer_id: cr.data.id,
+        customer_id: customer.id,
         customer_name: customerPayload.name,
         customer_email: customerPayload.email,
         customer_phone: customerPayload.phone,
