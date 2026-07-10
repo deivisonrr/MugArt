@@ -509,7 +509,7 @@ async function handleRegister(event) {
                         cpf_cnpj: documentValue
                     },
                     emailRedirectTo:
-                        `${window.location.origin}/conta/minha-conta.html`
+                      `${window.location.origin}/conta/login.html?confirmed=1`
                 }
             });
 
@@ -715,7 +715,7 @@ async function handleResetPassword(event) {
                 email,
                 {
                     redirectTo:
-                        `${window.location.origin}/conta/minha-conta.html?reset-password=1`
+                        `${window.location.origin}/conta/redefinir-senha.html`
                 }
             );
 
