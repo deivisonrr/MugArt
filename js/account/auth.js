@@ -3,10 +3,10 @@
    Arquivo: js/account/auth.js
 ========================================================= */
 
-const authContent = document.getElementById("authContent");
-const tabLogin = document.getElementById("tabLogin");
-const tabRegister = document.getElementById("tabRegister");
-const tabReset = document.getElementById("tabReset");
+let authContent;
+let tabLogin;
+let tabRegister;
+let tabReset;
 
 function onlyNumbers(value) {
     return String(value || "").replace(/\D/g, "");
@@ -774,16 +774,42 @@ async function checkExistingSession() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    if (!window.mugartSupabase) {
-        authContent.innerHTML = `
-            <div class="auth-message show error">
-                Não foi possível carregar a conexão com o Supabase.
-            </div>
-        `;
 
+    authContent = document.getElementById("authContent");
+    tabLogin = document.getElementById("tabLogin");
+    tabRegister = document.getElementById("tabRegister");
+    tabReset = document.getElementById("tabReset");
+
+    if (!authContent || !tabLogin || !tabRegister || !tabReset) {
+        console.error("Elementos da tela de autenticação não encontrados.");
         return;
     }
 
-    await checkExistingSession();
+    tabLogin.addEventListener("click", renderLogin);
+    tabRegister.addEventListener("click", renderRegister);
+    tabReset.addEventListener("click", renderReset);
+
+    if (!window.mugartSupabase) {
+        authContent.innerHTML = `
+            <div class="auth-message show error">
+                Erro ao conectar ao Supabase.
+            </div>
+        `;
+        return;
+    }
+
+    try {
+        const { data } = await mugartSupabase.auth.getSession();
+
+        if (data?.session) {
+            window.location.href = "minha-conta.html";
+            return;
+        }
+
+    } catch (e) {
+        console.error(e);
+    }
+
     renderLogin();
+
 });
