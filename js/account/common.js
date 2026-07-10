@@ -1,271 +1,119 @@
-
 /* ==========================================================
    MugArt - Área do Cliente
-   common.js
+   account.js
 ========================================================== */
 
-window.Account = {
+document.addEventListener("DOMContentLoaded", async () => {
+    const loading = document.getElementById("accountLoading");
+    const app = document.getElementById("accountApp");
 
-    session: null,
-
-    user: null,
-
-    customer: null,
-
-    orders: [],
-
-    addresses: [],
-
-    currentSection: "dashboard"
-
-};
-
-/* ==========================================================
-   Toast
-========================================================== */
-
-Account.showMessage = function (message, type = "success") {
-
-    const box = document.getElementById("accountMessage");
-
-    if (!box) return;
-
-    box.className = `account-message ${type}`;
-
-    box.innerHTML = message;
-
-    box.style.display = "block";
-
-    clearTimeout(box.timer);
-
-    box.timer = setTimeout(() => {
-
-        box.style.display = "none";
-
-    }, 4000);
-
-};
-
-/* ==========================================================
-   Helpers
-========================================================== */
-
-Account.onlyNumbers = function (value) {
-
-    return String(value || "").replace(/\D/g, "");
-
-};
-
-Account.formatMoney = function (value) {
-
-    return Number(value || 0).toLocaleString(
-        "pt-BR",
-        {
-            style: "currency",
-            currency: "BRL"
+    try {
+        if (!window.mugartSupabase) {
+            throw new Error("Supabase não carregou.");
         }
-    );
 
-};
+        const hasSession = await Account.loadSession();
 
-Account.formatDate = function (date) {
+        if (!hasSession) return;
 
-    if (!date) return "-";
+        const hasCustomer = await Account.loadCustomer();
 
-    return new Date(date).toLocaleDateString("pt-BR");
+        if (!hasCustomer) return;
 
-};
+        Account.updateHeader();
+        bindAccountNavigation();
+        bindAccountActions();
 
-Account.firstName = function () {
+        if (typeof Account.loadOrders === "function") {
+            await Account.loadOrders();
+        }
 
-    if (!Account.customer) return "";
+        if (typeof Account.loadAddresses === "function") {
+            await Account.loadAddresses();
+        }
 
-    return Account.customer.name.split(" ")[0];
+        if (typeof Account.fillProfileForm === "function") {
+            Account.fillProfileForm();
+        }
 
-};
+        Account.openSection("dashboard");
 
-/* ==========================================================
-   Sessão
-========================================================== */
+        loading?.classList.add("hidden");
+        app?.classList.remove("hidden");
 
-Account.loadSession = async function () {
+    } catch (error) {
+        console.error("Erro ao inicializar a área do cliente:", error);
 
-    const { data, error } =
-        await mugartSupabase.auth.getSession();
-
-    if (error) {
-
-        console.error(error);
-
-        location.href = "login.html";
-
-        return false;
-
+        if (loading) {
+            loading.innerHTML = `
+                <div class="account-empty-state">
+                    <span>⚠️</span>
+                    <h3>Não foi possível carregar sua conta</h3>
+                    <p>${error.message || "Tente novamente em instantes."}</p>
+                    <a href="login.html">Voltar ao login</a>
+                </div>
+            `;
+        }
     }
+});
 
-    if (!data.session) {
-
-        location.href = "login.html";
-
-        return false;
-
-    }
-
-    Account.session = data.session;
-
-    Account.user = data.session.user;
-
-    return true;
-
-};
-
-/* ==========================================================
-   Cliente
-========================================================== */
-
-Account.loadCustomer = async function () {
-
-    const { data, error } =
-        await mugartSupabase
-            .from("customers")
-            .select("*")
-            .eq(
-                "auth_user_id",
-                Account.user.id
-            )
-            .single();
-
-    if (error) {
-
-        console.error(error);
-
-        Account.showMessage(
-            "Não foi possível carregar seus dados.",
-            "error"
-        );
-
-        return false;
-
-    }
-
-    Account.customer = data;
-
-    return true;
-
-};
-
-/* ==========================================================
-   Atualiza cabeçalho
-========================================================== */
-
-Account.updateHeader = function () {
-
-    if (!Account.customer) return;
-
-    const name =
-        Account.customer.name || "";
-
-    const email =
-        Account.customer.email || "";
-
-    const avatar =
-        name.substring(0, 1).toUpperCase();
-
-    document.getElementById(
-        "headerCustomerName"
-    ).textContent = name;
-
-    document.getElementById(
-        "sidebarCustomerName"
-    ).textContent = name;
-
-    document.getElementById(
-        "sidebarCustomerEmail"
-    ).textContent = email;
-
-    document.getElementById(
-        "dashboardGreeting"
-    ).textContent =
-        `Olá, ${Account.firstName()} 👋`;
-
-    document.getElementById(
-        "accountAvatar"
-    ).textContent = avatar;
-
-};
-
-/* ==========================================================
-   Logout
-========================================================== */
-
-Account.logout = async function () {
-
-    await mugartSupabase.auth.signOut();
-
-    location.href = "login.html";
-
-};
-
-/* ==========================================================
-   Menu lateral
-========================================================== */
-
-Account.openSection = function (section) {
-
+function bindAccountNavigation() {
     document
-        .querySelectorAll(".account-menu-button")
-        .forEach(btn => {
+        .querySelectorAll("[data-account-section]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                const section = button.dataset.accountSection;
 
-            btn.classList.remove("active");
+                Account.openSection(section);
 
+                if (
+                    section === "orders" &&
+                    typeof Account.renderOrders === "function"
+                ) {
+                    Account.renderOrders();
+                }
+
+                if (
+                    section === "addresses" &&
+                    typeof Account.renderAddresses === "function"
+                ) {
+                    Account.renderAddresses();
+                }
+
+                if (
+                    section === "profile" &&
+                    typeof Account.fillProfileForm === "function"
+                ) {
+                    Account.fillProfileForm();
+                }
+            });
         });
 
     document
-        .querySelectorAll(".account-section")
-        .forEach(sec => {
-
-            sec.classList.remove("active");
-
+        .querySelectorAll("[data-open-section]")
+        .forEach(button => {
+            button.addEventListener("click", () => {
+                Account.openSection(button.dataset.openSection);
+            });
         });
 
     document
-        .querySelector(
-            `[data-account-section="${section}"]`
-        )
-        ?.classList.add("active");
+        .getElementById("viewAllOrdersButton")
+        ?.addEventListener("click", () => {
+            Account.openSection("orders");
+
+            if (typeof Account.renderOrders === "function") {
+                Account.renderOrders();
+            }
+        });
+}
+
+function bindAccountActions() {
+    document
+        .getElementById("headerLogoutButton")
+        ?.addEventListener("click", Account.logout);
 
     document
-        .querySelector(
-            `[data-section-name="${section}"]`
-        )
-        ?.classList.add("active");
-
-    Account.currentSection = section;
-
-};
-
-/* ==========================================================
-   ViaCEP
-========================================================== */
-
-Account.buscarCEP = async function (cep) {
-
-    cep = Account.onlyNumbers(cep);
-
-    if (cep.length !== 8)
-        return null;
-
-    const response =
-        await fetch(
-            `https://viacep.com.br/ws/${cep}/json/`
-        );
-
-    const data =
-        await response.json();
-
-    if (data.erro)
-        return null;
-
-    return data;
-
-};
+        .getElementById("sidebarLogoutButton")
+        ?.addEventListener("click", Account.logout);
+}
