@@ -254,15 +254,18 @@ function validarEndereco() {
 }
 
 async function preencherClienteLogadoNoCheckout() {
-    if (!window.mugartSupabase) {
-        console.warn(
-            "[Checkout] Supabase não está disponível."
-        );
-
-        return false;
-    }
-
     try {
+        if (
+            !window.mugartSupabase ||
+            typeof window.mugartSupabase
+                .from !== "function"
+        ) {
+            console.warn(
+                "[Checkout] Cliente Supabase indisponível."
+            );
+            return false;
+        }
+
         const {
             data: sessionData,
             error: sessionError
@@ -270,10 +273,9 @@ async function preencherClienteLogadoNoCheckout() {
 
         if (sessionError) {
             console.error(
-                "[Checkout] Erro ao consultar sessão:",
+                "[Checkout] Erro ao carregar sessão:",
                 sessionError
             );
-
             return false;
         }
 
@@ -281,15 +283,15 @@ async function preencherClienteLogadoNoCheckout() {
 
         if (!user) {
             console.info(
-                "[Checkout] Cliente não está logado."
+                "[Checkout] Usuário não autenticado."
             );
-
             return false;
         }
 
         console.info(
-            "[Checkout] Usuário autenticado:",
-            user.email
+            "[Checkout] Usuário logado:",
+            user.email,
+            user.id
         );
 
         const {
@@ -303,34 +305,33 @@ async function preencherClienteLogadoNoCheckout() {
 
         if (customerError) {
             console.error(
-                "[Checkout] Erro ao carregar cliente:",
+                "[Checkout] Erro ao buscar cliente:",
                 customerError
             );
-
             return false;
         }
 
         if (!customer) {
             console.warn(
-                "[Checkout] Cadastro de cliente não encontrado."
+                "[Checkout] Cliente não encontrado para:",
+                user.id
             );
-
             return false;
         }
 
         console.info(
-            "[Checkout] Cliente carregado:",
+            "[Checkout] Cliente encontrado:",
             customer
         );
 
         preencherCampo(
             "customerName",
-            customer.name
+            customer.name || ""
         );
 
         preencherCampo(
             "customerPhone",
-            formatPhone(customer.phone || "")
+            customer.phone || ""
         );
 
         preencherCampo(
@@ -340,32 +341,24 @@ async function preencherClienteLogadoNoCheckout() {
 
         preencherCampo(
             "customerDocument",
-            formatCpfCnpj(
-                customer.cpf_cnpj ||
-                customer.document ||
-                ""
-            )
+            customer.cpf_cnpj ||
+            customer.document ||
+            ""
         );
 
-        const emailInput = qs("#customerEmail");
+        const emailInput =
+            qs("#customerEmail");
 
         if (emailInput) {
             emailInput.readOnly = true;
             emailInput.classList.add(
                 "checkout-readonly"
             );
-
-            emailInput.title =
-                "Este e-mail está vinculado à sua conta.";
         }
 
-        /*
-         * Preenche o endereço básico salvo no cadastro
-         * do cliente.
-         */
         preencherCampo(
             "shippingZip",
-            formatCep(customer.zip || "")
+            customer.zip || ""
         );
 
         preencherCampo(
@@ -380,17 +373,17 @@ async function preencherClienteLogadoNoCheckout() {
 
         preencherCampo(
             "shippingState",
-            String(customer.state || "")
-                .toUpperCase()
+            customer.state || ""
         );
 
-        /*
-         * Tenta carregar o endereço padrão da tabela
-         * customer_addresses, caso ela exista.
-         */
-        await preencherEnderecoPadraoDoCliente(
-            customer.id
-        );
+        if (
+            typeof preencherEnderecoPadraoDoCliente ===
+            "function"
+        ) {
+            await preencherEnderecoPadraoDoCliente(
+                customer.id
+            );
+        }
 
         saveDraft();
         updateProgress();
@@ -401,17 +394,16 @@ async function preencherClienteLogadoNoCheckout() {
         );
 
         if (cep.length === 8) {
-            await calculateShipping();
+            await searchCep();
         }
 
         return true;
 
     } catch (error) {
         console.error(
-            "[Checkout] Falha ao preencher dados:",
+            "[Checkout] Erro inesperado ao preencher cliente:",
             error
         );
-
         return false;
     }
 }
@@ -423,17 +415,32 @@ function preencherCampo(id, value) {
         console.warn(
             `[Checkout] Campo não encontrado: #${id}`
         );
-
         return;
     }
 
     if (
-        value !== null &&
-        value !== undefined &&
-        String(value).trim() !== ""
+        value === null ||
+        value === undefined ||
+        String(value).trim() === ""
     ) {
-        field.value = value;
+        return;
     }
+
+    field.value = String(value);
+
+    applyMasks(field);
+
+    field.dispatchEvent(
+        new Event("input", {
+            bubbles: true
+        })
+    );
+
+    field.dispatchEvent(
+        new Event("change", {
+            bubbles: true
+        })
+    );
 }
 
 async function preencherEnderecoPadraoDoCliente(
