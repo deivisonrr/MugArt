@@ -261,25 +261,46 @@ async function handleLogin(event) {
         return;
     }
 
-    try {
-        setButtonLoading(button, true);
+    const { data, error } =
+    await mugartSupabase.auth.signInWithPassword({
+        email,
+        password
+    });
 
-        const { data, error } =
-            await mugartSupabase.auth.signInWithPassword({
-                email,
-                password
-            });
+if (error) {
+    console.error(
+        "Erro ao entrar:",
+        error
+    );
 
-        if (error) throw error;
+    AccountAuth.showMessage(
+        "E-mail ou senha inválidos.",
+        "error"
+    );
 
-        if (!data?.user) {
-            throw new Error("Não foi possível identificar o usuário.");
-        }
+    return;
+}
 
-        showMessage("Login realizado com sucesso.", "success");
+const redirectParam =
+    new URLSearchParams(
+        window.location.search
+    ).get("redirect");
 
-        setTimeout(() => {
-            window.location.href = "minha-conta.html";
+const savedRedirect =
+    localStorage.getItem(
+        "mugart_redirect_after_login"
+    );
+
+const destino =
+    redirectParam ||
+    savedRedirect ||
+    "minha-conta.html";
+
+localStorage.removeItem(
+    "mugart_redirect_after_login"
+);
+
+window.location.href = destino;
         }, 500);
 
     } catch (error) {
