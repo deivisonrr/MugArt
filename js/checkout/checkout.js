@@ -861,12 +861,26 @@ async function calculateShipping() {
                 CheckoutState.selectedShippingCompany = option.company;
                 CheckoutState.selectedShippingService = option.name;
                 CheckoutState.selectedShippingDeliveryTime = option.delivery_time;
-                CheckoutState.shipping = Number(option.price);
-            
+               const primeiraOpcao = data.options[0];
+               if (primeiraOpcao) {
+                    CheckoutState.selectedShipping =
+                        primeiraOpcao.id;
+                
+                    CheckoutState.selectedShippingCompany =
+                        primeiraOpcao.company || "";
+                
+                    CheckoutState.selectedShippingService =
+                        primeiraOpcao.name || "";
+                
+                    CheckoutState.selectedShippingDeliveryTime =
+                        Number(primeiraOpcao.delivery_time || 0);
+                
+                    CheckoutState.shipping =
+                        Number(primeiraOpcao.price || 0);
+                }
+                
                 updateOptionCards();
-            
                 renderSummary();
-            
                 saveDraft();
             
             });
