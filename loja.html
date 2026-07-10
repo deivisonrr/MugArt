@@ -67,6 +67,38 @@
         <i class="fa-brands fa-whatsapp"></i>
       </a>
 
+      <div class="account-menu-wrapper">
+  <button
+    id="accountMenuButton"
+    class="header-icon-button account-menu-button"
+    type="button"
+    aria-label="Minha conta"
+  >
+    <span class="account-menu-icon">👤</span>
+
+    <span class="account-menu-text">
+      <small id="accountMenuLabel">Entrar</small>
+      <strong id="accountMenuName">Minha conta</strong>
+    </span>
+  </button>
+
+  <div id="accountDropdown" class="account-dropdown">
+    <a id="accountLoginLink" href="conta/login.html">
+      Entrar ou criar conta
+    </a>
+
+    <div id="accountLoggedOptions" class="account-logged-options hidden">
+      <a href="conta/minha-conta.html">Minha conta</a>
+      <a href="conta/minha-conta.html#orders">Meus pedidos</a>
+      <a href="conta/minha-conta.html#addresses">Meus endereços</a>
+
+      <button id="accountLogoutButton" type="button">
+        Sair
+      </button>
+    </div>
+  </div>
+</div>
+
       <button class="cart-top-btn" id="openCart" type="button">
         <i class="fa-solid fa-cart-shopping"></i>
         <span>Carrinho</span>
