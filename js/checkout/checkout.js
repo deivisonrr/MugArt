@@ -544,9 +544,57 @@ async function preencherEnderecoPadraoDoCliente(
     }
 }
 
+async function exigirLoginNoCheckout() {
+    if (!window.mugartSupabase) {
+        console.error(
+            "[Checkout] Supabase não carregou."
+        );
+
+        return false;
+    }
+
+    const {
+        data,
+        error
+    } = await mugartSupabase.auth.getSession();
+
+    if (error) {
+        console.error(
+            "[Checkout] Erro ao verificar sessão:",
+            error
+        );
+
+        window.location.href =
+            "conta/login.html?redirect=../checkout.html";
+
+        return false;
+    }
+
+    if (!data?.session) {
+        localStorage.setItem(
+            "mugart_redirect_after_login",
+            "../checkout.html"
+        );
+
+        window.location.href =
+            "conta/login.html?redirect=../checkout.html";
+
+        return false;
+    }
+
+    return true;
+}
+
 document.addEventListener(
     "DOMContentLoaded",
     async () => {
+        const usuarioLogado =
+            await exigirLoginNoCheckout();
+
+        if (!usuarioLogado) {
+            return;
+        }
+
         CheckoutState.cart = loadStorage(
             CHECKOUT_KEYS.cart,
             []
