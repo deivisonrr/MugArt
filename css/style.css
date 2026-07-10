@@ -826,3 +826,119 @@ footer div:nth-child(3) h4 { color: var(--pink); }
   .steps-grid { grid-template-columns: 1fr; }
   .tip { position: relative; margin-top: 14px; white-space: normal; text-align: center; }
 }
+
+.account-menu-wrapper {
+    position: relative;
+}
+
+.header-icon-button.account-menu-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    min-height: 46px;
+    padding: 8px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+
+    cursor: pointer;
+}
+
+.account-menu-icon {
+    font-size: 21px;
+}
+
+.account-menu-text {
+    display: grid;
+    text-align: left;
+}
+
+.account-menu-text small {
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.account-menu-text strong {
+    font-size: 13px;
+}
+
+.account-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 100;
+
+    width: 220px;
+    padding: 10px;
+
+    display: none;
+
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 18px;
+
+    background: #0a0b0e;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+}
+
+.account-dropdown.open {
+    display: grid;
+}
+
+.account-dropdown a,
+.account-dropdown button {
+    width: 100%;
+    padding: 12px 13px;
+
+    border: 0;
+    border-radius: 12px;
+
+    background: transparent;
+    color: #fff;
+
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: left;
+    text-decoration: none;
+
+    cursor: pointer;
+}
+
+.account-dropdown a:hover,
+.account-dropdown button:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.account-logged-options {
+    display: grid;
+}
+
+.account-logged-options button {
+    color: #ff7b7b;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 700px) {
+    .account-menu-text {
+        display: none;
+    }
+
+    .header-icon-button.account-menu-button {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .account-dropdown {
+        right: -45px;
+    }
+}
