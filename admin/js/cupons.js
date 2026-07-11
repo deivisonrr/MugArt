@@ -213,68 +213,51 @@
     }
 
     async function loadCoupons() {
-        const supabase =
-            window.mugartSupabase;
-
-        if (!supabase) {
-            showToast(
-                "Supabase não carregou.",
-                "error"
+    try {
+        const result =
+            await callAdminCoupons(
+                "list"
             );
-            return;
-        }
-
-        const [
-            couponResult,
-            usageResult
-        ] = await Promise.all([
-            supabase
-                .from("coupons")
-                .select("*")
-                .order("created_at", {
-                    ascending: false
-                }),
-
-            supabase
-                .from("coupon_usages")
-                .select(`
-                    id,
-                    coupon_id,
-                    discount_amount,
-                    created_at
-                `)
-        ]);
-
-        if (couponResult.error) {
-            console.error(
-                "Erro ao carregar cupons:",
-                couponResult.error
-            );
-
-            showToast(
-                "Não foi possível carregar os cupons.",
-                "error"
-            );
-
-            return;
-        }
-
-        if (usageResult.error) {
-            console.warn(
-                "Utilizações não carregadas:",
-                usageResult.error
-            );
-        }
 
         CouponAdmin.coupons =
-            couponResult.data || [];
+            result.coupons || [];
 
         CouponAdmin.usages =
-            usageResult.data || [];
+            result.usages || [];
 
         applyFilters();
         renderMetrics();
+
+    } catch (error) {
+        console.error(
+            "Erro ao carregar cupons:",
+            error
+        );
+
+        const tbody =
+            qs("#couponsTableBody");
+
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td
+                      colspan="9"
+                      class="admin-empty-cell"
+                    >
+                      ${escapeHtml(
+                          error.message
+                      )}
+                    </td>
+                </tr>
+            `;
+        }
+
+        showToast(
+            error.message,
+            "error"
+        );
     }
+}
 
     function getCouponUsageCount(coupon) {
         const realUsageCount =
@@ -929,49 +912,27 @@
             button.textContent =
                 "Salvando...";
 
-            const supabase =
-                window.mugartSupabase;
+            const result =
+                await callAdminCoupons(
+                    "save",
+                    {
+                        coupon_id:
+                            couponId || null,
 
-            let result;
-
-            if (couponId) {
-                result = await supabase
-                    .from("coupons")
-                    .update(payload)
-                    .eq("id", couponId);
-            } else {
-                result = await supabase
-                    .from("coupons")
-                    .insert({
-                        ...payload,
-                        usage_count: 0,
-                        created_at:
-                            new Date()
-                                .toISOString()
-                    });
-            }
-
-            if (result.error) {
-                if (
-                    String(
-                        result.error.message
-                    ).toLowerCase()
-                    .includes("duplicate")
-                ) {
-                    throw new Error(
-                        "Já existe um cupom com este código."
-                    );
-                }
-
-                throw result.error;
-            }
+                        coupon:
+                            payload
+                    }
+                );
 
             closeCouponModal();
 
             showToast(
-                couponId
-                    ? "Cupom atualizado."
-                    : "Cupom criado."
+                result.message ||
+                (
+                    couponId
+                        ? "Cupom atualizado."
+                        : "Cupom criado."
+                )
             );
 
             await loadCoupons();
@@ -993,48 +954,36 @@
                 "Salvar cupom";
         }
     }
-
     async function toggleCoupon(id) {
-        const coupon =
-            CouponAdmin.coupons.find(
-                item => item.id === id
-            );
-
-        if (!coupon) {
-            return;
-        }
-
-        const { error } =
-            await window.mugartSupabase
-                .from("coupons")
-                .update({
-                    active: !coupon.active,
-                    updated_at:
-                        new Date()
-                            .toISOString()
-                })
-                .eq("id", id);
-
-        if (error) {
-            console.error(error);
+        try {
+            const result =
+                await callAdminCoupons(
+                    "toggle",
+                    {
+                        coupon_id: id
+                    }
+                );
 
             showToast(
+                result.message ||
+                "Cupom atualizado."
+            );
+
+            await loadCoupons();
+
+        } catch (error) {
+            console.error(
+                "Erro ao alterar cupom:",
+                error
+            );
+
+            showToast(
+                error.message ||
                 "Não foi possível alterar o cupom.",
                 "error"
             );
-
-            return;
         }
-
-        showToast(
-            coupon.active
-                ? "Cupom desativado."
-                : "Cupom ativado."
-        );
-
-        await loadCoupons();
     }
-
     async function deleteCoupon(id) {
         const coupon =
             CouponAdmin.coupons.find(
@@ -1054,57 +1003,35 @@
             return;
         }
 
-        const { count, error: countError } =
-            await window.mugartSupabase
-                .from("coupon_usages")
-                .select("id", {
-                    count: "exact",
-                    head: true
-                })
-                .eq("coupon_id", id);
-
-        if (countError) {
-            console.error(countError);
+        try {
+            const result =
+                await callAdminCoupons(
+                    "delete",
+                    {
+                        coupon_id: id
+                    }
+                );
 
             showToast(
-                "Não foi possível verificar o uso do cupom.",
-                "error"
+                result.message ||
+                "Cupom excluído."
             );
 
-            return;
-        }
+            await loadCoupons();
 
-        if (Number(count || 0) > 0) {
-            showToast(
-                "Este cupom já foi utilizado. Desative-o em vez de excluir.",
-                "error"
+        } catch (error) {
+            console.error(
+                "Erro ao excluir cupom:",
+                error
             );
 
-            return;
-        }
-
-        const { error } =
-            await window.mugartSupabase
-                .from("coupons")
-                .delete()
-                .eq("id", id);
-
-        if (error) {
-            console.error(error);
-
             showToast(
+                error.message ||
                 "Não foi possível excluir o cupom.",
                 "error"
             );
-
-            return;
         }
-
-        showToast("Cupom excluído.");
-
-        await loadCoupons();
     }
-
     function bindTableActions() {
         qsa("[data-edit-coupon]")
             .forEach(button => {
