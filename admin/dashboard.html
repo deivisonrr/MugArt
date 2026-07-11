@@ -1,151 +1,755 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
-  />
+  >
 
-  <title>MugArt Admin | Dashboard</title>
+  <meta
+    name="robots"
+    content="noindex, nofollow"
+  >
 
-  <link
-    rel="icon"
-    href="../assets/favicon.ico"
-    sizes="any"
-  />
-
-  <link
-    rel="shortcut icon"
-    href="../assets/favicon.ico"
-    type="image/x-icon"
-  />
+  <title>Dashboard PRO | MugArt</title>
 
   <link
     rel="stylesheet"
-    href="/admin/css/admin.css?v=5"
-  />
+    href="/admin/css/dashboard.css?v=1"
+  >
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+  ></script>
+
+  <script src="/js/supabase-config.js?v=5"></script>
+  <script src="/admin/js/admin-auth.js?v=1"></script>
 </head>
 
-<body class="admin-body">
-  <aside class="admin-sidebar">
-    <a
-      class="admin-brand"
-      href="/admin/dashboard.html"
+<body>
+  <div
+    id="dashboard-loading"
+    class="dashboard-loading"
+  >
+    <div class="dashboard-loading-content">
+      <div class="loading-logo">MugArt</div>
+
+      <div class="loading-spinner"></div>
+
+      <p>Carregando dashboard...</p>
+    </div>
+  </div>
+
+  <div class="admin-layout">
+    <aside
+      id="admin-sidebar"
+      class="admin-sidebar"
     >
-      <img
-        src="../assets/logo.png"
-        alt="MugArt"
-      />
-    </a>
+      <div class="sidebar-header">
+        <a
+          href="/admin/dashboard.html"
+          class="sidebar-logo"
+        >
+          <span class="sidebar-logo-main">Mug</span>
+          <span class="sidebar-logo-highlight">Art</span>
+        </a>
 
-    <nav>
-      <a
-        class="active"
-        href="/admin/dashboard.html"
-      >
-        Dashboard
-      </a>
-
-      <a href="/admin/produtos.html">
-        Produtos
-      </a>
-
-      <a href="/admin/categorias.html">
-        Categorias
-      </a>
-
-      <a href="/admin/pedidos.html">
-        Pedidos
-      </a>
-
-      <a href="/admin/cupons.html">
-        Cupons
-      </a>
-
-      <a href="/admin/configuracoes.html">
-        Configurações
-      </a>
-
-      <a href="/loja.html">
-        Ver Loja
-      </a>
-    </nav>
-
-    <button
-      id="logoutBtn"
-      class="logout-btn"
-      type="button"
-    >
-      Sair
-    </button>
-  </aside>
-
-  <main class="admin-main">
-    <header class="admin-header">
-      <div>
-        <p class="eyebrow">Resumo</p>
-        <h1>Dashboard</h1>
+        <button
+          id="close-sidebar"
+          class="sidebar-close-button"
+          type="button"
+          aria-label="Fechar menu"
+        >
+          ×
+        </button>
       </div>
 
-      <a
-        class="admin-action"
-        href="/admin/produtos.html"
-      >
-        Cadastrar produto
-      </a>
-    </header>
+      <nav class="sidebar-navigation">
+        <span class="sidebar-section-title">
+          Visão geral
+        </span>
 
-    <section class="metric-grid">
-      <article class="metric-card">
-        <span>Produtos ativos</span>
-        <strong id="metricProducts">0</strong>
-      </article>
+        <a
+          href="/admin/dashboard.html"
+          class="sidebar-link active"
+        >
+          <span class="sidebar-icon">⌂</span>
+          <span>Dashboard</span>
+        </a>
 
-      <article class="metric-card">
-        <span>Estoque total</span>
-        <strong id="metricStock">0</strong>
-      </article>
+        <span class="sidebar-section-title">
+          Loja
+        </span>
 
-      <article class="metric-card">
-        <span>Pedidos</span>
-        <strong id="metricOrders">0</strong>
-      </article>
+        <a
+          href="/admin/produtos.html"
+          class="sidebar-link"
+        >
+          <span class="sidebar-icon">◫</span>
+          <span>Produtos</span>
+        </a>
 
-      <article class="metric-card">
-        <span>Faturamento visual</span>
-        <strong id="metricRevenue">R$ 0,00</strong>
-      </article>
-    </section>
+        <a
+          href="/admin/categorias.html"
+          class="sidebar-link"
+        >
+          <span class="sidebar-icon">▦</span>
+          <span>Categorias</span>
+        </a>
 
-    <section class="admin-panel">
-      <div class="panel-head">
-        <div>
-          <p class="eyebrow">Atenção</p>
-          <h2>Estoque baixo</h2>
+        <a
+          href="/admin/pedidos.html"
+          class="sidebar-link"
+        >
+          <span class="sidebar-icon">▣</span>
+          <span>Pedidos</span>
+
+          <span
+            id="sidebar-pending-orders"
+            class="sidebar-badge hidden"
+          >
+            0
+          </span>
+        </a>
+
+        <a
+          href="/admin/cupons.html"
+          class="sidebar-link"
+        >
+          <span class="sidebar-icon">%</span>
+          <span>Cupons</span>
+        </a>
+
+        <span class="sidebar-section-title">
+          Configurações
+        </span>
+
+        <a
+          href="/admin/analytics.html"
+          class="sidebar-link"
+        >
+          <span class="sidebar-icon">↗</span>
+          <span>Analytics</span>
+        </a>
+
+        <a
+          href="/admin/configuracoes.html"
+          class="sidebar-link"
+        >
+          <span class="sidebar-icon">⚙</span>
+          <span>Configurações</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a
+          href="/"
+          class="sidebar-store-link"
+          target="_blank"
+          rel="noopener"
+        >
+          <span>Ver loja</span>
+          <span>↗</span>
+        </a>
+
+        <button
+          id="admin-logout-button"
+          class="sidebar-logout-button"
+          type="button"
+        >
+          Sair do painel
+        </button>
+      </div>
+    </aside>
+
+    <div
+      id="sidebar-overlay"
+      class="sidebar-overlay"
+    ></div>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button
+            id="open-sidebar"
+            class="menu-button"
+            type="button"
+            aria-label="Abrir menu"
+          >
+            ☰
+          </button>
+
+          <div>
+            <p class="topbar-kicker">
+              Painel administrativo
+            </p>
+
+            <h1>Dashboard PRO</h1>
+          </div>
         </div>
-      </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Produto</th>
-              <th>Categoria</th>
-              <th>Cor</th>
-              <th>Estoque</th>
-            </tr>
-          </thead>
+        <div class="topbar-actions">
+          <div class="last-update">
+            <span class="status-indicator"></span>
 
-          <tbody id="lowStockTable"></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+            <div>
+              <small>Última atualização</small>
 
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script src="/js/supabase-config.js?v=5"></script>
-   <script src="/admin/js/admin-auth.js?v=1"></script>
-   <script src="/admin/js/admin.js?v=5"></script>
+              <strong id="last-update-text">
+                Carregando...
+              </strong>
+            </div>
+          </div>
+
+          <button
+            id="refresh-dashboard"
+            class="refresh-button"
+            type="button"
+          >
+            <span id="refresh-icon">↻</span>
+            Atualizar
+          </button>
+
+          <div class="admin-user">
+            <div class="admin-avatar">
+              M
+            </div>
+
+            <div class="admin-user-information">
+              <strong>Administrador</strong>
+
+              <small id="admin-user-email">
+                contato@mugart.com.br
+              </small>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="dashboard-content">
+        <div class="dashboard-heading">
+          <div>
+            <p class="dashboard-eyebrow">
+              Desempenho da loja
+            </p>
+
+            <h2>
+              Visão geral do e-commerce
+            </h2>
+
+            <p>
+              Indicadores atualizados diretamente pelo Supabase.
+            </p>
+          </div>
+
+          <div class="period-filter">
+            <button
+              class="period-button"
+              data-period="today"
+              type="button"
+            >
+              Hoje
+            </button>
+
+            <button
+              class="period-button"
+              data-period="7days"
+              type="button"
+            >
+              7 dias
+            </button>
+
+            <button
+              class="period-button active"
+              data-period="30days"
+              type="button"
+            >
+              30 dias
+            </button>
+
+            <button
+              class="period-button"
+              data-period="month"
+              type="button"
+            >
+              Este mês
+            </button>
+
+            <button
+              class="period-button"
+              data-period="year"
+              type="button"
+            >
+              Este ano
+            </button>
+
+            <button
+              class="period-button"
+              data-period="custom"
+              type="button"
+            >
+              Personalizado
+            </button>
+          </div>
+        </div>
+
+        <div
+          id="custom-period-container"
+          class="custom-period-container hidden"
+        >
+          <div class="custom-period-field">
+            <label for="custom-start-date">
+              Data inicial
+            </label>
+
+            <input
+              id="custom-start-date"
+              type="date"
+            >
+          </div>
+
+          <div class="custom-period-field">
+            <label for="custom-end-date">
+              Data final
+            </label>
+
+            <input
+              id="custom-end-date"
+              type="date"
+            >
+          </div>
+
+          <button
+            id="apply-custom-period"
+            class="apply-period-button"
+            type="button"
+          >
+            Aplicar período
+          </button>
+        </div>
+
+        <section class="kpi-grid">
+          <article class="kpi-card">
+            <div class="kpi-card-header">
+              <div class="kpi-icon revenue-icon">
+                R$
+              </div>
+
+              <span class="kpi-label">
+                Faturamento
+              </span>
+            </div>
+
+            <strong
+              id="kpi-revenue"
+              class="kpi-value"
+            >
+              R$ 0,00
+            </strong>
+
+            <div class="kpi-footer">
+              <span
+                id="kpi-revenue-comparison"
+                class="kpi-comparison neutral"
+              >
+                0%
+              </span>
+
+              <span>em relação ao período anterior</span>
+            </div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card-header">
+              <div class="kpi-icon today-icon">
+                ◷
+              </div>
+
+              <span class="kpi-label">
+                Faturamento hoje
+              </span>
+            </div>
+
+            <strong
+              id="kpi-today-revenue"
+              class="kpi-value"
+            >
+              R$ 0,00
+            </strong>
+
+            <div class="kpi-footer">
+              <span
+                id="kpi-today-orders"
+                class="kpi-highlight"
+              >
+                0 pedidos
+              </span>
+
+              <span>realizados hoje</span>
+            </div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card-header">
+              <div class="kpi-icon orders-icon">
+                ▣
+              </div>
+
+              <span class="kpi-label">
+                Pedidos
+              </span>
+            </div>
+
+            <strong
+              id="kpi-orders"
+              class="kpi-value"
+            >
+              0
+            </strong>
+
+            <div class="kpi-footer">
+              <span
+                id="kpi-orders-comparison"
+                class="kpi-comparison neutral"
+              >
+                0%
+              </span>
+
+              <span>em relação ao período anterior</span>
+            </div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card-header">
+              <div class="kpi-icon ticket-icon">
+                ↗
+              </div>
+
+              <span class="kpi-label">
+                Ticket médio
+              </span>
+            </div>
+
+            <strong
+              id="kpi-average-ticket"
+              class="kpi-value"
+            >
+              R$ 0,00
+            </strong>
+
+            <div class="kpi-footer">
+              <span
+                id="kpi-ticket-comparison"
+                class="kpi-comparison neutral"
+              >
+                0%
+              </span>
+
+              <span>em relação ao período anterior</span>
+            </div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card-header">
+              <div class="kpi-icon products-icon">
+                ◫
+              </div>
+
+              <span class="kpi-label">
+                Produtos vendidos
+              </span>
+            </div>
+
+            <strong
+              id="kpi-products-sold"
+              class="kpi-value"
+            >
+              0
+            </strong>
+
+            <div class="kpi-footer">
+              <span
+                id="kpi-products-comparison"
+                class="kpi-comparison neutral"
+              >
+                0%
+              </span>
+
+              <span>em relação ao período anterior</span>
+            </div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card-header">
+              <div class="kpi-icon customers-icon">
+                ◎
+              </div>
+
+              <span class="kpi-label">
+                Clientes
+              </span>
+            </div>
+
+            <strong
+              id="kpi-customers"
+              class="kpi-value"
+            >
+              0
+            </strong>
+
+            <div class="kpi-footer">
+              <span
+                id="kpi-new-customers"
+                class="kpi-highlight"
+              >
+                0 novos
+              </span>
+
+              <span>no período selecionado</span>
+            </div>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-card-header">
+              <div class="kpi-icon coupons-icon">
+                %
+              </div>
+
+              <span class="kpi-label">
+                Cupons utilizados
+              </span>
+            </div>
+
+            <strong
+              id="kpi-coupons"
+              class="kpi-value"
+            >
+              0
+            </strong>
+
+            <div class="kpi-footer">
+              <span
+                id="kpi-coupon-value"
+                class="kpi-highlight"
+              >
+                R$ 0,00
+              </span>
+
+              <span>em descontos concedidos</span>
+            </div>
+          </article>
+
+          <article class="kpi-card warning-card">
+            <div class="kpi-card-header">
+              <div class="kpi-icon stock-icon">
+                !
+              </div>
+
+              <span class="kpi-label">
+                Estoque baixo
+              </span>
+            </div>
+
+            <strong
+              id="kpi-low-stock"
+              class="kpi-value"
+            >
+              0
+            </strong>
+
+            <div class="kpi-footer">
+              <a
+                href="/admin/produtos.html"
+                class="kpi-link"
+              >
+                Ver produtos
+              </a>
+            </div>
+          </article>
+        </section>
+
+        <section class="dashboard-grid dashboard-grid-main">
+          <article class="dashboard-card revenue-chart-card">
+            <div class="dashboard-card-header">
+              <div>
+                <span class="dashboard-card-eyebrow">
+                  Receita
+                </span>
+
+                <h3>Faturamento por dia</h3>
+              </div>
+
+              <div class="chart-summary">
+                <small>Total do período</small>
+
+                <strong id="chart-revenue-total">
+                  R$ 0,00
+                </strong>
+              </div>
+            </div>
+
+            <div class="chart-container">
+              <canvas id="revenue-chart"></canvas>
+            </div>
+          </article>
+
+          <article class="dashboard-card order-status-card">
+            <div class="dashboard-card-header">
+              <div>
+                <span class="dashboard-card-eyebrow">
+                  Pedidos
+                </span>
+
+                <h3>Status dos pedidos</h3>
+              </div>
+            </div>
+
+            <div class="donut-chart-container">
+              <canvas id="order-status-chart"></canvas>
+            </div>
+
+            <div
+              id="order-status-legend"
+              class="order-status-legend"
+            ></div>
+          </article>
+        </section>
+
+        <section class="dashboard-grid dashboard-grid-secondary">
+          <article class="dashboard-card">
+            <div class="dashboard-card-header">
+              <div>
+                <span class="dashboard-card-eyebrow">
+                  Produtos
+                </span>
+
+                <h3>Produtos mais vendidos</h3>
+              </div>
+
+              <a
+                href="/admin/produtos.html"
+                class="card-action-link"
+              >
+                Ver produtos
+              </a>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="dashboard-table">
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Receita</th>
+                  </tr>
+                </thead>
+
+                <tbody id="best-products-table">
+                  <tr>
+                    <td
+                      colspan="3"
+                      class="table-loading"
+                    >
+                      Carregando produtos...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="dashboard-card">
+            <div class="dashboard-card-header">
+              <div>
+                <span class="dashboard-card-eyebrow">
+                  Estoque
+                </span>
+
+                <h3>Atenção necessária</h3>
+              </div>
+
+              <a
+                href="/admin/produtos.html"
+                class="card-action-link"
+              >
+                Gerenciar
+              </a>
+            </div>
+
+            <div
+              id="stock-alert-list"
+              class="stock-alert-list"
+            >
+              <div class="empty-state">
+                Carregando estoque...
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="dashboard-card latest-orders-card">
+          <div class="dashboard-card-header">
+            <div>
+              <span class="dashboard-card-eyebrow">
+                Pedidos recentes
+              </span>
+
+              <h3>Últimos pedidos</h3>
+            </div>
+
+            <a
+              href="/admin/pedidos.html"
+              class="card-action-link"
+            >
+              Ver todos
+            </a>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="dashboard-table orders-table">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Data</th>
+                  <th>Pagamento</th>
+                  <th>Status</th>
+                  <th>Valor</th>
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody id="latest-orders-table">
+                <tr>
+                  <td
+                    colspan="7"
+                    class="table-loading"
+                  >
+                    Carregando pedidos...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div
+    id="dashboard-toast"
+    class="dashboard-toast"
+  >
+    <span id="dashboard-toast-message"></span>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/supabase-config.js?v=5"></script>
+<script src="/admin/js/admin-auth.js?v=1"></script>
+<script src="/admin/js/admin.js?v=5"></script>
 </body>
 </html>
