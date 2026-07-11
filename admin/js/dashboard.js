@@ -1,40 +1,31 @@
 (() => {
   "use strict";
 
-  /*
-   * =========================================================
-   * CONFIGURAÇÕES
-   * =========================================================
-   *
-   * Caso os nomes das colunas no seu Supabase sejam diferentes,
-   * altere apenas este objeto.
-   */
-
   const DASHBOARD_CONFIG = {
-  autoRefreshMilliseconds: 30000,
-  lowStockLimit: 5,
+    autoRefreshMilliseconds: 30000,
+    lowStockLimit: 5,
 
-  tables: {
-    orders: "orders",
-    orderItems: "order_items",
-    products: "products",
-    customers: "customers"
-  },
-
-  columns: {
-    orders: {
-      id: "id",
-      number: "order_number",
-      total: "total",
-      status: "status",
-      paymentStatus: "payment_status",
-      createdAt: "created_at",
-      customerId: "customer_id",
-      customerName: "customer_name",
-      customerEmail: "customer_email",
-      couponCode: "coupon",
-      discount: "discount"
+    tables: {
+      orders: "orders",
+      orderItems: "order_items",
+      products: "products",
+      customers: "customers"
     },
+
+    columns: {
+      orders: {
+        id: "id",
+        number: "order_number",
+        total: "total",
+        status: "status",
+        paymentStatus: "payment_status",
+        createdAt: "created_at",
+        customerId: "customer_id",
+        customerName: "customer_name",
+        customerEmail: "customer_email",
+        couponCode: "coupon",
+        discount: "discount"
+      },
 
       orderItems: {
         id: "id",
@@ -43,8 +34,8 @@
         productName: "product_name",
         quantity: "quantity",
         unitPrice: "unit_price",
-        total: "total"
-        image: "image_url",
+        total: "total",
+        image: "image_url"
       },
 
       products: {
@@ -101,12 +92,7 @@
   };
 
   const elements = {};
-
-  /*
-   * =========================================================
-   * INICIALIZAÇÃO
-   * =========================================================
-   */
+  let toastTimer = null;
 
   document.addEventListener("DOMContentLoaded", initializeDashboard);
 
@@ -119,7 +105,6 @@
       await loadAdminInformation();
       calculatePeriod("30days");
       await loadDashboard();
-
       startAutoRefresh();
     } catch (error) {
       console.error("Erro ao inicializar dashboard:", error);
@@ -128,166 +113,81 @@
         error?.message || "Não foi possível carregar o dashboard.",
         "error"
       );
-
+    } finally {
       hideLoading();
     }
   }
 
   function cacheElements() {
     elements.loading = document.getElementById("dashboard-loading");
-
-    elements.sidebar = document.getElementById("admin-sidebar");
-    elements.sidebarOverlay = document.getElementById("sidebar-overlay");
-    elements.openSidebar = document.getElementById("open-sidebar");
-    elements.closeSidebar = document.getElementById("close-sidebar");
-
     elements.refreshButton = document.getElementById("refresh-dashboard");
     elements.logoutButton = document.getElementById("admin-logout-button");
-
     elements.lastUpdateText = document.getElementById("last-update-text");
     elements.adminUserEmail = document.getElementById("admin-user-email");
 
     elements.periodButtons = document.querySelectorAll(".period-button");
-
-    elements.customPeriodContainer = document.getElementById(
-      "custom-period-container"
-    );
-
+    elements.customPeriodContainer = document.getElementById("custom-period-container");
     elements.customStartDate = document.getElementById("custom-start-date");
     elements.customEndDate = document.getElementById("custom-end-date");
-    elements.applyCustomPeriod = document.getElementById(
-      "apply-custom-period"
-    );
+    elements.applyCustomPeriod = document.getElementById("apply-custom-period");
 
     elements.kpiRevenue = document.getElementById("kpi-revenue");
-    elements.kpiRevenueComparison = document.getElementById(
-      "kpi-revenue-comparison"
-    );
-
-    elements.kpiTodayRevenue = document.getElementById(
-      "kpi-today-revenue"
-    );
-
-    elements.kpiTodayOrders = document.getElementById(
-      "kpi-today-orders"
-    );
-
+    elements.kpiRevenueComparison = document.getElementById("kpi-revenue-comparison");
+    elements.kpiTodayRevenue = document.getElementById("kpi-today-revenue");
+    elements.kpiTodayOrders = document.getElementById("kpi-today-orders");
     elements.kpiOrders = document.getElementById("kpi-orders");
-
-    elements.kpiOrdersComparison = document.getElementById(
-      "kpi-orders-comparison"
-    );
-
-    elements.kpiAverageTicket = document.getElementById(
-      "kpi-average-ticket"
-    );
-
-    elements.kpiTicketComparison = document.getElementById(
-      "kpi-ticket-comparison"
-    );
-
-    elements.kpiProductsSold = document.getElementById(
-      "kpi-products-sold"
-    );
-
-    elements.kpiProductsComparison = document.getElementById(
-      "kpi-products-comparison"
-    );
-
+    elements.kpiOrdersComparison = document.getElementById("kpi-orders-comparison");
+    elements.kpiAverageTicket = document.getElementById("kpi-average-ticket");
+    elements.kpiTicketComparison = document.getElementById("kpi-ticket-comparison");
+    elements.kpiProductsSold = document.getElementById("kpi-products-sold");
+    elements.kpiProductsComparison = document.getElementById("kpi-products-comparison");
     elements.kpiCustomers = document.getElementById("kpi-customers");
-
-    elements.kpiNewCustomers = document.getElementById(
-      "kpi-new-customers"
-    );
-
+    elements.kpiNewCustomers = document.getElementById("kpi-new-customers");
     elements.kpiCoupons = document.getElementById("kpi-coupons");
-
-    elements.kpiCouponValue = document.getElementById(
-      "kpi-coupon-value"
-    );
-
+    elements.kpiCouponValue = document.getElementById("kpi-coupon-value");
     elements.kpiLowStock = document.getElementById("kpi-low-stock");
+    elements.chartRevenueTotal = document.getElementById("chart-revenue-total");
 
-    elements.chartRevenueTotal = document.getElementById(
-      "chart-revenue-total"
-    );
-
-    elements.revenueChartCanvas = document.getElementById(
-      "revenue-chart"
-    );
-
-    elements.orderStatusChartCanvas = document.getElementById(
-      "order-status-chart"
-    );
-
-    elements.orderStatusLegend = document.getElementById(
-      "order-status-legend"
-    );
-
-    elements.bestProductsTable = document.getElementById(
-      "best-products-table"
-    );
-
-    elements.latestOrdersTable = document.getElementById(
-      "latest-orders-table"
-    );
-
-    elements.stockAlertList = document.getElementById(
-      "stock-alert-list"
-    );
-
-    elements.sidebarPendingOrders = document.getElementById(
-      "sidebar-pending-orders"
-    );
-
+    elements.revenueChartCanvas = document.getElementById("revenue-chart");
+    elements.orderStatusChartCanvas = document.getElementById("order-status-chart");
+    elements.orderStatusLegend = document.getElementById("order-status-legend");
+    elements.bestProductsTable = document.getElementById("best-products-table");
+    elements.latestOrdersTable = document.getElementById("latest-orders-table");
+    elements.stockAlertList = document.getElementById("stock-alert-list");
+    elements.sidebarPendingOrders = document.getElementById("sidebar-pending-orders");
     elements.toast = document.getElementById("dashboard-toast");
-    elements.toastMessage = document.getElementById(
-      "dashboard-toast-message"
-    );
+    elements.toastMessage = document.getElementById("dashboard-toast-message");
   }
 
   function configureEvents() {
-    elements.openSidebar?.addEventListener("click", openSidebar);
-    elements.closeSidebar?.addEventListener("click", closeSidebar);
-    elements.sidebarOverlay?.addEventListener("click", closeSidebar);
-
     elements.refreshButton?.addEventListener("click", async () => {
-      await loadDashboard({
-        showSuccessMessage: true
-      });
+      await loadDashboard({ showSuccessMessage: true });
     });
 
     elements.periodButtons.forEach((button) => {
       button.addEventListener("click", async () => {
         const period = button.dataset.period;
-
         activatePeriodButton(period);
 
         if (period === "custom") {
-          elements.customPeriodContainer.classList.remove("hidden");
+          elements.customPeriodContainer?.classList.remove("hidden");
           prepareDefaultCustomDates();
           return;
         }
 
-        elements.customPeriodContainer.classList.add("hidden");
-
+        elements.customPeriodContainer?.classList.add("hidden");
         state.period = period;
         calculatePeriod(period);
-
         await loadDashboard();
       });
     });
 
     elements.applyCustomPeriod?.addEventListener("click", async () => {
-      const start = elements.customStartDate.value;
-      const end = elements.customEndDate.value;
+      const start = elements.customStartDate?.value;
+      const end = elements.customEndDate?.value;
 
       if (!start || !end) {
-        showToast(
-          "Informe a data inicial e a data final.",
-          "error"
-        );
-
+        showToast("Informe a data inicial e a data final.", "error");
         return;
       }
 
@@ -295,36 +195,34 @@
       const endDate = endOfDay(new Date(`${end}T23:59:59`));
 
       if (startDate > endDate) {
-        showToast(
-          "A data inicial não pode ser maior que a data final.",
-          "error"
-        );
-
+        showToast("A data inicial não pode ser maior que a data final.", "error");
         return;
       }
 
       state.period = "custom";
       calculateCustomPeriod(startDate, endDate);
-
       await loadDashboard();
     });
 
     elements.logoutButton?.addEventListener("click", logoutAdmin);
-
-    window.addEventListener("resize", () => {
-      if (window.innerWidth > 980) {
-        closeSidebar();
-      }
-    });
   }
 
-  /*
-   * =========================================================
-   * SUPABASE
-   * =========================================================
-   */
-
   function getSupabaseClient() {
+    if (window.mugartSupabase?.from) {
+      return window.mugartSupabase;
+    }
+
+    if (
+      typeof mugartSupabase !== "undefined" &&
+      mugartSupabase?.from
+    ) {
+      return mugartSupabase;
+    }
+
+    if (window.supabaseClient?.from) {
+      return window.supabaseClient;
+    }
+
     if (
       typeof supabaseClient !== "undefined" &&
       supabaseClient?.from
@@ -332,16 +230,12 @@
       return supabaseClient;
     }
 
-    if (window.supabaseClient?.from) {
-      return window.supabaseClient;
-    }
-
     if (window.sb?.from) {
       return window.sb;
     }
 
     throw new Error(
-      "Cliente do Supabase não encontrado. Verifique o arquivo supabase-config.js."
+      "Cliente Supabase não encontrado. Verifique o arquivo supabase-config.js."
     );
   }
 
@@ -371,21 +265,13 @@
   async function logoutAdmin() {
     try {
       const client = getSupabaseClient();
-
       await client.auth.signOut();
-
       window.location.href = "/admin/login.html";
     } catch (error) {
       console.error("Erro ao sair:", error);
       showToast("Não foi possível sair do painel.", "error");
     }
   }
-
-  /*
-   * =========================================================
-   * CARREGAMENTO PRINCIPAL
-   * =========================================================
-   */
 
   async function loadDashboard(options = {}) {
     if (state.isLoading) {
@@ -400,51 +286,41 @@
         currentOrders,
         previousOrders,
         todayOrders,
-        currentOrderItems,
-        previousOrderItems,
         products,
         customers
       ] = await Promise.all([
         fetchOrders(state.startDate, state.endDate),
         fetchOrders(state.previousStartDate, state.previousEndDate),
         fetchOrders(startOfDay(new Date()), endOfDay(new Date())),
-        fetchOrderItems(state.startDate, state.endDate),
-        fetchOrderItems(
-          state.previousStartDate,
-          state.previousEndDate
-        ),
         fetchProducts(),
         fetchCustomers()
       ]);
 
-      const currentApprovedOrders =
-        filterRevenueOrders(currentOrders);
+      const currentOrderItems = await fetchOrderItemsByOrders(currentOrders);
+      const previousOrderItems = await fetchOrderItemsByOrders(previousOrders);
 
-      const previousApprovedOrders =
-        filterRevenueOrders(previousOrders);
+      const currentApprovedOrders = filterRevenueOrders(currentOrders);
+      const previousApprovedOrders = filterRevenueOrders(previousOrders);
+      const todayApprovedOrders = filterRevenueOrders(todayOrders);
 
-      const todayApprovedOrders =
-        filterRevenueOrders(todayOrders);
-
-      const currentOrderIds = new Set(
+      const currentApprovedOrderIds = new Set(
         currentApprovedOrders.map((order) => String(order.id))
       );
 
-      const previousOrderIds = new Set(
+      const previousApprovedOrderIds = new Set(
         previousApprovedOrders.map((order) => String(order.id))
       );
 
       const approvedCurrentItems = currentOrderItems.filter((item) =>
-        currentOrderIds.has(String(item.orderId))
+        currentApprovedOrderIds.has(String(item.orderId))
       );
 
       const approvedPreviousItems = previousOrderItems.filter((item) =>
-        previousOrderIds.has(String(item.orderId))
+        previousApprovedOrderIds.has(String(item.orderId))
       );
 
       const dashboardData = buildDashboardData({
         currentOrders,
-        previousOrders,
         currentApprovedOrders,
         previousApprovedOrders,
         todayApprovedOrders,
@@ -455,7 +331,6 @@
       });
 
       renderDashboard(dashboardData);
-
       updateLastUpdate();
 
       if (options.showSuccessMessage) {
@@ -465,8 +340,7 @@
       console.error("Erro ao carregar dashboard:", error);
 
       showToast(
-        error?.message ||
-          "Ocorreu um erro ao buscar os dados do Supabase.",
+        error?.message || "Ocorreu um erro ao buscar os dados do Supabase.",
         "error"
       );
     } finally {
@@ -475,12 +349,6 @@
       hideLoading();
     }
   }
-
-  /*
-   * =========================================================
-   * CONSULTAS
-   * =========================================================
-   */
 
   async function fetchOrders(startDate, endDate) {
     const client = getSupabaseClient();
@@ -498,45 +366,30 @@
       config.customerEmail,
       config.couponCode,
       config.discount
-    ]
-      .filter(Boolean)
-      .join(",");
+    ].join(",");
 
-    let query = client
+    const { data, error } = await client
       .from(DASHBOARD_CONFIG.tables.orders)
       .select(selectColumns)
       .gte(config.createdAt, startDate.toISOString())
       .lte(config.createdAt, endDate.toISOString())
-      .order(config.createdAt, {
-        ascending: false
-      });
-
-    const { data, error } = await query;
+      .order(config.createdAt, { ascending: false });
 
     if (error) {
-      throw new Error(
-        `Erro ao carregar pedidos: ${error.message}`
-      );
+      throw new Error(`Erro ao carregar pedidos: ${error.message}`);
     }
 
     return (data || []).map(normalizeOrder);
   }
 
-  async function fetchOrderItems(startDate, endDate) {
-    const client = getSupabaseClient();
-
-    /*
-     * Primeiro buscamos os pedidos do período.
-     * Depois buscamos os itens pertencentes a esses pedidos.
-     */
-
-    const orders = await fetchOrders(startDate, endDate);
+  async function fetchOrderItemsByOrders(orders) {
     const orderIds = orders.map((order) => order.id).filter(Boolean);
 
     if (!orderIds.length) {
       return [];
     }
 
+    const client = getSupabaseClient();
     const config = DASHBOARD_CONFIG.columns.orderItems;
 
     const selectColumns = [
@@ -548,22 +401,29 @@
       config.unitPrice,
       config.total,
       config.image
-    ]
-      .filter(Boolean)
-      .join(",");
+    ].join(",");
 
-    const { data, error } = await client
-      .from(DASHBOARD_CONFIG.tables.orderItems)
-      .select(selectColumns)
-      .in(config.orderId, orderIds);
+    const allItems = [];
+    const chunkSize = 100;
 
-    if (error) {
-      throw new Error(
-        `Erro ao carregar itens dos pedidos: ${error.message}`
-      );
+    for (let index = 0; index < orderIds.length; index += chunkSize) {
+      const chunk = orderIds.slice(index, index + chunkSize);
+
+      const { data, error } = await client
+        .from(DASHBOARD_CONFIG.tables.orderItems)
+        .select(selectColumns)
+        .in(config.orderId, chunk);
+
+      if (error) {
+        throw new Error(
+          `Erro ao carregar itens dos pedidos: ${error.message}`
+        );
+      }
+
+      allItems.push(...(data || []));
     }
 
-    return (data || []).map(normalizeOrderItem);
+    return allItems.map(normalizeOrderItem);
   }
 
   async function fetchProducts() {
@@ -577,21 +437,15 @@
       config.image,
       config.stock,
       config.active
-    ]
-      .filter(Boolean)
-      .join(",");
+    ].join(",");
 
     const { data, error } = await client
       .from(DASHBOARD_CONFIG.tables.products)
       .select(selectColumns)
-      .order(config.name, {
-        ascending: true
-      });
+      .order(config.name, { ascending: true });
 
     if (error) {
-      throw new Error(
-        `Erro ao carregar produtos: ${error.message}`
-      );
+      throw new Error(`Erro ao carregar produtos: ${error.message}`);
     }
 
     return (data || []).map(normalizeProduct);
@@ -606,28 +460,18 @@
       config.name,
       config.email,
       config.createdAt
-    ]
-      .filter(Boolean)
-      .join(",");
+    ].join(",");
 
     const { data, error } = await client
       .from(DASHBOARD_CONFIG.tables.customers)
       .select(selectColumns);
 
     if (error) {
-      throw new Error(
-        `Erro ao carregar clientes: ${error.message}`
-      );
+      throw new Error(`Erro ao carregar clientes: ${error.message}`);
     }
 
     return (data || []).map(normalizeCustomer);
   }
-
-  /*
-   * =========================================================
-   * NORMALIZAÇÃO
-   * =========================================================
-   */
 
   function normalizeOrder(rawOrder) {
     const config = DASHBOARD_CONFIG.columns.orders;
@@ -637,61 +481,38 @@
       number:
         rawOrder[config.number] ||
         createShortOrderNumber(rawOrder[config.id]),
-
       total: parseMoney(rawOrder[config.total]),
       status: normalizeText(rawOrder[config.status]),
-      paymentStatus: normalizeText(
-        rawOrder[config.paymentStatus]
-      ),
-
+      paymentStatus: normalizeText(rawOrder[config.paymentStatus]),
       createdAt: rawOrder[config.createdAt],
       customerId: rawOrder[config.customerId],
       customerName:
         rawOrder[config.customerName] || "Cliente não informado",
-
       customerEmail: rawOrder[config.customerEmail] || "",
       couponCode: rawOrder[config.couponCode] || "",
       discount: parseMoney(rawOrder[config.discount])
     };
   }
 
- function normalizeOrderItem(rawItem) {
-  const config = DASHBOARD_CONFIG.columns.orderItems;
+  function normalizeOrderItem(rawItem) {
+    const config = DASHBOARD_CONFIG.columns.orderItems;
 
-  const quantity =
-    Number(rawItem[config.quantity]) || 0;
+    const quantity = Number(rawItem[config.quantity]) || 0;
+    const unitPrice = parseMoney(rawItem[config.unitPrice]);
+    const informedTotal = parseMoney(rawItem[config.total]);
 
-  const unitPrice = parseMoney(
-    rawItem[config.unitPrice]
-  );
-
-  const informedTotal = parseMoney(
-    rawItem[config.total]
-  );
-
-  return {
-    id: rawItem[config.id],
-
-    orderId: rawItem[config.orderId],
-
-    productId: rawItem[config.productId],
-
-    productName:
-      rawItem[config.productName] ||
-      "Produto não informado",
-
-    image:
-      rawItem[config.image] || "",
-
-    quantity,
-
-    unitPrice,
-
-    total:
-      informedTotal ||
-      quantity * unitPrice
-  };
-}
+    return {
+      id: rawItem[config.id],
+      orderId: rawItem[config.orderId],
+      productId: rawItem[config.productId],
+      productName:
+        rawItem[config.productName] || "Produto não informado",
+      image: rawItem[config.image] || "",
+      quantity,
+      unitPrice,
+      total: informedTotal || quantity * unitPrice
+    };
+  }
 
   function normalizeProduct(rawProduct) {
     const config = DASHBOARD_CONFIG.columns.products;
@@ -720,15 +541,8 @@
     };
   }
 
-  /*
-   * =========================================================
-   * CÁLCULOS
-   * =========================================================
-   */
-
   function buildDashboardData({
     currentOrders,
-    previousOrders,
     currentApprovedOrders,
     previousApprovedOrders,
     todayApprovedOrders,
@@ -769,17 +583,14 @@
     );
 
     const newCustomers = customers.filter((customer) => {
-      if (!customer.createdAt) {
-        return false;
-      }
+      if (!customer.createdAt) return false;
 
       const date = new Date(customer.createdAt);
-
       return date >= state.startDate && date <= state.endDate;
     });
 
     const couponOrders = currentApprovedOrders.filter(
-      (order) => order.couponCode
+      (order) => String(order.couponCode || "").trim() !== ""
     );
 
     const couponDiscount = sum(
@@ -801,83 +612,55 @@
           currentRevenue,
           previousRevenue
         ),
-
         todayRevenue,
         todayOrders: todayApprovedOrders.length,
-
         orders: currentOrderCount,
         ordersComparison: calculatePercentageChange(
           currentOrderCount,
           previousOrderCount
         ),
-
         averageTicket: currentAverageTicket,
         averageTicketComparison: calculatePercentageChange(
           currentAverageTicket,
           previousAverageTicket
         ),
-
         productsSold: currentProductsSold,
         productsSoldComparison: calculatePercentageChange(
           currentProductsSold,
           previousProductsSold
         ),
-
         customers: customers.length,
         newCustomers: newCustomers.length,
-
         coupons: couponOrders.length,
         couponDiscount,
-
         lowStock: lowStockProducts.length
       },
 
       revenueSeries: buildRevenueSeries(currentApprovedOrders),
-
       orderStatus: buildOrderStatus(currentOrders),
-
-      bestProducts: buildBestProducts(
-        approvedCurrentItems,
-        products
-      ),
-
+      bestProducts: buildBestProducts(approvedCurrentItems, products),
       latestOrders: currentOrders.slice(0, 10),
-
       lowStockProducts
     };
   }
 
   function filterRevenueOrders(orders) {
-  return orders.filter((order) => {
-    const paymentStatus = normalizeText(order.paymentStatus);
-    const orderStatus = normalizeText(order.status);
+    return orders.filter((order) => {
+      const paymentStatus = normalizeText(order.paymentStatus);
+      const orderStatus = normalizeText(order.status);
 
-    const cancelledStatuses = [
-      "cancelled",
-      "canceled",
-      "cancelado",
-      "rejected",
-      "rejeitado",
-      "failed"
-    ];
+      if (
+        DASHBOARD_CONFIG.cancelledOrderStatuses.includes(orderStatus)
+      ) {
+        return false;
+      }
 
-    if (cancelledStatuses.includes(orderStatus)) {
-      return false;
-    }
-
-    const approvedStatuses = [
-      "approved",
-      "paid",
-      "pago",
-      "aprovado"
-    ];
-
-    return (
-      approvedStatuses.includes(paymentStatus) ||
-      approvedStatuses.includes(orderStatus)
-    );
-  });
-}
+      return (
+        DASHBOARD_CONFIG.approvedPaymentStatuses.includes(paymentStatus) ||
+        DASHBOARD_CONFIG.approvedPaymentStatuses.includes(orderStatus)
+      );
+    });
+  }
 
   function buildRevenueSeries(orders) {
     const days = enumerateDays(state.startDate, state.endDate);
@@ -887,9 +670,7 @@
     );
 
     orders.forEach((order) => {
-      if (!order.createdAt) {
-        return;
-      }
+      if (!order.createdAt) return;
 
       const dateKey = formatDateKey(new Date(order.createdAt));
 
@@ -914,9 +695,7 @@
     const statusMap = new Map();
 
     orders.forEach((order) => {
-      const status =
-        normalizeText(order.status) || "não informado";
-
+      const status = normalizeText(order.status) || "nao_informado";
       statusMap.set(status, (statusMap.get(status) || 0) + 1);
     });
 
@@ -931,10 +710,7 @@
 
   function buildBestProducts(orderItems, products) {
     const productsById = new Map(
-      products.map((product) => [
-        String(product.id),
-        product
-      ])
+      products.map((product) => [String(product.id), product])
     );
 
     const productSummary = new Map();
@@ -950,15 +726,18 @@
 
       const existing = productSummary.get(key) || {
         id: item.productId,
-        name:product?.name || item.productName || "Produto sem identificação",
+        name:
+          product?.name ||
+          item.productName ||
+          "Produto sem identificação",
         sku: product?.sku || "",
         image: product?.image || item.image || "",
         quantity: 0,
         revenue: 0
       };
 
-      existing.quantity += item.quantity;
-      existing.revenue += item.total;
+      existing.quantity += Number(item.quantity) || 0;
+      existing.revenue += Number(item.total) || 0;
 
       productSummary.set(key, existing);
     });
@@ -975,22 +754,10 @@
   }
 
   function calculatePercentageChange(current, previous) {
-    if (previous === 0 && current === 0) {
-      return 0;
-    }
-
-    if (previous === 0) {
-      return 100;
-    }
-
+    if (previous === 0 && current === 0) return 0;
+    if (previous === 0) return 100;
     return ((current - previous) / previous) * 100;
   }
-
-  /*
-   * =========================================================
-   * RENDERIZAÇÃO
-   * =========================================================
-   */
 
   function renderDashboard(data) {
     renderMetrics(data.metrics);
@@ -1003,36 +770,27 @@
   }
 
   function renderMetrics(metrics) {
-    elements.kpiRevenue.textContent = formatCurrency(
-      metrics.revenue
-    );
-
+    setText(elements.kpiRevenue, formatCurrency(metrics.revenue));
     renderComparison(
       elements.kpiRevenueComparison,
       metrics.revenueComparison
     );
 
-    elements.kpiTodayRevenue.textContent = formatCurrency(
-      metrics.todayRevenue
+    setText(elements.kpiTodayRevenue, formatCurrency(metrics.todayRevenue));
+    setText(
+      elements.kpiTodayOrders,
+      formatQuantityText(metrics.todayOrders, "pedido", "pedidos")
     );
 
-    elements.kpiTodayOrders.textContent = formatQuantityText(
-      metrics.todayOrders,
-      "pedido",
-      "pedidos"
-    );
-
-    elements.kpiOrders.textContent = formatInteger(
-      metrics.orders
-    );
-
+    setText(elements.kpiOrders, formatInteger(metrics.orders));
     renderComparison(
       elements.kpiOrdersComparison,
       metrics.ordersComparison
     );
 
-    elements.kpiAverageTicket.textContent = formatCurrency(
-      metrics.averageTicket
+    setText(
+      elements.kpiAverageTicket,
+      formatCurrency(metrics.averageTicket)
     );
 
     renderComparison(
@@ -1040,8 +798,9 @@
       metrics.averageTicketComparison
     );
 
-    elements.kpiProductsSold.textContent = formatInteger(
-      metrics.productsSold
+    setText(
+      elements.kpiProductsSold,
+      formatInteger(metrics.productsSold)
     );
 
     renderComparison(
@@ -1049,35 +808,27 @@
       metrics.productsSoldComparison
     );
 
-    elements.kpiCustomers.textContent = formatInteger(
-      metrics.customers
+    setText(elements.kpiCustomers, formatInteger(metrics.customers));
+    setText(
+      elements.kpiNewCustomers,
+      `${formatInteger(metrics.newCustomers)} novos`
     );
 
-    elements.kpiNewCustomers.textContent = `${formatInteger(
-      metrics.newCustomers
-    )} novos`;
-
-    elements.kpiCoupons.textContent = formatInteger(
-      metrics.coupons
+    setText(elements.kpiCoupons, formatInteger(metrics.coupons));
+    setText(
+      elements.kpiCouponValue,
+      formatCurrency(metrics.couponDiscount)
     );
 
-    elements.kpiCouponValue.textContent = formatCurrency(
-      metrics.couponDiscount
-    );
-
-    elements.kpiLowStock.textContent = formatInteger(
-      metrics.lowStock
-    );
-
-    elements.chartRevenueTotal.textContent = formatCurrency(
-      metrics.revenue
+    setText(elements.kpiLowStock, formatInteger(metrics.lowStock));
+    setText(
+      elements.chartRevenueTotal,
+      formatCurrency(metrics.revenue)
     );
   }
 
   function renderComparison(element, percentage) {
-    if (!element) {
-      return;
-    }
+    if (!element) return;
 
     const rounded = Math.round(percentage * 10) / 10;
     const absoluteValue = Math.abs(rounded);
@@ -1101,7 +852,7 @@
   }
 
   function renderRevenueChart(series) {
-    if (!elements.revenueChartCanvas) {
+    if (!elements.revenueChartCanvas || typeof Chart === "undefined") {
       return;
     }
 
@@ -1110,50 +861,41 @@
     }
 
     const context = elements.revenueChartCanvas.getContext("2d");
-
     const gradient = context.createLinearGradient(0, 0, 0, 320);
 
-    gradient.addColorStop(0, "rgba(232, 62, 140, 0.35)");
-    gradient.addColorStop(1, "rgba(232, 62, 140, 0)");
+    gradient.addColorStop(0, "rgba(255, 212, 0, 0.30)");
+    gradient.addColorStop(1, "rgba(255, 212, 0, 0)");
 
     state.revenueChart = new Chart(context, {
       type: "line",
-
       data: {
         labels: series.map((item) => item.label),
-
         datasets: [
           {
             label: "Faturamento",
             data: series.map((item) => item.value),
-            borderColor: "#e83e8c",
+            borderColor: "#ffd400",
             backgroundColor: gradient,
             fill: true,
             borderWidth: 2.5,
             tension: 0.35,
             pointRadius: series.length > 35 ? 0 : 3,
             pointHoverRadius: 6,
-            pointBackgroundColor: "#e83e8c",
-            pointBorderColor: "#ffffff",
+            pointBackgroundColor: "#ffd400",
+            pointBorderColor: "#111111",
             pointBorderWidth: 2
           }
         ]
       },
-
       options: {
         responsive: true,
         maintainAspectRatio: false,
-
         interaction: {
           mode: "index",
           intersect: false
         },
-
         plugins: {
-          legend: {
-            display: false
-          },
-
+          legend: { display: false },
           tooltip: {
             backgroundColor: "#202029",
             titleColor: "#ffffff",
@@ -1161,7 +903,6 @@
             borderColor: "rgba(255,255,255,0.12)",
             borderWidth: 1,
             padding: 12,
-
             callbacks: {
               label(context) {
                 return ` ${formatCurrency(context.raw)}`;
@@ -1169,47 +910,29 @@
             }
           }
         },
-
         scales: {
           x: {
-            grid: {
-              display: false
-            },
-
+            grid: { display: false },
             ticks: {
-              color: "#767681",
+              color: "#9ca3af",
               maxTicksLimit: 10,
-              font: {
-                size: 10
-              }
+              font: { size: 10 }
             },
-
-            border: {
-              display: false
-            }
+            border: { display: false }
           },
-
           y: {
             beginAtZero: true,
-
             grid: {
               color: "rgba(255,255,255,0.055)"
             },
-
             ticks: {
-              color: "#767681",
-              font: {
-                size: 10
-              },
-
+              color: "#9ca3af",
+              font: { size: 10 },
               callback(value) {
                 return formatCompactCurrency(value);
               }
             },
-
-            border: {
-              display: false
-            }
+            border: { display: false }
           }
         }
       }
@@ -1217,7 +940,7 @@
   }
 
   function renderOrderStatusChart(statusData) {
-    if (!elements.orderStatusChartCanvas) {
+    if (!elements.orderStatusChartCanvas || typeof Chart === "undefined") {
       return;
     }
 
@@ -1243,43 +966,30 @@
       elements.orderStatusChartCanvas,
       {
         type: "doughnut",
-
         data: {
           labels: preparedData.map((item) => item.label),
-
           datasets: [
             {
               data: preparedData.map((item) => item.value),
               backgroundColor: colors,
-              borderColor: "#15151b",
+              borderColor: "#111116",
               borderWidth: 5,
               hoverOffset: 7
             }
           ]
         },
-
         options: {
           responsive: true,
           maintainAspectRatio: false,
           cutout: "69%",
-
           plugins: {
-            legend: {
-              display: false
-            },
-
+            legend: { display: false },
             tooltip: {
               backgroundColor: "#202029",
               titleColor: "#ffffff",
               bodyColor: "#ffffff",
               borderColor: "rgba(255,255,255,0.12)",
-              borderWidth: 1,
-
-              callbacks: {
-                label(context) {
-                  return ` ${context.label}: ${context.raw}`;
-                }
-              }
+              borderWidth: 1
             }
           }
         }
@@ -1290,20 +1000,17 @@
   }
 
   function renderOrderStatusLegend(statusData, colors) {
-    if (!elements.orderStatusLegend) {
-      return;
-    }
+    if (!elements.orderStatusLegend) return;
 
     if (
       statusData.length === 1 &&
       statusData[0].status === "sem_pedidos"
     ) {
       elements.orderStatusLegend.innerHTML = `
-        <div class="empty-state">
+        <div class="dashboard-empty-state">
           Nenhum pedido encontrado no período.
         </div>
       `;
-
       return;
     }
 
@@ -1316,11 +1023,9 @@
               class="status-legend-dot"
               style="background:${colors[index]}"
             ></span>
-
             <span class="status-legend-label">
               ${escapeHTML(item.label)}
             </span>
-
             <span class="status-legend-value">
               ${formatInteger(item.value)}
             </span>
@@ -1331,19 +1036,16 @@
   }
 
   function renderBestProducts(products) {
-    if (!elements.bestProductsTable) {
-      return;
-    }
+    if (!elements.bestProductsTable) return;
 
     if (!products.length) {
       elements.bestProductsTable.innerHTML = `
         <tr>
-          <td colspan="3" class="table-empty">
+          <td colspan="3" class="dashboard-empty-cell">
             Nenhum produto vendido no período.
           </td>
         </tr>
       `;
-
       return;
     }
 
@@ -1354,47 +1056,33 @@
             <td>
               <div class="product-cell">
                 ${
-                  product.image
+                  isValidImageUrl(product.image)
                     ? `
                       <img
                         class="product-image"
                         src="${escapeAttribute(product.image)}"
                         alt="${escapeAttribute(product.name)}"
                         loading="lazy"
+                        onerror="this.style.display='none';"
                       >
                     `
                     : `
-                      <div class="product-image-placeholder">
-                        ◫
-                      </div>
+                      <div class="product-image-placeholder">◫</div>
                     `
                 }
 
                 <div class="product-information">
                   <strong>${escapeHTML(product.name)}</strong>
-
                   ${
                     product.sku
-                      ? `
-                        <small>
-                          SKU: ${escapeHTML(product.sku)}
-                        </small>
-                      `
+                      ? `<small>SKU: ${escapeHTML(product.sku)}</small>`
                       : ""
                   }
                 </div>
               </div>
             </td>
-
-            <td>
-              ${formatInteger(product.quantity)}
-            </td>
-
-            <td>
-              <strong>
-                ${formatCurrency(product.revenue)}
-              </strong>
-            </td>
+            <td>${formatInteger(product.quantity)}</td>
+            <td><strong>${formatCurrency(product.revenue)}</strong></td>
           </tr>
         `
       )
@@ -1402,19 +1090,16 @@
   }
 
   function renderLatestOrders(orders) {
-    if (!elements.latestOrdersTable) {
-      return;
-    }
+    if (!elements.latestOrdersTable) return;
 
     if (!orders.length) {
       elements.latestOrdersTable.innerHTML = `
         <tr>
-          <td colspan="7" class="table-empty">
+          <td colspan="7" class="dashboard-empty-cell">
             Nenhum pedido encontrado no período.
           </td>
         </tr>
       `;
-
       return;
     }
 
@@ -1427,56 +1112,31 @@
                 #${escapeHTML(String(order.number))}
               </span>
             </td>
-
             <td>
               <div class="customer-cell">
-                <strong>
-                  ${escapeHTML(order.customerName)}
-                </strong>
-
+                <strong>${escapeHTML(order.customerName)}</strong>
                 ${
                   order.customerEmail
-                    ? `
-                      <small>
-                        ${escapeHTML(order.customerEmail)}
-                      </small>
-                    `
+                    ? `<small>${escapeHTML(order.customerEmail)}</small>`
                     : ""
                 }
               </div>
             </td>
-
+            <td>${formatDateTime(order.createdAt)}</td>
             <td>
-              ${formatDateTime(order.createdAt)}
-            </td>
-
-            <td>
-              <span class="${getStatusBadgeClass(
-                order.paymentStatus
-              )}">
-                ${escapeHTML(
-                  formatStatusLabel(order.paymentStatus)
-                )}
+              <span class="${getStatusBadgeClass(order.paymentStatus)}">
+                ${escapeHTML(formatStatusLabel(order.paymentStatus))}
               </span>
             </td>
-
             <td>
               <span class="${getStatusBadgeClass(order.status)}">
                 ${escapeHTML(formatStatusLabel(order.status))}
               </span>
             </td>
-
-            <td>
-              <strong>
-                ${formatCurrency(order.total)}
-              </strong>
-            </td>
-
+            <td><strong>${formatCurrency(order.total)}</strong></td>
             <td>
               <a
-                href="/admin/pedidos.html?id=${encodeURIComponent(
-                  order.id
-                )}"
+                href="/admin/pedidos.html?id=${encodeURIComponent(order.id)}"
                 class="order-action"
                 title="Abrir pedido"
               >
@@ -1490,17 +1150,14 @@
   }
 
   function renderLowStock(products) {
-    if (!elements.stockAlertList) {
-      return;
-    }
+    if (!elements.stockAlertList) return;
 
     if (!products.length) {
       elements.stockAlertList.innerHTML = `
-        <div class="empty-state">
+        <div class="dashboard-empty-state">
           Nenhum produto com estoque baixo.
         </div>
       `;
-
       return;
     }
 
@@ -1509,20 +1166,13 @@
       .map(
         (product) => `
           <a
-            href="/admin/produtos.html?id=${encodeURIComponent(
-              product.id
-            )}"
+            href="/admin/produtos.html?id=${encodeURIComponent(product.id)}"
             class="stock-alert-item"
           >
-            <div class="stock-alert-icon">
-              !
-            </div>
+            <div class="stock-alert-icon">!</div>
 
             <div class="stock-alert-information">
-              <strong>
-                ${escapeHTML(product.name)}
-              </strong>
-
+              <strong>${escapeHTML(product.name)}</strong>
               <small>
                 ${
                   product.sku
@@ -1542,9 +1192,7 @@
   }
 
   function renderSidebarPendingOrders(orders) {
-    if (!elements.sidebarPendingOrders) {
-      return;
-    }
+    if (!elements.sidebarPendingOrders) return;
 
     const pendingCount = orders.filter((order) => {
       const status = normalizeText(order.status);
@@ -1557,18 +1205,11 @@
     }).length;
 
     elements.sidebarPendingOrders.textContent = String(pendingCount);
-
     elements.sidebarPendingOrders.classList.toggle(
       "hidden",
       pendingCount === 0
     );
   }
-
-  /*
-   * =========================================================
-   * PERÍODOS
-   * =========================================================
-   */
 
   function calculatePeriod(period) {
     const now = new Date();
@@ -1596,7 +1237,6 @@
           0,
           0
         );
-
         endDate = endOfDay(now);
         break;
 
@@ -1610,7 +1250,6 @@
           0,
           0
         );
-
         endDate = endOfDay(now);
         break;
 
@@ -1630,11 +1269,7 @@
 
     state.startDate = startDate;
     state.endDate = endDate;
-
-    state.previousEndDate = new Date(
-      startDate.getTime() - 1
-    );
-
+    state.previousEndDate = new Date(startDate.getTime() - 1);
     state.previousStartDate = new Date(
       state.previousEndDate.getTime() -
         durationMilliseconds +
@@ -1665,41 +1300,19 @@
     });
   }
 
-  /*
-   * =========================================================
-   * INTERFACE
-   * =========================================================
-   */
-
-  function openSidebar() {
-    elements.sidebar?.classList.add("open");
-    elements.sidebarOverlay?.classList.add("visible");
-    document.body.style.overflow = "hidden";
-  }
-
-  function closeSidebar() {
-    elements.sidebar?.classList.remove("open");
-    elements.sidebarOverlay?.classList.remove("visible");
-    document.body.style.overflow = "";
-  }
-
   function hideLoading() {
     elements.loading?.classList.add("finished");
   }
 
   function setRefreshLoading(isLoading) {
-    if (!elements.refreshButton) {
-      return;
-    }
+    if (!elements.refreshButton) return;
 
     elements.refreshButton.disabled = isLoading;
     elements.refreshButton.classList.toggle("loading", isLoading);
   }
 
   function updateLastUpdate() {
-    if (!elements.lastUpdateText) {
-      return;
-    }
+    if (!elements.lastUpdateText) return;
 
     elements.lastUpdateText.textContent = new Intl.DateTimeFormat(
       "pt-BR",
@@ -1721,23 +1334,13 @@
     }, DASHBOARD_CONFIG.autoRefreshMilliseconds);
   }
 
-  let toastTimer;
-
   function showToast(message, type = "success") {
-    if (!elements.toast || !elements.toastMessage) {
-      return;
-    }
+    if (!elements.toast || !elements.toastMessage) return;
 
     clearTimeout(toastTimer);
 
     elements.toastMessage.textContent = message;
-
-    elements.toast.classList.remove(
-      "success",
-      "error",
-      "visible"
-    );
-
+    elements.toast.classList.remove("success", "error", "visible");
     elements.toast.classList.add(type);
 
     requestAnimationFrame(() => {
@@ -1749,15 +1352,14 @@
     }, 4000);
   }
 
-  /*
-   * =========================================================
-   * FUNÇÕES AUXILIARES
-   * =========================================================
-   */
+  function setText(element, value) {
+    if (element) {
+      element.textContent = value;
+    }
+  }
 
   function getStatusBadgeClass(status) {
-    const normalizedStatus = normalizeText(status)
-      .replaceAll("_", "-");
+    const normalizedStatus = normalizeText(status).replaceAll("_", "-");
 
     const knownStatuses = [
       "approved",
@@ -1800,7 +1402,7 @@
         "entregue"
       ].includes(normalizedStatus)
     ) {
-      return "#35d07f";
+      return "#20c463";
     }
 
     if (
@@ -1811,37 +1413,31 @@
         "aguardando_pagamento"
       ].includes(normalizedStatus)
     ) {
-      return "#ffad42";
+      return "#ffd400";
     }
 
     if (
-      [
-        "processing",
-        "producao",
-        "em_producao"
-      ].includes(normalizedStatus)
+      ["processing", "producao", "em_producao"].includes(normalizedStatus)
     ) {
-      return "#5898ff";
+      return "#00d8ff";
     }
 
     if (["shipped", "enviado"].includes(normalizedStatus)) {
-      return "#9f72ff";
+      return "#ff3b7b";
     }
 
     if (
-      DASHBOARD_CONFIG.cancelledOrderStatuses.includes(
-        normalizedStatus
-      )
+      DASHBOARD_CONFIG.cancelledOrderStatuses.includes(normalizedStatus)
     ) {
-      return "#ff5d68";
+      return "#ff2f3d";
     }
 
     const fallbackColors = [
-      "#e83e8c",
-      "#5ed4c7",
+      "#ff3b7b",
+      "#00d8ff",
+      "#ffd400",
+      "#20c463",
       "#8f7cff",
-      "#f0c35a",
-      "#67a7ff",
       "#ef7d62"
     ];
 
@@ -1849,9 +1445,7 @@
   }
 
   function formatStatusLabel(status) {
-    if (!status) {
-      return "Não informado";
-    }
+    if (!status) return "Não informado";
 
     const translations = {
       approved: "Aprovado",
@@ -1888,10 +1482,7 @@
   }
 
   function createShortOrderNumber(id) {
-    if (!id) {
-      return "—";
-    }
-
+    if (!id) return "—";
     return String(id).replaceAll("-", "").slice(0, 8).toUpperCase();
   }
 
@@ -1904,51 +1495,33 @@
   }
 
   function parseMoney(value) {
-  if (value === null || value === undefined || value === "") {
-    return 0;
+    if (value === null || value === undefined || value === "") {
+      return 0;
+    }
+
+    if (typeof value === "number") {
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    let normalizedValue = String(value)
+      .trim()
+      .replace("R$", "")
+      .replace(/\s/g, "");
+
+    if (
+      normalizedValue.includes(".") &&
+      normalizedValue.includes(",")
+    ) {
+      normalizedValue = normalizedValue
+        .replace(/\./g, "")
+        .replace(",", ".");
+    } else if (normalizedValue.includes(",")) {
+      normalizedValue = normalizedValue.replace(",", ".");
+    }
+
+    const parsedValue = Number(normalizedValue);
+    return Number.isFinite(parsedValue) ? parsedValue : 0;
   }
-
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : 0;
-  }
-
-  let normalizedValue = String(value)
-    .trim()
-    .replace("R$", "")
-    .replace(/\s/g, "");
-
-  /*
-   * Formato brasileiro:
-   * 1.234,56
-   */
-  if (
-    normalizedValue.includes(".") &&
-    normalizedValue.includes(",")
-  ) {
-    normalizedValue = normalizedValue
-      .replace(/\./g, "")
-      .replace(",", ".");
-  }
-
-  /*
-   * Formato brasileiro sem separador de milhar:
-   * 23,59
-   */
-  else if (normalizedValue.includes(",")) {
-    normalizedValue = normalizedValue.replace(",", ".");
-  }
-
-  /*
-   * Formato retornado pelo Supabase:
-   * 23.59
-   *
-   * Nesse caso, o ponto deve ser preservado.
-   */
-
-  const parsedValue = Number(normalizedValue);
-
-  return Number.isFinite(parsedValue) ? parsedValue : 0;
-}
 
   function sum(values) {
     return values.reduce(
@@ -1992,9 +1565,7 @@
   }
 
   function formatDateTime(value) {
-    if (!value) {
-      return "—";
-    }
+    if (!value) return "—";
 
     const date = new Date(value);
 
@@ -2067,6 +1638,17 @@
     }
 
     return dates;
+  }
+
+  function isValidImageUrl(value) {
+    if (!value) return false;
+
+    try {
+      const url = new URL(value, window.location.origin);
+      return ["http:", "https:"].includes(url.protocol);
+    } catch {
+      return false;
+    }
   }
 
   function escapeHTML(value) {
