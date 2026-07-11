@@ -27,7 +27,6 @@ const PaymentStatusLabels = {
 const OrdersState = {
   orders: [],
   products: [],
-  customers: [],
   currentOrder: null,
   currentItems: [],
   filters: {
@@ -55,6 +54,61 @@ function poMoney(value) {
 
 function generateOrderNumber() {
   return "MUG-" + Date.now();
+}
+
+async function updateOrderStatusSecurely(orderId, previousOrder, newOrderPayload) {
+  const { data: { session }, error: sessionError } =
+    await mugartSupabase.auth.getSession();
+
+  if (sessionError) {
+    throw new Error("Não foi possível validar a sessão do administrador.");
+  }
+
+  if (!session?.access_token) {
+    throw new Error("Sessão administrativa não encontrada.");
+  }
+
+  const response = await fetch(
+    `${window.SUPABASE_URL || "https://qtchckrcwnsmcsbehjkq.supabase.co"}/functions/v1/admin-order-status`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`,
+      },
+
+      body: JSON.stringify({
+        order_id: orderId,
+        previous_status: previousOrder?.status || null,
+        previous_production_status:
+          previousOrder?.production_status || null,
+        previous_shipping_status:
+          previousOrder?.shipping_status || null,
+
+        status: newOrderPayload.status,
+        production_status:
+          newOrderPayload.production_status,
+        shipping_status:
+          newOrderPayload.shipping_status,
+        tracking_code:
+          newOrderPayload.tracking_code || null,
+        carrier:
+          newOrderPayload.carrier || null,
+      }),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result?.error ||
+      "Não foi possível atualizar o status do pedido."
+    );
+  }
+
+  return result;
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -116,71 +170,6 @@ function bindOrderEvents() {
   ["#orderDiscount", "#orderShipping"].forEach((selector) => {
     po(selector)?.addEventListener("input", updateOrderTotalPreview);
   });
-
-  po("#shippingZip")?.addEventListener("input", handleCepInput);
-  po("#shippingZip")?.addEventListener("blur", searchCepAndFillAddress);
-
-  setupSmartOrderFields();
-}
-
-function onlyNumbers(value) {
-  return String(value || "").replace(/\D/g, "");
-}
-
-function formatCep(value) {
-  const numbers = onlyNumbers(value).slice(0, 8);
-
-  if (numbers.length > 5) {
-    return numbers.slice(0, 5) + "-" + numbers.slice(5);
-  }
-
-  return numbers;
-}
-
-function handleCepInput(event) {
-  event.target.value = formatCep(event.target.value);
-
-  const cep = onlyNumbers(event.target.value);
-
-  if (cep.length === 8) {
-    searchCepAndFillAddress();
-  }
-}
-
-async function searchCepAndFillAddress() {
-  const zipInput = po("#shippingZip");
-  const cep = onlyNumbers(zipInput?.value);
-
-  if (!cep || cep.length !== 8) return;
-
-  const oldPlaceholder = zipInput.placeholder;
-  zipInput.placeholder = "Buscando CEP...";
-
-  try {
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await response.json();
-
-    if (data.erro) {
-      alert("CEP não encontrado.");
-      return;
-    }
-
-    po("#shippingStreet").value = data.logradouro || "";
-    po("#shippingNeighborhood").value = data.bairro || "";
-    po("#shippingCity").value = data.localidade || "";
-    po("#shippingState").value = data.uf || "";
-
-    if (po("#shippingComplement") && data.complemento) {
-      po("#shippingComplement").value = data.complemento;
-    }
-
-    po("#shippingNumber")?.focus();
-  } catch (error) {
-    console.error("Erro ao buscar CEP:", error);
-    alert("Não foi possível buscar o CEP agora.");
-  } finally {
-    zipInput.placeholder = oldPlaceholder || "00000-000";
-  }
 }
 
 async function loadOrdersData() {
@@ -220,9 +209,6 @@ async function loadOrdersData() {
       categories (
         id,
         name
-      ),
-      product_variants (
-        *
       )
     `)
     .eq("active", true)
@@ -234,257 +220,12 @@ async function loadOrdersData() {
   }
 
   OrdersState.products = productsResult.data || [];
-
-  const customersResult = await mugartSupabase
-    .from("customers")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(300);
-
-  if (customersResult.error) {
-    console.warn("Erro ao carregar clientes:", customersResult.error.message);
-    OrdersState.customers = [];
-  } else {
-    OrdersState.customers = customersResult.data || [];
-  }
 }
 
 function renderOrdersPage() {
   renderProductOptions();
   renderMetrics();
   renderOrders();
-}
-
-function setupSmartOrderFields() {
-  setupCustomerAutocomplete();
-  setupProductAutocomplete();
-  setupSmartTotals();
-}
-
-function setupCustomerAutocomplete() {
-  const nameInput = po("#customerName");
-  if (!nameInput || po("#customerSuggestions")) return;
-
-  nameInput.insertAdjacentHTML("afterend", `<div class="smart-suggestions" id="customerSuggestions"></div>`);
-
-  ["input", "focus"].forEach((eventName) => {
-    nameInput.addEventListener(eventName, () => renderCustomerSuggestions(nameInput.value));
-  });
-
-  document.addEventListener("click", (event) => {
-    if (!event.target.closest("#customerName") && !event.target.closest("#customerSuggestions")) {
-      po("#customerSuggestions").classList.remove("open");
-    }
-  });
-}
-
-function renderCustomerSuggestions(term) {
-  const box = po("#customerSuggestions");
-  if (!box) return;
-
-  const normalized = String(term || "").toLowerCase().trim();
-
-  if (!normalized || normalized.length < 2) {
-    box.classList.remove("open");
-    box.innerHTML = "";
-    return;
-  }
-
-  const customers = OrdersState.customers.filter((customer) => {
-    return (
-      (customer.name || "").toLowerCase().includes(normalized) ||
-      (customer.email || "").toLowerCase().includes(normalized) ||
-      (customer.phone || "").toLowerCase().includes(normalized)
-    );
-  }).slice(0, 8);
-
-  if (!customers.length) {
-    box.classList.remove("open");
-    box.innerHTML = "";
-    return;
-  }
-
-  box.innerHTML = customers.map((customer) => `
-    <button type="button" onclick="selectCustomer('${customer.id}')">
-      <strong>${customer.name || "Cliente"}</strong>
-      <span>${customer.phone || ""} ${customer.email ? "• " + customer.email : ""}</span>
-    </button>
-  `).join("");
-
-  box.classList.add("open");
-}
-
-window.selectCustomer = function(customerId) {
-  const customer = OrdersState.customers.find((item) => item.id === customerId);
-  if (!customer) return;
-
-  po("#customerName").value = customer.name || "";
-  po("#customerPhone").value = customer.phone || "";
-  po("#customerEmail").value = customer.email || "";
-  po("#customerDocument").value = customer.cpf_cnpj || "";
-  po("#shippingZip").value = customer.zip || "";
-  po("#shippingStreet").value = customer.address || "";
-  po("#shippingCity").value = customer.city || "";
-  po("#shippingState").value = customer.state || "";
-
-  po("#customerSuggestions").classList.remove("open");
-};
-
-function setupProductAutocomplete() {
-  const productSelect = po("#orderProductSelect");
-  if (!productSelect || po("#smartProductSearch")) return;
-
-  productSelect.style.display = "none";
-
-  productSelect.insertAdjacentHTML("afterend", `
-    <div class="smart-product-picker">
-      <input id="smartProductSearch" type="search" placeholder="Digite para buscar produto..." autocomplete="off" />
-      <input id="smartProductId" type="hidden" />
-      <input id="smartVariantId" type="hidden" />
-      <div class="smart-suggestions product-suggestions" id="productSuggestions"></div>
-      <div class="selected-product-box" id="selectedProductBox"></div>
-      <div class="variant-picker" id="variantPicker"></div>
-    </div>
-  `);
-
-  po("#smartProductSearch").addEventListener("input", (event) => renderProductSuggestions(event.target.value));
-  po("#smartProductSearch").addEventListener("focus", (event) => renderProductSuggestions(event.target.value));
-
-  document.addEventListener("click", (event) => {
-    if (!event.target.closest(".smart-product-picker")) {
-      po("#productSuggestions")?.classList.remove("open");
-    }
-  });
-}
-
-function renderProductSuggestions(term) {
-  const box = po("#productSuggestions");
-  if (!box) return;
-
-  const normalized = String(term || "").toLowerCase().trim();
-
-  if (!normalized || normalized.length < 1) {
-    box.classList.remove("open");
-    box.innerHTML = "";
-    return;
-  }
-
-  const products = OrdersState.products.filter((product) => {
-    return (
-      (product.name || "").toLowerCase().includes(normalized) ||
-      (product.sku || "").toLowerCase().includes(normalized) ||
-      (product.color || "").toLowerCase().includes(normalized) ||
-      (product.categories?.name || "").toLowerCase().includes(normalized)
-    );
-  }).slice(0, 10);
-
-  if (!products.length) {
-    box.classList.remove("open");
-    box.innerHTML = "";
-    return;
-  }
-
-  box.innerHTML = products.map((product) => `
-    <button type="button" onclick="selectSmartProduct('${product.id}')">
-      <img src="${product.image_url || "../assets/hero-caneca.png"}" alt="${product.name}">
-      <span>
-        <strong>${product.name}</strong>
-        <small>${product.sku || "-"} • ${poMoney(product.price)} • Estoque: ${product.stock || 0}</small>
-      </span>
-    </button>
-  `).join("");
-
-  box.classList.add("open");
-}
-
-window.selectSmartProduct = function(productId) {
-  const product = OrdersState.products.find((item) => item.id === productId);
-  if (!product) return;
-
-  po("#smartProductId").value = product.id;
-  po("#smartVariantId").value = "";
-  po("#smartProductSearch").value = product.name;
-  po("#productSuggestions").classList.remove("open");
-
-  renderSelectedProduct(product);
-  renderVariantPicker(product);
-};
-
-function renderSelectedProduct(product, variant) {
-  const box = po("#selectedProductBox");
-  if (!box) return;
-
-  const price = variant ? variant.price : product.price;
-  const stock = variant ? variant.stock : product.stock;
-  const sku = variant ? variant.sku : product.sku;
-  const color = variant ? variant.color : product.color;
-  const image = variant?.image_url || product.image_url || "../assets/hero-caneca.png";
-
-  box.innerHTML = `
-    <div class="selected-product-card">
-      <img src="${image}" alt="${product.name}">
-      <div>
-        <strong>${product.name}</strong>
-        <span>${sku || "-"} ${color ? "• " + color : ""}</span>
-        <small>${poMoney(price)} • Estoque: ${stock || 0}</small>
-      </div>
-      <button type="button" onclick="clearSmartProductSelection()">x</button>
-    </div>
-  `;
-}
-
-function renderVariantPicker(product) {
-  const box = po("#variantPicker");
-  if (!box) return;
-
-  const variants = product.product_variants || [];
-
-  if (!variants.length) {
-    box.innerHTML = "";
-    return;
-  }
-
-  box.innerHTML = `
-    <span>Variação</span>
-    <div class="variant-options">
-      ${variants.map((variant) => `
-        <button type="button" onclick="selectSmartVariant('${product.id}', '${variant.id}')">
-          ${variant.color}
-          <small>${poMoney(variant.price)} • ${variant.stock || 0} un.</small>
-        </button>
-      `).join("")}
-    </div>
-  `;
-}
-
-window.selectSmartVariant = function(productId, variantId) {
-  const product = OrdersState.products.find((item) => item.id === productId);
-  if (!product) return;
-
-  const variant = (product.product_variants || []).find((item) => item.id === variantId);
-  if (!variant) return;
-
-  po("#smartVariantId").value = variant.id;
-
-  renderSelectedProduct(product, variant);
-
-  poAll(".variant-options button").forEach((button) => button.classList.remove("active"));
-  event?.target?.closest("button")?.classList.add("active");
-};
-
-function clearSmartProductSelection() {
-  if (po("#smartProductSearch")) po("#smartProductSearch").value = "";
-  if (po("#smartProductId")) po("#smartProductId").value = "";
-  if (po("#smartVariantId")) po("#smartVariantId").value = "";
-  if (po("#selectedProductBox")) po("#selectedProductBox").innerHTML = "";
-  if (po("#variantPicker")) po("#variantPicker").innerHTML = "";
-  if (po("#productSuggestions")) po("#productSuggestions").classList.remove("open");
-}
-
-function setupSmartTotals() {
-  ["#orderDiscount", "#orderShipping"].forEach((selector) => {
-    po(selector)?.addEventListener("input", updateOrderTotalPreview);
-  });
 }
 
 function renderProductOptions() {
@@ -657,8 +398,7 @@ window.editOrder = async function(id) {
     quantity: Number(item.quantity || 0),
     unit_price: Number(item.unit_price || 0),
     discount: Number(item.discount || 0),
-    total: Number(item.total || 0),
-    image_url: item.image_url || ""
+    total: Number(item.total || 0)
   }));
 
   po("#orderId").value = order.id;
@@ -701,9 +441,7 @@ window.editOrder = async function(id) {
 };
 
 function addOrderItemFromSelect() {
-  const smartProductId = po("#smartProductId")?.value;
-  const smartVariantId = po("#smartVariantId")?.value;
-  const productId = smartProductId || po("#orderProductSelect").value;
+  const productId = po("#orderProductSelect").value;
   const qty = Number(po("#orderItemQty").value || 1);
   const product = OrdersState.products.find((item) => item.id === productId);
 
@@ -712,55 +450,25 @@ function addOrderItemFromSelect() {
     return;
   }
 
-  let variant = null;
-
-  if (smartVariantId) {
-    variant = (product.product_variants || []).find((item) => item.id === smartVariantId);
-  }
-
-  const itemKey = productId + "::" + (variant ? variant.id : "");
-  const existing = OrdersState.currentItems.find((item) => {
-    return (item.product_id + "::" + (item.variant_id || "")) === itemKey;
-  });
-
-  const itemName = product.name;
-  const itemSku = variant ? variant.sku : product.sku;
-  const itemColor = variant ? variant.color : product.color;
-  const itemPrice = Number(variant ? variant.price : product.price || 0);
-  const itemStock = Number(variant ? variant.stock : product.stock || 0);
-  const itemImage = variant?.image_url || product.image_url || "";
-
-  if (itemStock > 0 && qty > itemStock) {
-    alert("Quantidade maior que o estoque disponível.");
-    return;
-  }
+  const existing = OrdersState.currentItems.find((item) => item.product_id === productId && !item.variant_id);
 
   if (existing) {
-    const nextQty = existing.quantity + qty;
-
-    if (itemStock > 0 && nextQty > itemStock) {
-      alert("Quantidade maior que o estoque disponível.");
-      return;
-    }
-
-    existing.quantity = nextQty;
+    existing.quantity += qty;
     existing.total = existing.quantity * existing.unit_price;
   } else {
     OrdersState.currentItems.push({
       product_id: product.id,
-      variant_id: variant ? variant.id : null,
-      product_name: itemName,
-      sku: itemSku,
-      color: itemColor,
-      image_url: itemImage,
+      variant_id: null,
+      product_name: product.name,
+      sku: product.sku,
+      color: product.color,
       quantity: qty,
-      unit_price: itemPrice,
+      unit_price: Number(product.price || 0),
       discount: 0,
-      total: qty * itemPrice
+      total: qty * Number(product.price || 0)
     });
   }
 
-  clearSmartProductSelection();
   renderOrderItems();
   updateOrderTotalPreview();
 }
@@ -775,21 +483,12 @@ function renderOrderItems() {
   }
 
   list.innerHTML = OrdersState.currentItems.map((item, index) => `
-    <div class="order-item-row smart-item-row">
-      <img class="order-item-thumb" src="${item.image_url || "../assets/hero-caneca.png"}" alt="${item.product_name}">
+    <div class="order-item-row">
       <div>
         <h4>${item.product_name}</h4>
-        <small>${item.sku || "-"} ${item.color ? "• " + item.color : ""}</small>
-        <div class="order-item-qty">
-          <button type="button" onclick="changeOrderItemQty(${index}, -1)">−</button>
-          <input type="number" min="1" value="${item.quantity}" onchange="setOrderItemQty(${index}, this.value)">
-          <button type="button" onclick="changeOrderItemQty(${index}, 1)">+</button>
-        </div>
+        <small>${item.sku || "-"} ${item.color ? "• " + item.color : ""} • Qtd: ${item.quantity}</small>
       </div>
-      <div class="order-item-values">
-        <span>${poMoney(item.unit_price)} un.</span>
-        <strong>${poMoney(item.total)}</strong>
-      </div>
+      <strong>${poMoney(item.total)}</strong>
       <button type="button" onclick="removeOrderItem(${index})">Remover</button>
     </div>
   `).join("");
@@ -797,28 +496,6 @@ function renderOrderItems() {
 
 window.removeOrderItem = function(index) {
   OrdersState.currentItems.splice(index, 1);
-  renderOrderItems();
-  updateOrderTotalPreview();
-};
-
-window.changeOrderItemQty = function(index, delta) {
-  const item = OrdersState.currentItems[index];
-  if (!item) return;
-
-  item.quantity = Math.max(1, Number(item.quantity || 1) + delta);
-  item.total = item.quantity * Number(item.unit_price || 0);
-
-  renderOrderItems();
-  updateOrderTotalPreview();
-};
-
-window.setOrderItemQty = function(index, value) {
-  const item = OrdersState.currentItems[index];
-  if (!item) return;
-
-  item.quantity = Math.max(1, Number(value || 1));
-  item.total = item.quantity * Number(item.unit_price || 0);
-
   renderOrderItems();
   updateOrderTotalPreview();
 };
@@ -913,13 +590,46 @@ async function saveOrder(event) {
   let savedOrderId = orderId;
 
   if (orderId) {
+    /*
+     * Campos gerais continuam sendo atualizados pelo Supabase.
+     * Os campos de status são tratados pela Edge Function segura,
+     * que também dispara os e-mails automáticos.
+     */
+    const generalPayload = {
+      ...orderPayload
+    };
+
+    delete generalPayload.status;
+    delete generalPayload.production_status;
+    delete generalPayload.shipping_status;
+    delete generalPayload.tracking_code;
+    delete generalPayload.carrier;
+
     const updateResult = await mugartSupabase
       .from("orders")
-      .update(orderPayload)
+      .update(generalPayload)
       .eq("id", orderId);
 
     if (updateResult.error) {
       alert("Erro ao atualizar pedido: " + updateResult.error.message);
+      return;
+    }
+
+    try {
+      await updateOrderStatusSecurely(
+        orderId,
+        oldOrder,
+        orderPayload
+      );
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar o status do pedido."
+      );
+
       return;
     }
   } else {
@@ -935,6 +645,24 @@ async function saveOrder(event) {
     }
 
     savedOrderId = insertResult.data.id;
+
+    /*
+     * Pedido manual recém-criado:
+     * registra os status pela função segura para manter
+     * o histórico e os e-mails consistentes.
+     */
+    try {
+      await updateOrderStatusSecurely(
+        savedOrderId,
+        null,
+        orderPayload
+      );
+    } catch (error) {
+      console.warn(
+        "Pedido criado, mas não foi possível processar o status automático:",
+        error
+      );
+    }
   }
 
   await replaceOrderItems(savedOrderId);
@@ -965,8 +693,7 @@ async function replaceOrderItems(orderId) {
     quantity: item.quantity,
     unit_price: item.unit_price,
     discount: item.discount || 0,
-    total: item.total,
-    image_url: item.image_url || null
+    total: item.total
   }));
 
   const result = await mugartSupabase
