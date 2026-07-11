@@ -8,6 +8,57 @@
         editingId: null
     };
 
+    async function callAdminCoupons(
+    action,
+    payload = {}
+) {
+    const {
+        data,
+        error
+    } =
+        await window.mugartSupabase
+            .functions
+            .invoke(
+                "admin-coupons",
+                {
+                    body: {
+                        action,
+                        ...payload
+                    }
+                }
+            );
+
+    if (error) {
+        let message =
+            error.message ||
+            "Erro na administração de cupons.";
+
+        try {
+            const responseBody =
+                await error.context
+                    ?.json?.();
+
+            if (responseBody?.error) {
+                message =
+                    responseBody.error;
+            }
+        } catch {
+            // Mantém a mensagem original.
+        }
+
+        throw new Error(message);
+    }
+
+    if (!data?.success) {
+        throw new Error(
+            data?.error ||
+            "Não foi possível concluir a operação."
+        );
+    }
+
+    return data;
+}
+
     function qs(selector) {
         return document.querySelector(selector);
     }
