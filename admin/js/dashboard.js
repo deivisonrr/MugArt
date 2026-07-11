@@ -32,7 +32,7 @@
         customerId: "customer_id",
         customerName: "customer_name",
         customerEmail: "customer_email",
-        couponCode: "coupon_code",
+        couponCode: "coupon",
         discount: "discount"
       },
 
@@ -829,21 +829,36 @@
   }
 
   function filterRevenueOrders(orders) {
-    return orders.filter((order) => {
-      const paymentStatus = normalizeText(order.paymentStatus);
-      const orderStatus = normalizeText(order.status);
+  return orders.filter((order) => {
+    const paymentStatus = normalizeText(order.paymentStatus);
+    const orderStatus = normalizeText(order.status);
 
-      if (
-        DASHBOARD_CONFIG.cancelledOrderStatuses.includes(orderStatus)
-      ) {
-        return false;
-      }
+    const cancelledStatuses = [
+      "cancelled",
+      "canceled",
+      "cancelado",
+      "rejected",
+      "rejeitado",
+      "failed"
+    ];
 
-      return DASHBOARD_CONFIG.approvedPaymentStatuses.includes(
-        paymentStatus
-      );
-    });
-  }
+    if (cancelledStatuses.includes(orderStatus)) {
+      return false;
+    }
+
+    const approvedStatuses = [
+      "approved",
+      "paid",
+      "pago",
+      "aprovado"
+    ];
+
+    return (
+      approvedStatuses.includes(paymentStatus) ||
+      approvedStatuses.includes(orderStatus)
+    );
+  });
+}
 
   function buildRevenueSeries(orders) {
     const days = enumerateDays(state.startDate, state.endDate);
@@ -1870,24 +1885,51 @@
   }
 
   function parseMoney(value) {
-    if (typeof value === "number") {
-      return Number.isFinite(value) ? value : 0;
-    }
+  if (value === null || value === undefined || value === "") {
+    return 0;
+  }
 
-    if (!value) {
-      return 0;
-    }
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
 
-    const normalizedValue = String(value)
-      .replace("R$", "")
-      .replace(/\s/g, "")
+  let normalizedValue = String(value)
+    .trim()
+    .replace("R$", "")
+    .replace(/\s/g, "");
+
+  /*
+   * Formato brasileiro:
+   * 1.234,56
+   */
+  if (
+    normalizedValue.includes(".") &&
+    normalizedValue.includes(",")
+  ) {
+    normalizedValue = normalizedValue
       .replace(/\./g, "")
       .replace(",", ".");
-
-    const parsedValue = Number(normalizedValue);
-
-    return Number.isFinite(parsedValue) ? parsedValue : 0;
   }
+
+  /*
+   * Formato brasileiro sem separador de milhar:
+   * 23,59
+   */
+  else if (normalizedValue.includes(",")) {
+    normalizedValue = normalizedValue.replace(",", ".");
+  }
+
+  /*
+   * Formato retornado pelo Supabase:
+   * 23.59
+   *
+   * Nesse caso, o ponto deve ser preservado.
+   */
+
+  const parsedValue = Number(normalizedValue);
+
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+}
 
   function sum(values) {
     return values.reduce(
