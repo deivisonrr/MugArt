@@ -711,6 +711,9 @@ function bindEvents() {
             CheckoutState.selectedPayment = r.value;
             updateOptionCards();
             saveDraft();
+            if (CheckoutState.coupon) {
+                revalidarCupomAplicado();
+}
         });
     });
 }
@@ -947,30 +950,213 @@ function persistCart() {
     saveStorage(CHECKOUT_KEYS.cart, CheckoutState.cart);
 }
 
-function applyCoupon() {
-    const code = qs("#couponCode").value.trim().toUpperCase();
+async function applyCoupon() {
+    const input =
+        qs("#couponCode");
+
+    const button =
+        qs("#applyCouponBtn");
+
+    if (!input || !button) {
+        return;
+    }
+
+    /*
+     * Quando já existe cupom aplicado,
+     * o botão funciona como "Remover".
+     */
+    if (CheckoutState.coupon) {
+        removerCupom();
+        return;
+    }
+
+    const code =
+        input.value
+            .trim()
+            .toUpperCase();
 
     if (!code) {
         toast("Digite um cupom.");
         return;
     }
 
-    if (code === "MUGART10") {
-        const subtotal = getCartItems().reduce((s, i) => s + i.subtotal, 0);
+    const items =
+        getCartItems();
 
-        CheckoutState.discount = subtotal * 0.1;
-        CheckoutState.coupon = code;
+    if (!items.length) {
+        toast(
+            "Adicione produtos ao carrinho."
+        );
+        return;
+    }
 
-        toast("Cupom aplicado: 10% de desconto.");
-    } else {
+    const subtotal =
+        items.reduce(
+            (sum, item) =>
+                sum + item.subtotal,
+            0
+        );
+
+    const originalText =
+        button.textContent;
+
+    try {
+        button.disabled = true;
+        button.textContent =
+            "Validando...";
+
+        const {
+            data,
+            error
+        } =
+            await mugartSupabase
+                .functions
+                .invoke(
+                    "validate-coupon",
+                    {
+                        body: {
+                            coupon: code,
+                            subtotal,
+                            shipping:
+                                Number(
+                                    CheckoutState.shipping ||
+                                    0
+                                )
+                        }
+                    }
+                );
+
+        if (error) {
+            console.error(
+                "Erro ao validar cupom:",
+                error
+            );
+
+            let message =
+                error.message ||
+                "Não foi possível validar o cupom.";
+
+            try {
+                const responseBody =
+                    await error.context
+                        ?.json?.();
+
+                if (
+                    responseBody?.message
+                ) {
+                    message =
+                        responseBody.message;
+                }
+            } catch {
+                // Mantém a mensagem original.
+            }
+
+            throw new Error(message);
+        }
+
+        if (!data?.valid) {
+            CheckoutState.discount = 0;
+            CheckoutState.coupon = "";
+
+            renderSummary();
+            saveDraft();
+
+            toast(
+                data?.message ||
+                "Cupom inválido."
+            );
+
+            return;
+        }
+
+        CheckoutState.coupon =
+            data.coupon;
+
+        CheckoutState.discount =
+            Number(
+                data.discount || 0
+            );
+
+        input.value =
+            data.coupon;
+
+        input.readOnly = true;
+
+        button.textContent =
+            "Remover";
+
+        button.classList.add(
+            "coupon-remove"
+        );
+
+        renderSummary();
+        saveDraft();
+
+        toast(
+            data.message ||
+            "Cupom aplicado com sucesso!"
+        );
+
+    } catch (error) {
+        console.error(
+            "Erro ao aplicar cupom:",
+            error
+        );
+
         CheckoutState.discount = 0;
         CheckoutState.coupon = "";
 
-        toast("Cupom inválido.");
+        input.readOnly = false;
+
+        renderSummary();
+        saveDraft();
+
+        toast(
+            error.message ||
+            "Não foi possível aplicar o cupom."
+        );
+
+    } finally {
+        button.disabled = false;
+
+        if (
+            !CheckoutState.coupon
+        ) {
+            button.textContent =
+                originalText ||
+                "Aplicar";
+        }
+    }
+}
+
+function removerCupom() {
+    const input =
+        qs("#couponCode");
+
+    const button =
+        qs("#applyCouponBtn");
+
+    CheckoutState.discount = 0;
+    CheckoutState.coupon = "";
+
+    if (input) {
+        input.value = "";
+        input.readOnly = false;
+    }
+
+    if (button) {
+        button.textContent =
+            "Aplicar";
+
+        button.classList.remove(
+            "coupon-remove"
+        );
     }
 
     renderSummary();
     saveDraft();
+
+    toast("Cupom removido.");
 }
 
 function updateOptionCards() {
