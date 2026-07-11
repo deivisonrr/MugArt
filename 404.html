@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Página não encontrada | MugArt</title>
+
+  <meta
+    name="description"
+    content="A página que você procurou não foi encontrada. Volte para a loja MugArt e encontre canecas personalizadas."
+  >
+
+  <meta name="robots" content="noindex, follow">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/style.css?v=1">
+  <link rel="stylesheet" href="/css/404.css?v=1">
+
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="/js/supabase-config.js?v=5"></script>
+  <script defer src="/js/404.js?v=1"></script>
+</head>
+
+<body class="error-page">
+
+  <main class="error-main">
+
+    <section class="error-hero">
+
+      <div class="error-visual">
+        <span class="error-code">404</span>
+
+        <div class="error-mug">
+          <div class="error-mug-body">
+            <span>?</span>
+          </div>
+
+          <div class="error-mug-handle"></div>
+        </div>
+      </div>
+
+      <div class="error-content">
+
+        <p class="error-eyebrow">
+          Página não encontrada
+        </p>
+
+        <h1>
+          Ops! Esta página saiu para tomar um café.
+        </h1>
+
+        <p class="error-description">
+          O endereço pode estar incorreto ou a página pode ter sido removida.
+          Use a busca abaixo ou volte para a loja da MugArt.
+        </p>
+
+        <form
+          id="errorSearchForm"
+          class="error-search"
+        >
+          <label for="errorSearchInput">
+            Buscar produtos
+          </label>
+
+          <div class="error-search-row">
+            <input
+              id="errorSearchInput"
+              type="search"
+              placeholder="Digite o nome de uma caneca..."
+              autocomplete="off"
+            >
+
+            <button type="submit">
+              Buscar
+            </button>
+          </div>
+        </form>
+
+        <div class="error-actions">
+          <a
+            href="/loja.html"
+            class="error-primary-button"
+          >
+            Voltar para a loja
+          </a>
+
+          <a
+            href="https://wa.me/5511988849236?text=Ol%C3%A1%21%20Preciso%20de%20ajuda%20no%20site%20da%20MugArt."
+            target="_blank"
+            rel="noopener noreferrer"
+            class="error-secondary-button"
+          >
+            Falar no WhatsApp
+          </a>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="error-products-section">
+
+      <div class="error-section-header">
+
+        <div>
+          <p class="error-eyebrow">
+            Talvez você goste
+          </p>
+
+          <h2>
+            Produtos em destaque
+          </h2>
+        </div>
+
+        <a href="/loja.html">
+          Ver todos os produtos
+        </a>
+
+      </div>
+
+      <div
+        id="errorProductsGrid"
+        class="error-products-grid"
+      >
+        <div class="error-products-loading">
+          Carregando produtos...
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="error-footer">
+    <a href="/loja.html">
+      MugArt
+    </a>
+
+    <span>
+      Transformamos ideias em canecas incríveis.
+    </span>
+  </footer>
+
+</body>
+</html>
