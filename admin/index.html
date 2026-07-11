@@ -1,47 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>MugArt Admin | Login</title>
-
-  <link rel="icon" href="../assets/favicon.ico" sizes="any">
-  <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="css/admin.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MugArt Admin</title>
+  <script>
+    window.location.replace(
+      "/conta/login.html?redirect=/admin/dashboard.html"
+    );
+  </script>
 </head>
-
-<body class="admin-login-body">
-  <main class="login-shell">
-    <section class="login-card">
-      <img class="login-logo" src="../assets/logo.png" alt="MugArt" />
-
-      <p class="eyebrow">Painel Administrativo</p>
-      <h1>Entrar no Admin</h1>
-      <p class="login-subtitle">Gerencie produtos, estoque, pedidos e categorias da loja MugArt.</p>
-
-      <form id="loginForm" class="login-form">
-        <label>
-          E-mail
-          <input type="email" id="loginEmail" placeholder="admin@mugart.com.br" required />
-        </label>
-
-        <label>
-          Senha
-          <input type="password" id="loginPassword" placeholder="Digite sua senha" required />
-        </label>
-
-        <button type="submit">Entrar</button>
-      </form>
-
-    </section>
-  </main>
-
-  <script src="js/admin.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/supabase-config.js?v=4"></script>
-  <script src="/admin/js/admin.js?v=4"></script>
-  
-</body>
+<body>Redirecionando para o login...</body>
 </html>
