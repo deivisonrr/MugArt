@@ -1,12 +1,11 @@
 /* ==========================================================
-   MugArt Admin + Supabase + Upload Corrigido
+   MugArt Admin + Supabase
+   Autenticação administrativa definitiva
 ========================================================== */
 
-const ADMIN_KEYS = {
-  auth: "mugart_admin_auth"
-};
-
 const STORAGE_BUCKET = "product-images";
+
+let mugartSupabase = null;
 
 function $(selector) {
   return document.querySelector(selector);
@@ -32,80 +31,169 @@ function slugify(text) {
     .replace(/(^-|-$)+/g, "");
 }
 
-function isLoginPage() {
-  return (
-    location.pathname.endsWith("/admin/") ||
-    location.pathname.endsWith("/admin") ||
-    location.pathname.includes("/admin/index.html")
+function getCurrentAdminPath() {
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+function redirectToLogin() {
+  const redirect = encodeURIComponent(getCurrentAdminPath());
+
+  window.location.replace(
+    `/conta/login.html?redirect=${redirect}`
   );
 }
 
-function requireAuth() {
-  if (isLoginPage()) return;
-
-  const auth = localStorage.getItem(ADMIN_KEYS.auth);
-
-  if (auth !== "true") {
-    location.href = "index.html";
-  }
-}
-
-function requireSupabase() {
+async function validateAdminSession() {
   if (!window.mugartSupabase) {
-    alert("Supabase não carregou. Verifique se supabase-config.js foi adicionado antes do admin.js.");
-    return false;
+    throw new Error(
+      "Supabase não carregou no painel administrativo."
+    );
   }
 
-  return true;
+  mugartSupabase = window.mugartSupabase;
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } = await mugartSupabase.auth.getSession();
+
+  if (sessionError) {
+    throw sessionError;
+  }
+
+  const user = sessionData?.session?.user;
+
+  if (!user) {
+    redirectToLogin();
+    return null;
+  }
+
+  const {
+    data: adminUser,
+    error: adminError
+  } = await mugartSupabase
+    .from("admin_users")
+    .select("auth_user_id, name, active")
+    .eq("auth_user_id", user.id)
+    .eq("active", true)
+    .maybeSingle();
+
+  if (adminError) {
+    console.error(
+      "[Admin] Erro ao verificar administrador:",
+      adminError
+    );
+
+    throw new Error(
+      "Não foi possível validar sua permissão administrativa."
+    );
+  }
+
+  if (!adminUser) {
+    alert(
+      "Esta conta não possui permissão para acessar o painel administrativo."
+    );
+
+    window.location.replace(
+      "/conta/minha-conta.html"
+    );
+
+    return null;
+  }
+
+  return {
+    user,
+    adminUser
+  };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  requireAuth();
+function bindLogout() {
+  const button = $("#logoutBtn");
 
-  bindLogin();
-  bindLogout();
+  if (!button) {
+    return;
+  }
 
-  if (!isLoginPage() && !requireSupabase()) return;
+  button.addEventListener("click", async () => {
+    button.disabled = true;
 
-  if ($("#metricProducts")) renderDashboard();
-  if ($("#productForm")) initProductsPage();
-  if ($("#categoryForm")) initCategoriesPage();
-  if ($("#ordersTable")) initOrdersPage();
-  if ($("#analyticsSettingsForm")) initAnalyticsSettingsPage();
-});
+    try {
+      await mugartSupabase.auth.signOut();
+    } catch (error) {
+      console.error(
+        "[Admin] Erro ao sair:",
+        error
+      );
+    } finally {
+      localStorage.removeItem(
+        "mugart_admin_auth"
+      );
 
-/* LOGIN TEMPORÁRIO */
+      sessionStorage.clear();
 
-function bindLogin() {
-  const form = $("#loginForm");
-  if (!form) return;
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const email = $("#loginEmail").value.trim();
-    const password = $("#loginPassword").value.trim();
-
-    if (email === "admin@mugart.com.br" && password === "123456") {
-      localStorage.setItem(ADMIN_KEYS.auth, "true");
-      location.href = "dashboard.html";
-    } else {
-      alert("Login inválido. Use admin@mugart.com.br / 123456 para teste.");
+      window.location.replace(
+        "/conta/login.html"
+      );
     }
   });
 }
 
-function bindLogout() {
-  const btn = $("#logoutBtn");
-  if (!btn) return;
+async function initializeAdminPage() {
+  try {
+    const adminSession =
+      await validateAdminSession();
 
-  btn.addEventListener("click", () => {
-    localStorage.removeItem(ADMIN_KEYS.auth);
-    location.href = "index.html";
-  });
+    if (!adminSession) {
+      return;
+    }
+
+    document.documentElement
+      .classList.add("admin-authenticated");
+
+    bindLogout();
+
+    if ($("#metricProducts")) {
+      await renderDashboard();
+    }
+
+    if ($("#productForm")) {
+      await initProductsPage();
+    }
+
+    if ($("#categoryForm")) {
+      await initCategoriesPage();
+    }
+
+    if ($("#ordersTable")) {
+      await initOrdersPage();
+    }
+
+    if ($("#analyticsSettingsForm")) {
+      await initAnalyticsSettingsPage();
+    }
+
+  } catch (error) {
+    console.error(
+      "[Admin] Falha ao inicializar painel:",
+      error
+    );
+
+    alert(
+      error?.message ||
+      "Não foi possível abrir o painel administrativo."
+    );
+
+    redirectToLogin();
+  }
 }
 
+document.addEventListener(
+  "DOMContentLoaded",
+  initializeAdminPage
+);
+
 /* SUPABASE */
+
 
 async function getCategories() {
   const result = await mugartSupabase
