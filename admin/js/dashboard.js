@@ -11,30 +11,30 @@
    */
 
   const DASHBOARD_CONFIG = {
-    autoRefreshMilliseconds: 30000,
-    lowStockLimit: 5,
+  autoRefreshMilliseconds: 30000,
+  lowStockLimit: 5,
 
-    tables: {
-      orders: "orders",
-      orderItems: "order_items",
-      products: "products",
-      customers: "customers"
+  tables: {
+    orders: "orders",
+    orderItems: "order_items",
+    products: "products",
+    customers: "customers"
+  },
+
+  columns: {
+    orders: {
+      id: "id",
+      number: "order_number",
+      total: "total",
+      status: "status",
+      paymentStatus: "payment_status",
+      createdAt: "created_at",
+      customerId: "customer_id",
+      customerName: "customer_name",
+      customerEmail: "customer_email",
+      couponCode: "coupon",
+      discount: "discount"
     },
-
-    columns: {
-      orders: {
-        id: "id",
-        number: "order_number",
-        total: "total",
-        status: "status",
-        paymentStatus: "payment_status",
-        createdAt: "created_at",
-        customerId: "customer_id",
-        customerName: "customer_name",
-        customerEmail: "customer_email",
-        couponCode: "coupon",
-        discount: "discount"
-      },
 
       orderItems: {
         id: "id",
@@ -655,32 +655,43 @@
     };
   }
 
-  function normalizeOrderItem(rawItem) {
-    const config = DASHBOARD_CONFIG.columns.orderItems;
+ function normalizeOrderItem(rawItem) {
+  const config = DASHBOARD_CONFIG.columns.orderItems;
 
-    const quantity = Number(rawItem[config.quantity]) || 0;
-    const unitPrice = parseMoney(rawItem[config.unitPrice]);
+  const quantity =
+    Number(rawItem[config.quantity]) || 0;
 
-    const informedTotal = parseMoney(rawItem[config.total]);
+  const unitPrice = parseMoney(
+    rawItem[config.unitPrice]
+  );
 
-    rreturn {
-  id: rawItem[config.id],
-  orderId: rawItem[config.orderId],
-  productId: rawItem[config.productId],
+  const informedTotal = parseMoney(
+    rawItem[config.total]
+  );
 
-  productName:
-    rawItem[config.productName] ||
-    "Produto não informado",
+  return {
+    id: rawItem[config.id],
 
-  image: rawItem[config.image] || "",
+    orderId: rawItem[config.orderId],
 
-  quantity,
-  unitPrice,
+    productId: rawItem[config.productId],
 
-  total:
-    informedTotal ||
-    quantity * unitPrice
-};
+    productName:
+      rawItem[config.productName] ||
+      "Produto não informado",
+
+    image:
+      rawItem[config.image] || "",
+
+    quantity,
+
+    unitPrice,
+
+    total:
+      informedTotal ||
+      quantity * unitPrice
+  };
+}
 
   function normalizeProduct(rawProduct) {
     const config = DASHBOARD_CONFIG.columns.products;
