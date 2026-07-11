@@ -1,6 +1,7 @@
 /* ==========================================================
    MugArt - Área do Cliente
    orders.js
+   Rastreamento Premium no modal
 ========================================================== */
 
 Account.loadOrders = async function () {
@@ -26,8 +27,11 @@ Account.loadOrders = async function () {
             shipping_service,
             shipping_delivery_time,
             shipping_tracking_code,
+            tracking_code,
+            carrier,
             shipping_label_url,
-            created_at
+            created_at,
+            updated_at
         `)
         .eq("customer_id", Account.customer.id)
         .order("created_at", { ascending: false });
@@ -59,7 +63,10 @@ Account.updateOrdersDashboard = function () {
 };
 
 Account.orderStatusText = function (order) {
-    if (order.status === "canceled") {
+    if (
+        order.status === "canceled" ||
+        order.status === "cancelled"
+    ) {
         return "Cancelado";
     }
 
@@ -72,20 +79,26 @@ Account.orderStatusText = function (order) {
 
     if (
         order.shipping_status === "shipped" ||
-        order.status === "sent"
+        order.status === "sent" ||
+        order.status === "shipped"
     ) {
         return "Enviado";
     }
 
     if (
         order.production_status === "completed" ||
-        order.production_status === "finished"
+        order.production_status === "finished" ||
+        order.production_status === "ready"
     ) {
         return "Produção concluída";
     }
 
     if (
         order.production_status === "in_production" ||
+        order.production_status === "production" ||
+        order.production_status === "printing" ||
+        order.production_status === "pressing" ||
+        order.production_status === "quality" ||
         order.status === "production"
     ) {
         return "Em produção";
@@ -93,7 +106,9 @@ Account.orderStatusText = function (order) {
 
     if (
         order.payment_status === "approved" ||
-        order.status === "approved"
+        order.payment_status === "paid" ||
+        order.status === "approved" ||
+        order.status === "paid"
     ) {
         return "Pagamento aprovado";
     }
@@ -139,11 +154,7 @@ Account.renderLatestOrder = function () {
 
     container.innerHTML = Account.orderCardTemplate(order, true);
 
-    container
-        .querySelector("[data-open-order]")
-        ?.addEventListener("click", () => {
-            Account.openOrder(order.id);
-        });
+    Account.bindOrderCardActions(container);
 };
 
 Account.renderOrders = function () {
@@ -194,6 +205,10 @@ Account.renderOrders = function () {
         .map((order) => Account.orderCardTemplate(order))
         .join("");
 
+    Account.bindOrderCardActions(container);
+};
+
+Account.bindOrderCardActions = function (container) {
     container
         .querySelectorAll("[data-open-order]")
         .forEach((button) => {
@@ -216,7 +231,7 @@ Account.orderCardTemplate = function (order, compact = false) {
             <div class="account-order-card-head">
                 <div>
                     <span>Pedido</span>
-                    <h3>${order.order_number || "-"}</h3>
+                    <h3>${Account.escapeHtml(order.order_number || "-")}</h3>
                     <small>${Account.formatDate(order.created_at)}</small>
                 </div>
 
@@ -229,15 +244,17 @@ Account.orderCardTemplate = function (order, compact = false) {
                 <div>
                     <small>Pagamento</small>
                     <strong>
-                        ${order.payment_status === "approved"
-                            ? "Aprovado"
-                            : "Pendente"}
+                        ${
+                            ["approved", "paid"].includes(order.payment_status)
+                                ? "Aprovado"
+                                : "Pendente"
+                        }
                     </strong>
                 </div>
 
                 <div>
                     <small>Entrega</small>
-                    <strong>${shippingText}</strong>
+                    <strong>${Account.escapeHtml(shippingText)}</strong>
                 </div>
 
                 <div>
@@ -273,6 +290,7 @@ Account.openOrder = async function (orderId) {
 
     modal.classList.add("open");
     modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("account-modal-open");
 
     const { data: order, error } = await mugartSupabase
         .from("orders")
@@ -306,184 +324,574 @@ Account.openOrder = async function (orderId) {
         return new Date(a.created_at) - new Date(b.created_at);
     });
 
+    const trackingCode =
+        order.shipping_tracking_code ||
+        order.tracking_code ||
+        "";
+
+    const carrier =
+        order.shipping_company ||
+        order.carrier ||
+        "";
+
+    const trackingUrl = Account.buildTrackingUrl(
+        carrier,
+        trackingCode
+    );
+
     content.innerHTML = `
-        <div class="account-modal-header">
-            <span>Pedido</span>
-            <h2>${order.order_number || "-"}</h2>
-            <p>${Account.formatDate(order.created_at)}</p>
-        </div>
+        <div class="account-tracking-modal">
 
-        ${Account.orderTimelineTemplate(order, history)}
+            <div class="account-modal-header account-tracking-modal-header">
+                <div>
+                    <span>Pedido</span>
+                    <h2>${Account.escapeHtml(order.order_number || "-")}</h2>
+                    <p>${Account.formatDate(order.created_at)}</p>
+                </div>
 
-        <div class="account-order-modal-grid">
+                <div class="account-tracking-current-status">
+                    <small>Status atual</small>
+                    <strong class="${Account.orderStatusClass(order)}">
+                        ${Account.orderStatusText(order)}
+                    </strong>
+                </div>
+            </div>
 
-            <section class="account-panel">
-                <h3>Itens do pedido</h3>
+            ${Account.orderTimelineTemplate(order, history)}
 
-                <div class="account-order-items">
-                    ${items.length
-                        ? items.map((item) => `
-                            <div class="account-order-item">
-                                <img
-                                    src="${item.image_url || "../assets/hero-caneca.png"}"
-                                    alt="${item.product_name || "Produto"}"
-                                >
+            <div class="account-tracking-layout">
 
-                                <div>
-                                    <strong>${item.product_name || "-"}</strong>
-                                    <span>
-                                        ${item.quantity}x •
-                                        ${Account.formatMoney(item.unit_price)}
-                                    </span>
-                                </div>
+                <div class="account-tracking-main-column">
 
-                                <b>
-                                    ${Account.formatMoney(item.total)}
-                                </b>
+                    <section class="account-panel account-tracking-panel">
+                        <div class="account-tracking-panel-head">
+                            <div>
+                                <span>Produtos</span>
+                                <h3>Itens do pedido</h3>
                             </div>
-                        `).join("")
-                        : "<p>Nenhum item encontrado.</p>"
-                    }
-                </div>
-            </section>
-
-            <section class="account-panel">
-                <h3>Entrega</h3>
-
-                <p>
-                    <strong>${order.shipping_company || "-"}</strong>
-                    ${order.shipping_service || ""}
-                </p>
-
-                <p>
-                    Prazo:
-                    ${order.shipping_delivery_time || "-"} dias úteis
-                </p>
-
-                <p>
-                    Frete:
-                    ${Account.formatMoney(order.shipping)}
-                </p>
-
-                ${order.shipping_tracking_code
-                    ? `
-                        <div class="account-tracking-box">
-                            <small>Código de rastreio</small>
-                            <strong>${order.shipping_tracking_code}</strong>
                         </div>
-                    `
-                    : ""
-                }
 
-                <hr>
+                        <div class="account-order-items">
+                            ${
+                                items.length
+                                    ? items.map((item) => `
+                                        <div class="account-order-item account-order-item-premium">
+                                            <img
+                                                src="${Account.escapeAttribute(
+                                                    item.image_url ||
+                                                    "../assets/hero-caneca.png"
+                                                )}"
+                                                alt="${Account.escapeAttribute(
+                                                    item.product_name || "Produto"
+                                                )}"
+                                                onerror="this.src='../assets/hero-caneca.png'"
+                                            >
 
-                <p>
-                    ${address.street || "-"},
-                    ${address.number || "-"}
-                </p>
+                                            <div>
+                                                <strong>
+                                                    ${Account.escapeHtml(
+                                                        item.product_name || "-"
+                                                    )}
+                                                </strong>
 
-                <p>
-                    ${address.neighborhood || "-"} -
-                    ${address.city || "-"} /
-                    ${address.state || "-"}
-                </p>
+                                                <span>
+                                                    ${item.quantity}x •
+                                                    ${Account.formatMoney(item.unit_price)}
+                                                </span>
+                                            </div>
 
-                <p>CEP: ${address.zip || "-"}</p>
-            </section>
+                                            <b>
+                                                ${Account.formatMoney(item.total)}
+                                            </b>
+                                        </div>
+                                    `).join("")
+                                    : "<p>Nenhum item encontrado.</p>"
+                            }
+                        </div>
+                    </section>
 
-            <section class="account-panel">
-                <h3>Resumo</h3>
+                    <section class="account-panel account-tracking-panel">
+                        <div class="account-tracking-panel-head">
+                            <div>
+                                <span>Histórico</span>
+                                <h3>Atualizações do pedido</h3>
+                            </div>
+                        </div>
 
-                <div class="account-summary-lines">
-                    <div>
-                        <span>Subtotal</span>
-                        <strong>${Account.formatMoney(order.subtotal)}</strong>
-                    </div>
+                        ${Account.orderHistoryTemplate(order, history)}
+                    </section>
 
-                    <div>
-                        <span>Desconto</span>
-                        <strong>${Account.formatMoney(order.discount)}</strong>
-                    </div>
-
-                    <div>
-                        <span>Frete</span>
-                        <strong>${Account.formatMoney(order.shipping)}</strong>
-                    </div>
-
-                    <div class="total">
-                        <span>Total</span>
-                        <strong>${Account.formatMoney(order.total)}</strong>
-                    </div>
                 </div>
-            </section>
+
+                <div class="account-tracking-side-column">
+
+                    <section class="account-panel account-tracking-panel">
+                        <div class="account-tracking-panel-head">
+                            <div>
+                                <span>Entrega</span>
+                                <h3>Informações do envio</h3>
+                            </div>
+                        </div>
+
+                        <div class="account-tracking-shipping-info">
+                            <div>
+                                <small>Transportadora</small>
+                                <strong>
+                                    ${Account.escapeHtml(carrier || "Ainda não informada")}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>Serviço</small>
+                                <strong>
+                                    ${Account.escapeHtml(
+                                        order.shipping_service ||
+                                        order.shipping_method ||
+                                        "Ainda não informado"
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>Prazo estimado</small>
+                                <strong>
+                                    ${
+                                        order.shipping_delivery_time
+                                            ? `${order.shipping_delivery_time} dia(s) útil(eis)`
+                                            : "Ainda não informado"
+                                    }
+                                </strong>
+                            </div>
+
+                            <div>
+                                <small>Código de rastreio</small>
+                                <strong class="account-tracking-code">
+                                    ${Account.escapeHtml(
+                                        trackingCode || "Ainda não disponível"
+                                    )}
+                                </strong>
+                            </div>
+                        </div>
+
+                        ${
+                            trackingUrl
+                                ? `
+                                    <a
+                                        class="account-primary-button account-tracking-external-button"
+                                        href="${Account.escapeAttribute(trackingUrl)}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Rastrear entrega
+                                    </a>
+                                `
+                                : ""
+                        }
+
+                        <hr>
+
+                        <div class="account-tracking-address">
+                            <small>Endereço de entrega</small>
+
+                            <p>
+                                ${Account.escapeHtml(address.street || "-")},
+                                ${Account.escapeHtml(address.number || "-")}
+                            </p>
+
+                            <p>
+                                ${Account.escapeHtml(address.neighborhood || "-")} -
+                                ${Account.escapeHtml(address.city || "-")} /
+                                ${Account.escapeHtml(address.state || "-")}
+                            </p>
+
+                            <p>
+                                CEP: ${Account.escapeHtml(address.zip || "-")}
+                            </p>
+                        </div>
+                    </section>
+
+                    <section class="account-panel account-tracking-panel">
+                        <div class="account-tracking-panel-head">
+                            <div>
+                                <span>Resumo</span>
+                                <h3>Valores</h3>
+                            </div>
+                        </div>
+
+                        <div class="account-summary-lines">
+                            <div>
+                                <span>Subtotal</span>
+                                <strong>${Account.formatMoney(order.subtotal)}</strong>
+                            </div>
+
+                            <div>
+                                <span>Desconto</span>
+                                <strong>${Account.formatMoney(order.discount)}</strong>
+                            </div>
+
+                            <div>
+                                <span>Frete</span>
+                                <strong>${Account.formatMoney(order.shipping)}</strong>
+                            </div>
+
+                            <div class="total">
+                                <span>Total</span>
+                                <strong>${Account.formatMoney(order.total)}</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="account-panel account-tracking-help">
+                        <span>Precisa de ajuda?</span>
+                        <h3>Fale com a MugArt</h3>
+
+                        <p>
+                            Nossa equipe pode ajudar com dúvidas sobre produção,
+                            envio ou prazo de entrega.
+                        </p>
+
+                        <a
+                            href="https://wa.me/5511988849236?text=${encodeURIComponent(
+                                `Olá! Preciso de ajuda com o pedido ${order.order_number || order.id}.`
+                            )}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="account-secondary-button"
+                        >
+                            Chamar no WhatsApp
+                        </a>
+                    </section>
+
+                </div>
+
+            </div>
 
         </div>
     `;
 };
 
-Account.orderTimelineTemplate = function (order, history) {
+Account.orderTimelineTemplate = function (order, history = []) {
+    const currentIndex = Account.resolveOrderStepIndex(order);
+    const dates = Account.resolveOrderStepDates(order, history);
+
     const steps = [
         {
             key: "received",
             label: "Pedido recebido",
-            active: true
+            description: "Recebemos seu pedido.",
+            date: dates.received
         },
         {
             key: "paid",
             label: "Pagamento aprovado",
-            active:
-                order.payment_status === "approved" ||
-                order.status === "approved" ||
-                order.status === "production" ||
-                order.status === "sent" ||
-                order.status === "delivered"
+            description: "O pagamento foi confirmado.",
+            date: dates.paid
         },
         {
             key: "production",
             label: "Em produção",
-            active:
-                order.production_status === "in_production" ||
-                order.production_status === "completed" ||
-                order.status === "production" ||
-                order.status === "sent" ||
-                order.status === "delivered"
+            description: "Seu pedido está sendo preparado.",
+            date: dates.production
         },
         {
             key: "finished",
             label: "Produção concluída",
-            active:
-                order.production_status === "completed" ||
-                order.production_status === "finished" ||
-                order.status === "sent" ||
-                order.status === "delivered"
+            description: "O pedido ficou pronto para envio.",
+            date: dates.finished
         },
         {
             key: "sent",
             label: "Enviado",
-            active:
-                order.shipping_status === "shipped" ||
-                order.status === "sent" ||
-                order.status === "delivered"
+            description: "O pedido foi entregue à transportadora.",
+            date: dates.sent
         },
         {
             key: "delivered",
             label: "Entregue",
-            active:
-                order.shipping_status === "delivered" ||
-                order.status === "delivered"
+            description: "O pedido foi entregue.",
+            date: dates.delivered
         }
     ];
 
     return `
-        <div class="account-order-timeline">
-            ${steps.map((step) => `
-                <div class="account-timeline-step ${step.active ? "active" : ""}">
-                    <span>${step.active ? "✓" : ""}</span>
-                    <p>${step.label}</p>
-                </div>
-            `).join("")}
+        <div class="account-order-timeline account-order-timeline-premium">
+            ${steps.map((step, index) => {
+                const completed = index < currentIndex;
+                const current = index === currentIndex;
+
+                return `
+                    <div class="
+                        account-timeline-step-premium
+                        ${completed ? "completed" : ""}
+                        ${current ? "current" : ""}
+                    ">
+                        <div class="account-timeline-marker">
+                            ${completed ? "✓" : index + 1}
+                        </div>
+
+                        <div class="account-timeline-content">
+                            <strong>${step.label}</strong>
+                            <p>${step.description}</p>
+
+                            ${
+                                step.date
+                                    ? `<time>${Account.formatDate(step.date)}</time>`
+                                    : ""
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join("")}
         </div>
     `;
+};
+
+Account.orderHistoryTemplate = function (order, history) {
+    const normalized = history
+        .map((item) => {
+            const title =
+                item.status ||
+                item.new_status ||
+                item.event_type ||
+                item.action ||
+                "Atualização";
+
+            const description =
+                item.description ||
+                item.message ||
+                item.notes ||
+                item.details ||
+                "";
+
+            return {
+                title: Account.formatStatusLabel(title),
+                description,
+                created_at:
+                    item.created_at ||
+                    item.updated_at ||
+                    order.updated_at ||
+                    order.created_at
+            };
+        })
+        .filter((item) => item.title || item.description);
+
+    if (!normalized.length) {
+        return `
+            <div class="account-empty-state account-history-empty">
+                <span>🕘</span>
+                <h3>Sem atualizações adicionais</h3>
+                <p>
+                    As próximas movimentações aparecerão aqui.
+                </p>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="account-tracking-history">
+            ${normalized
+                .slice()
+                .reverse()
+                .map((item) => `
+                    <article class="account-tracking-history-item">
+                        <time>${Account.formatDate(item.created_at)}</time>
+
+                        <div>
+                            <strong>${Account.escapeHtml(item.title)}</strong>
+
+                            ${
+                                item.description
+                                    ? `<p>${Account.escapeHtml(item.description)}</p>`
+                                    : ""
+                            }
+                        </div>
+                    </article>
+                `)
+                .join("")}
+        </div>
+    `;
+};
+
+Account.resolveOrderStepIndex = function (order) {
+    const shipping = Account.normalizeStatus(order.shipping_status);
+    const production = Account.normalizeStatus(order.production_status);
+    const payment = Account.normalizeStatus(order.payment_status);
+    const status = Account.normalizeStatus(order.status);
+
+    if (["delivered", "entregue"].includes(shipping) ||
+        ["delivered", "entregue"].includes(status)) {
+        return 5;
+    }
+
+    if (["shipped", "sent", "enviado", "despachado"].includes(shipping) ||
+        ["shipped", "sent", "enviado"].includes(status)) {
+        return 4;
+    }
+
+    if (["completed", "finished", "ready", "concluido", "pronto"].includes(production)) {
+        return 3;
+    }
+
+    if ([
+        "in_production",
+        "production",
+        "printing",
+        "pressing",
+        "quality",
+        "producing",
+        "em_producao"
+    ].includes(production) || status === "production") {
+        return 2;
+    }
+
+    if (
+        ["approved", "paid", "pago", "aprovado"].includes(payment) ||
+        ["approved", "paid", "pago", "aprovado"].includes(status)
+    ) {
+        return 1;
+    }
+
+    return 0;
+};
+
+Account.resolveOrderStepDates = function (order, history) {
+    const dates = {
+        received: order.created_at,
+        paid: null,
+        production: null,
+        finished: null,
+        sent: null,
+        delivered: null
+    };
+
+    history.forEach((item) => {
+        const text = Account.normalizeStatus(
+            [
+                item.status,
+                item.new_status,
+                item.event_type,
+                item.action,
+                item.description,
+                item.message,
+                item.notes
+            ]
+                .filter(Boolean)
+                .join(" ")
+        );
+
+        const date =
+            item.created_at ||
+            item.updated_at ||
+            null;
+
+        if (!date) return;
+
+        if (
+            !dates.paid &&
+            ["approved", "paid", "pago", "aprovado"].some((value) =>
+                text.includes(value)
+            )
+        ) {
+            dates.paid = date;
+        }
+
+        if (
+            !dates.production &&
+            ["production", "producao", "printing", "pressing", "quality"].some((value) =>
+                text.includes(value)
+            )
+        ) {
+            dates.production = date;
+        }
+
+        if (
+            !dates.finished &&
+            ["completed", "finished", "ready", "concluido", "pronto"].some((value) =>
+                text.includes(value)
+            )
+        ) {
+            dates.finished = date;
+        }
+
+        if (
+            !dates.sent &&
+            ["shipped", "sent", "enviado", "despachado"].some((value) =>
+                text.includes(value)
+            )
+        ) {
+            dates.sent = date;
+        }
+
+        if (
+            !dates.delivered &&
+            ["delivered", "entregue"].some((value) =>
+                text.includes(value)
+            )
+        ) {
+            dates.delivered = date;
+        }
+    });
+
+    if (
+        !dates.paid &&
+        ["approved", "paid"].includes(
+            Account.normalizeStatus(order.payment_status)
+        )
+    ) {
+        dates.paid = order.updated_at || order.created_at;
+    }
+
+    return dates;
+};
+
+Account.buildTrackingUrl = function (carrier, code) {
+    if (!code) return "";
+
+    const normalizedCarrier = Account.normalizeStatus(carrier);
+
+    if (normalizedCarrier.includes("correios")) {
+        return `https://rastreamento.correios.com.br/app/index.php?objeto=${encodeURIComponent(code)}`;
+    }
+
+    if (normalizedCarrier.includes("jadlog")) {
+        return `https://www.jadlog.com.br/siteInstitucional/tracking.jad?cte=${encodeURIComponent(code)}`;
+    }
+
+    if (normalizedCarrier.includes("loggi")) {
+        return `https://www.loggi.com/rastreador/${encodeURIComponent(code)}`;
+    }
+
+    return `https://www.google.com/search?q=${encodeURIComponent(
+        `${carrier || "transportadora"} rastrear ${code}`
+    )}`;
+};
+
+Account.normalizeStatus = function (value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "_");
+};
+
+Account.formatStatusLabel = function (value) {
+    return String(value || "Atualização")
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+};
+
+Account.escapeHtml = function (value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+};
+
+Account.escapeAttribute = function (value) {
+    return Account.escapeHtml(value);
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -507,6 +915,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 modal?.classList.remove("open");
                 modal?.setAttribute("aria-hidden", "true");
+                document.body.classList.remove("account-modal-open");
             });
         });
 });

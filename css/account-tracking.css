@@ -1,0 +1,354 @@
+/* ==========================================================
+   MugArt - Rastreamento Premium no Modal
+   Complemento do account.css
+========================================================== */
+
+body.account-modal-open {
+  overflow: hidden;
+}
+
+.account-order-modal-card {
+  width: min(1180px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.account-tracking-modal {
+  display: grid;
+  gap: 24px;
+}
+
+.account-tracking-modal-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.account-tracking-current-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+}
+
+.account-tracking-current-status small {
+  color: rgba(255,255,255,.62);
+}
+
+.account-tracking-current-status strong {
+  display: inline-flex;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.account-tracking-current-status strong.pending {
+  background: rgba(255,212,0,.14);
+  color: #ffd400;
+}
+
+.account-tracking-current-status strong.approved,
+.account-tracking-current-status strong.delivered {
+  background: rgba(32,196,99,.15);
+  color: #20c463;
+}
+
+.account-tracking-current-status strong.production,
+.account-tracking-current-status strong.ready {
+  background: rgba(0,216,255,.14);
+  color: #00d8ff;
+}
+
+.account-tracking-current-status strong.sent {
+  background: rgba(255,59,123,.14);
+  color: #ff3b7b;
+}
+
+.account-tracking-current-status strong.canceled {
+  background: rgba(255,47,61,.14);
+  color: #ff2f3d;
+}
+
+.account-order-timeline-premium {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 22px;
+  background: rgba(255,255,255,.035);
+}
+
+.account-timeline-step-premium {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.account-timeline-step-premium:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: calc(50% + 24px);
+  width: calc(100% - 48px);
+  height: 2px;
+  background: rgba(255,255,255,.12);
+}
+
+.account-timeline-step-premium.completed:not(:last-child)::after {
+  background: #20c463;
+}
+
+.account-timeline-marker {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255,255,255,.16);
+  border-radius: 50%;
+  background: #111318;
+  color: rgba(255,255,255,.55);
+  font-weight: 900;
+}
+
+.account-timeline-step-premium.completed .account-timeline-marker {
+  border-color: #20c463;
+  background: rgba(32,196,99,.14);
+  color: #20c463;
+}
+
+.account-timeline-step-premium.current .account-timeline-marker {
+  border-color: #ffd400;
+  background: rgba(255,212,0,.14);
+  color: #ffd400;
+  box-shadow: 0 0 0 7px rgba(255,212,0,.07);
+}
+
+.account-timeline-content strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.account-timeline-content p {
+  margin: 0;
+  color: rgba(255,255,255,.58);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.account-timeline-content time {
+  display: block;
+  margin-top: 7px;
+  color: #00d8ff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.account-tracking-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, .75fr);
+  gap: 22px;
+}
+
+.account-tracking-main-column,
+.account-tracking-side-column {
+  display: grid;
+  gap: 22px;
+  align-content: start;
+}
+
+.account-tracking-panel {
+  padding: 22px;
+}
+
+.account-tracking-panel-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.account-tracking-panel-head span,
+.account-tracking-help > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #ffd400;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.account-tracking-panel-head h3,
+.account-tracking-help h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.account-order-item-premium {
+  grid-template-columns: 70px 1fr auto;
+  padding: 13px 0;
+}
+
+.account-order-item-premium img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: rgba(255,255,255,.055);
+}
+
+.account-tracking-shipping-info {
+  display: grid;
+  gap: 13px;
+}
+
+.account-tracking-shipping-info > div {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.account-tracking-shipping-info small,
+.account-tracking-address small {
+  color: rgba(255,255,255,.58);
+}
+
+.account-tracking-code {
+  word-break: break-all;
+  color: #ffd400;
+}
+
+.account-tracking-external-button {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.account-tracking-address p {
+  margin: 6px 0;
+  color: rgba(255,255,255,.72);
+  line-height: 1.45;
+}
+
+.account-tracking-help p {
+  color: rgba(255,255,255,.68);
+  line-height: 1.55;
+}
+
+.account-tracking-help .account-secondary-button {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.account-tracking-history {
+  display: grid;
+  gap: 11px;
+}
+
+.account-tracking-history-item {
+  display: grid;
+  grid-template-columns: 145px 1fr;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,.025);
+}
+
+.account-tracking-history-item time {
+  color: #00d8ff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.account-tracking-history-item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.account-tracking-history-item p {
+  margin: 0;
+  color: rgba(255,255,255,.65);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.account-history-empty {
+  min-height: 150px;
+}
+
+@media (max-width: 920px) {
+  .account-order-timeline-premium {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .account-timeline-step-premium {
+    grid-template-columns: 46px 1fr;
+    min-height: 84px;
+    justify-items: stretch;
+    text-align: left;
+  }
+
+  .account-timeline-step-premium:not(:last-child)::after {
+    top: 42px;
+    bottom: -3px;
+    left: 21px;
+    width: 2px;
+    height: auto;
+  }
+
+  .account-timeline-content {
+    padding: 4px 0 18px;
+  }
+
+  .account-tracking-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .account-order-modal-card {
+    width: calc(100vw - 18px);
+    max-height: calc(100vh - 18px);
+    padding: 18px;
+  }
+
+  .account-tracking-modal-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .account-tracking-current-status {
+    align-items: flex-start;
+  }
+
+  .account-tracking-history-item {
+    grid-template-columns: 1fr;
+  }
+
+  .account-order-item-premium {
+    grid-template-columns: 56px 1fr;
+  }
+
+  .account-order-item-premium img {
+    width: 56px;
+    height: 56px;
+  }
+
+  .account-order-item-premium b {
+    grid-column: 2;
+  }
+}
