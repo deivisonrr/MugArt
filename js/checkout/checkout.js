@@ -711,9 +711,6 @@ function bindEvents() {
             CheckoutState.selectedPayment = r.value;
             updateOptionCards();
             saveDraft();
-            if (CheckoutState.coupon) {
-                revalidarCupomAplicado();
-}
         });
     });
 }
@@ -752,9 +749,25 @@ function restoreDraft() {
         }
     });
 
-    CheckoutState.discount = Number(d.discount || 0);
-    CheckoutState.shipping = Number(d.shipping || 0);
-    CheckoutState.coupon = d.coupon || "";
+   /*
+ * O desconto salvo no navegador não é confiável.
+ * O cliente deverá validar novamente o cupom.
+ */
+CheckoutState.discount = 0;
+CheckoutState.coupon = "";
+
+CheckoutState.shipping =
+    Number(d.shipping || 0);
+
+const couponInput =
+    qs("#couponCode");
+
+if (couponInput && d.couponCode) {
+    couponInput.value =
+        String(d.couponCode)
+            .trim()
+            .toUpperCase();
+}
 }
 
 function saveDraft() {
@@ -917,33 +930,60 @@ function updateProgress() {
     }
 }
 
-window.changeQty = (id, d) => {
-    const i = CheckoutState.cart.find(x => x.productId === id);
+window.changeQty = async (id, d) => {
+    const item =
+        CheckoutState.cart.find(
+            entry => entry.productId === id
+        );
 
-    if (!i) return;
+    if (!item) return;
 
-    i.quantity = Math.max(1, Number(i.quantity || 1) + d);
+    item.quantity = Math.max(
+        1,
+        Number(item.quantity || 1) + d
+    );
 
     persistCart();
     renderItems();
+
+    if (CheckoutState.coupon) {
+        await revalidarCupomAplicado();
+    }
 };
 
-window.setQty = (id, v) => {
-    const i = CheckoutState.cart.find(x => x.productId === id);
+window.setQty = async (id, value) => {
+    const item =
+        CheckoutState.cart.find(
+            entry => entry.productId === id
+        );
 
-    if (!i) return;
+    if (!item) return;
 
-    i.quantity = Math.max(1, Number(v || 1));
+    item.quantity = Math.max(
+        1,
+        Number(value || 1)
+    );
 
     persistCart();
     renderItems();
+
+    if (CheckoutState.coupon) {
+        await revalidarCupomAplicado();
+    }
 };
 
-window.removeItem = id => {
-    CheckoutState.cart = CheckoutState.cart.filter(i => i.productId !== id);
+window.removeItem = async id => {
+    CheckoutState.cart =
+        CheckoutState.cart.filter(
+            item => item.productId !== id
+        );
 
     persistCart();
     renderItems();
+
+    if (CheckoutState.coupon) {
+        await revalidarCupomAplicado();
+    }
 };
 
 function persistCart() {
@@ -961,10 +1001,6 @@ async function applyCoupon() {
         return;
     }
 
-    /*
-     * Quando já existe cupom aplicado,
-     * o botão funciona como "Remover".
-     */
     if (CheckoutState.coupon) {
         removerCupom();
         return;
@@ -998,7 +1034,7 @@ async function applyCoupon() {
         );
 
     const originalText =
-        button.textContent;
+        button.textContent || "Aplicar";
 
     try {
         button.disabled = true;
@@ -1058,6 +1094,15 @@ async function applyCoupon() {
             CheckoutState.discount = 0;
             CheckoutState.coupon = "";
 
+            input.readOnly = false;
+
+            button.textContent =
+                "Aplicar";
+
+            button.classList.remove(
+                "coupon-remove"
+            );
+
             renderSummary();
             saveDraft();
 
@@ -1070,7 +1115,9 @@ async function applyCoupon() {
         }
 
         CheckoutState.coupon =
-            data.coupon;
+            String(data.coupon || code)
+                .trim()
+                .toUpperCase();
 
         CheckoutState.discount =
             Number(
@@ -1078,7 +1125,7 @@ async function applyCoupon() {
             );
 
         input.value =
-            data.coupon;
+            CheckoutState.coupon;
 
         input.readOnly = true;
 
@@ -1108,6 +1155,10 @@ async function applyCoupon() {
 
         input.readOnly = false;
 
+        button.classList.remove(
+            "coupon-remove"
+        );
+
         renderSummary();
         saveDraft();
 
@@ -1119,12 +1170,11 @@ async function applyCoupon() {
     } finally {
         button.disabled = false;
 
-        if (
-            !CheckoutState.coupon
-        ) {
+        if (!CheckoutState.coupon) {
             button.textContent =
-                originalText ||
-                "Aplicar";
+                originalText === "Remover"
+                    ? "Aplicar"
+                    : originalText;
         }
     }
 }
@@ -1145,6 +1195,7 @@ function removerCupom() {
     }
 
     if (button) {
+        button.disabled = false;
         button.textContent =
             "Aplicar";
 
@@ -1157,6 +1208,41 @@ function removerCupom() {
     saveDraft();
 
     toast("Cupom removido.");
+}
+
+async function revalidarCupomAplicado() {
+    const code =
+        CheckoutState.coupon;
+
+    if (!code) {
+        return;
+    }
+
+    const input =
+        qs("#couponCode");
+
+    const button =
+        qs("#applyCouponBtn");
+
+    CheckoutState.coupon = "";
+    CheckoutState.discount = 0;
+
+    if (input) {
+        input.value = code;
+        input.readOnly = false;
+    }
+
+    if (button) {
+        button.disabled = false;
+        button.textContent =
+            "Aplicar";
+
+        button.classList.remove(
+            "coupon-remove"
+        );
+    }
+
+    await applyCoupon();
 }
 
 function updateOptionCards() {
@@ -1294,7 +1380,7 @@ async function calculateShipping() {
 
             const input = label.querySelector("input");
 
-            input?.addEventListener("change", () => {
+            input?.addEventListener("change", async () => {
                 CheckoutState.selectedShipping = option.id;
                 CheckoutState.selectedShippingCompany = option.company || "";
                 CheckoutState.selectedShippingService = option.name || "";
@@ -1305,6 +1391,10 @@ async function calculateShipping() {
                 updateOptionCards();
                 renderSummary();
                 saveDraft();
+
+                if (CheckoutState.coupon) {
+                    await revalidarCupomAplicado();
+                }
             });
 
             shippingOptions.appendChild(label);
@@ -1322,6 +1412,10 @@ async function calculateShipping() {
         updateOptionCards();
         renderSummary();
         saveDraft();
+
+        if (CheckoutState.coupon) {
+            await revalidarCupomAplicado();
+        }
 
     } catch (error) {
         console.error("Erro inesperado ao calcular frete:", error);
