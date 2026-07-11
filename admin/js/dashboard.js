@@ -44,6 +44,7 @@
         quantity: "quantity",
         unitPrice: "unit_price",
         total: "total"
+        image: "image_url",
       },
 
       products: {
@@ -545,7 +546,8 @@
       config.productName,
       config.quantity,
       config.unitPrice,
-      config.total
+      config.total,
+      config.image
     ]
       .filter(Boolean)
       .join(",");
@@ -661,18 +663,24 @@
 
     const informedTotal = parseMoney(rawItem[config.total]);
 
-    return {
-      id: rawItem[config.id],
-      orderId: rawItem[config.orderId],
-      productId: rawItem[config.productId],
-      productName:
-        rawItem[config.productName] || "Produto não informado",
+    rreturn {
+  id: rawItem[config.id],
+  orderId: rawItem[config.orderId],
+  productId: rawItem[config.productId],
 
-      quantity,
-      unitPrice,
-      total: informedTotal || quantity * unitPrice
-    };
-  }
+  productName:
+    rawItem[config.productName] ||
+    "Produto não informado",
+
+  image: rawItem[config.image] || "",
+
+  quantity,
+  unitPrice,
+
+  total:
+    informedTotal ||
+    quantity * unitPrice
+};
 
   function normalizeProduct(rawProduct) {
     const config = DASHBOARD_CONFIG.columns.products;
@@ -931,9 +939,9 @@
 
       const existing = productSummary.get(key) || {
         id: item.productId,
-        name: product?.name || item.productName,
+        name:product?.name || item.productName || "Produto sem identificação",
         sku: product?.sku || "",
-        image: product?.image || "",
+        image: product?.image || item.image || "",
         quantity: 0,
         revenue: 0
       };
