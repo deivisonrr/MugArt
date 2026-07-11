@@ -30,6 +30,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <!-- Scripts do painel em ordem, executados após o HTML ser interpretado -->
+  <script defer src="/js/supabase-config.js?v=5"></script>
+  <script defer src="/admin/js/admin-auth.js?v=1"></script>
+  <script defer src="/admin/js/admin.js?v=5"></script>
+  <script defer src="/admin/js/dashboard.js?v=11"></script>
 </head>
 
 <body class="admin-body">
@@ -608,11 +614,22 @@
     <span id="dashboard-toast-message"></span>
   </div>
 
-  <!-- SCRIPTS -->
-  <script src="/js/supabase-config.js?v=5"></script>
-  <script src="/admin/js/admin-auth.js?v=1"></script>
-  <script src="/admin/js/admin.js?v=5"></script>
-  <script src="/admin/js/dashboard.js?v=4"></script>
+  <!-- Proteção: impede que a tela fique travada eternamente em “Carregando” -->
+  <script>
+    window.addEventListener("load", () => {
+      window.setTimeout(() => {
+        const loading = document.getElementById("dashboard-loading");
+
+        if (loading && !loading.classList.contains("finished")) {
+          console.error(
+            "Dashboard não concluiu a inicialização. Verifique o Console do navegador."
+          );
+
+          loading.classList.add("finished");
+        }
+      }, 8000);
+    });
+  </script>
 
 </body>
 </html>
