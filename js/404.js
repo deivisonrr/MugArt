@@ -92,9 +92,8 @@
 
     productsGrid.innerHTML = products
       .map((product) => {
-        const productUrl = product.slug
-          ? `/produto.html?slug=${encodeURIComponent(product.slug)}`
-          : `/produto.html?id=${encodeURIComponent(product.id)}`;
+        const productUrl = 
+          `/loja.html?busca=${encodeURIComponent(product.name || "")}`;
 
         return `
           <a
