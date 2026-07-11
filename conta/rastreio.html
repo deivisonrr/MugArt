@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Acompanhar pedido | MugArt</title>
+
+  <link rel="stylesheet" href="/css/style.css?v=1">
+  <link rel="stylesheet" href="/css/order-tracking.css?v=1">
+
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="/js/supabase-config.js?v=5"></script>
+  <script defer src="/js/account/order-tracking.js?v=1"></script>
+</head>
+
+<body>
+  <main class="tracking-page">
+    <section class="tracking-shell">
+      <header class="tracking-header">
+        <div>
+          <p class="tracking-eyebrow">Área do cliente</p>
+          <h1>Acompanhar pedido</h1>
+          <p class="tracking-subtitle">
+            Veja cada etapa do seu pedido e acompanhe o envio.
+          </p>
+        </div>
+
+        <a href="/conta/pedidos.html" class="tracking-back-link">
+          Voltar aos pedidos
+        </a>
+      </header>
+
+      <div id="tracking-loading" class="tracking-loading">
+        <div class="tracking-spinner"></div>
+        <p>Carregando seu pedido...</p>
+      </div>
+
+      <div id="tracking-error" class="tracking-message tracking-error hidden"></div>
+
+      <section id="tracking-content" class="hidden">
+        <article class="tracking-order-card">
+          <div>
+            <span>Pedido</span>
+            <strong id="tracking-order-number">—</strong>
+          </div>
+
+          <div>
+            <span>Data</span>
+            <strong id="tracking-order-date">—</strong>
+          </div>
+
+          <div>
+            <span>Valor</span>
+            <strong id="tracking-order-total">R$ 0,00</strong>
+          </div>
+
+          <div>
+            <span>Status atual</span>
+            <strong id="tracking-current-status" class="tracking-status-badge">
+              —
+            </strong>
+          </div>
+        </article>
+
+        <section class="tracking-grid">
+          <article class="tracking-panel">
+            <div class="tracking-panel-head">
+              <div>
+                <p class="tracking-eyebrow">Andamento</p>
+                <h2>Linha do tempo</h2>
+              </div>
+            </div>
+
+            <div id="tracking-timeline" class="tracking-timeline"></div>
+          </article>
+
+          <aside class="tracking-side-column">
+            <article class="tracking-panel">
+              <div class="tracking-panel-head">
+                <div>
+                  <p class="tracking-eyebrow">Entrega</p>
+                  <h2>Informações do envio</h2>
+                </div>
+              </div>
+
+              <dl class="tracking-shipping-list">
+                <div>
+                  <dt>Transportadora</dt>
+                  <dd id="tracking-carrier">Ainda não informada</dd>
+                </div>
+
+                <div>
+                  <dt>Serviço</dt>
+                  <dd id="tracking-service">Ainda não informado</dd>
+                </div>
+
+                <div>
+                  <dt>Prazo estimado</dt>
+                  <dd id="tracking-delivery-time">Ainda não informado</dd>
+                </div>
+
+                <div>
+                  <dt>Código de rastreio</dt>
+                  <dd id="tracking-code">Ainda não disponível</dd>
+                </div>
+              </dl>
+
+              <a
+                id="tracking-external-link"
+                class="tracking-primary-button hidden"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Rastrear entrega
+              </a>
+            </article>
+
+            <article class="tracking-panel tracking-help-panel">
+              <p class="tracking-eyebrow">Precisa de ajuda?</p>
+              <h2>Fale com a MugArt</h2>
+              <p>
+                Nossa equipe pode ajudar com dúvidas sobre produção,
+                envio ou prazo de entrega.
+              </p>
+
+              <a
+                class="tracking-secondary-button"
+                href="https://wa.me/5511988849236"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Chamar no WhatsApp
+              </a>
+            </article>
+          </aside>
+        </section>
+
+        <section class="tracking-panel tracking-history-panel">
+          <div class="tracking-panel-head">
+            <div>
+              <p class="tracking-eyebrow">Histórico</p>
+              <h2>Atualizações do pedido</h2>
+            </div>
+          </div>
+
+          <div id="tracking-history" class="tracking-history"></div>
+        </section>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
