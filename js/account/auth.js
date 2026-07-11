@@ -156,6 +156,55 @@ function getErrorMessage(error) {
     return error?.message || "Não foi possível concluir a operação.";
 }
 
+async function usuarioEhAdministrador(userId) {
+    if (!userId) {
+        return false;
+    }
+
+    const {
+        data,
+        error
+    } = await mugartSupabase
+        .from("admin_users")
+        .select("auth_user_id, active")
+        .eq("auth_user_id", userId)
+        .eq("active", true)
+        .maybeSingle();
+
+    if (error) {
+        console.error(
+            "Erro ao verificar administrador:",
+            error
+        );
+
+        return false;
+    }
+
+    return Boolean(data);
+}
+
+function obterRedirecionamentoCliente() {
+    const redirectParam =
+        new URLSearchParams(
+            window.location.search
+        ).get("redirect");
+
+    const savedRedirect =
+        localStorage.getItem(
+            "mugart_redirect_after_login"
+        );
+
+    localStorage.removeItem(
+        "mugart_redirect_after_login"
+    );
+
+    return (
+        redirectParam ||
+        savedRedirect ||
+        "/conta/minha-conta.html"
+    );
+}
+
 /* =========================================================
    FORMULÁRIO DE LOGIN
 ========================================================= */
@@ -253,7 +302,9 @@ async function handleLogin(event) {
         document.getElementById("loginButton");
 
     if (!isValidEmail(email)) {
-        showMessage("Digite um e-mail válido.");
+        showMessage(
+            "Digite um e-mail válido."
+        );
         return;
     }
 
@@ -265,51 +316,62 @@ async function handleLogin(event) {
     }
 
     try {
-        setButtonLoading(button, true);
+        setButtonLoading(
+            button,
+            true
+        );
 
-        const { data, error } =
-            await mugartSupabase.auth
-                .signInWithPassword({
-                    email,
-                    password
-                });
+        const {
+            data,
+            error
+        } = await mugartSupabase.auth
+            .signInWithPassword({
+                email,
+                password
+            });
 
         if (error) {
             throw error;
         }
 
-        if (!data?.session) {
+        if (
+            !data?.session ||
+            !data?.user
+        ) {
             throw new Error(
                 "Não foi possível iniciar sua sessão."
             );
         }
 
-        const redirectParam =
-            new URLSearchParams(
-                window.location.search
-            ).get("redirect");
-
-        const savedRedirect =
-            localStorage.getItem(
-                "mugart_redirect_after_login"
+        const isAdmin =
+            await usuarioEhAdministrador(
+                data.user.id
             );
-
-        const destino =
-            redirectParam ||
-            savedRedirect ||
-            "minha-conta.html";
-
-        localStorage.removeItem(
-            "mugart_redirect_after_login"
-        );
 
         showMessage(
             "Login realizado com sucesso.",
             "success"
         );
 
+        if (isAdmin) {
+            localStorage.removeItem(
+                "mugart_redirect_after_login"
+            );
+
+            setTimeout(() => {
+                window.location.href =
+                    "/admin/dashboard.html";
+            }, 400);
+
+            return;
+        }
+
+        const destino =
+            obterRedirecionamentoCliente();
+
         setTimeout(() => {
-            window.location.href = destino;
+            window.location.href =
+                destino;
         }, 400);
 
     } catch (error) {
@@ -324,10 +386,12 @@ async function handleLogin(event) {
         );
 
     } finally {
-        setButtonLoading(button, false);
+        setButtonLoading(
+            button,
+            false
+        );
     }
 }
-
 /* =========================================================
    FORMULÁRIO DE CADASTRO
 ========================================================= */
@@ -836,13 +900,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-        const { data } = await mugartSupabase.auth.getSession();
+       const { data } =
+    await mugartSupabase.auth.getSession();
 
-        if (data?.session) {
-            window.location.href = "minha-conta.html";
-            return;
-        }
+const session =
+    data?.session;
 
+if (session?.user) {
+    const isAdmin =
+        await usuarioEhAdministrador(
+            session.user.id
+        );
+
+    if (isAdmin) {
+        window.location.href =
+            "/admin/dashboard.html";
+    } else {
+        window.location.href =
+            obterRedirecionamentoCliente();
+    }
+
+    return;
+}
     } catch (e) {
         console.error(e);
     }
