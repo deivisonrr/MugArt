@@ -1,0 +1,215 @@
+/* ==========================================================
+   MugArt - Rodape profissional
+========================================================== */
+
+.mugart-footer {
+  margin-top: 70px;
+  border-top: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255,59,123,.08), transparent 25%),
+    radial-gradient(circle at 90% 0%, rgba(0,216,255,.08), transparent 25%),
+    #050608;
+  color: #fff;
+}
+
+.mugart-footer-main {
+  display: grid;
+  grid-template-columns:
+    minmax(250px, 1.25fr)
+    repeat(3, minmax(170px, 1fr));
+  gap: 38px;
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 52px 0 38px;
+}
+
+.mugart-footer-brand {
+  max-width: 330px;
+}
+
+.mugart-footer-logo {
+  display: inline-block;
+}
+
+.mugart-footer-logo img {
+  display: block;
+  width: 170px;
+  max-width: 100%;
+  height: auto;
+}
+
+.mugart-footer-brand > p {
+  margin: 18px 0;
+  color: rgba(255,255,255,.66);
+  line-height: 1.65;
+}
+
+.mugart-footer-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mugart-footer-social a,
+.mugart-footer-cookie-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 999px;
+  background: rgba(255,255,255,.04);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mugart-footer-social a:hover,
+.mugart-footer-cookie-button:hover {
+  border-color: rgba(255,212,0,.48);
+  color: #ffd400;
+}
+
+.mugart-footer-column h2 {
+  margin: 0 0 16px;
+  color: #ffd400;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.mugart-footer-column nav {
+  display: grid;
+  gap: 11px;
+}
+
+.mugart-footer-column nav a {
+  color: rgba(255,255,255,.68);
+  font-size: 14px;
+  line-height: 1.45;
+  text-decoration: none;
+  transition: color .2s ease, transform .2s ease;
+}
+
+.mugart-footer-column nav a:hover {
+  color: #fff;
+  transform: translateX(3px);
+}
+
+.mugart-footer-hours {
+  margin: 19px 0 0;
+  color: rgba(255,255,255,.48);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.mugart-footer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mugart-footer-badges span {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  padding: 0 11px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 10px;
+  background: rgba(255,255,255,.045);
+  color: rgba(255,255,255,.78);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mugart-footer-delivery-title {
+  margin-top: 28px !important;
+}
+
+.mugart-footer-security {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px;
+  background: rgba(255,255,255,.09);
+}
+
+.mugart-footer-security > div {
+  display: grid;
+  gap: 5px;
+  padding: 18px;
+  background: #0b0d10;
+}
+
+.mugart-footer-security strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.mugart-footer-security span {
+  color: rgba(255,255,255,.52);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mugart-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 26px 0 34px;
+}
+
+.mugart-footer-bottom p {
+  margin: 0;
+  color: rgba(255,255,255,.46);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.mugart-footer-cookie-button {
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,.58);
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  .mugart-footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mugart-footer-brand {
+    max-width: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .mugart-footer-security {
+    grid-template-columns: 1fr;
+  }
+
+  .mugart-footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .mugart-footer-main {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding-top: 38px;
+  }
+}
