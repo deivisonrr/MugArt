@@ -2371,3 +2371,24 @@ body.modal-open {
     flex-direction: column;
   }
 }
+
+/* ==========================================================
+   Correção dos selects do Admin
+========================================================== */
+
+.admin-body select {
+  background: #111318;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.admin-body select option {
+  background: #111318;
+  color: #ffffff;
+}
+
+.admin-body select:focus {
+  border-color: #ffd400;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 212, 0, 0.1);
+}
