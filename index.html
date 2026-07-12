@@ -21,6 +21,7 @@
   <title>MugArt | Canecas Personalizadas</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/header-account.css?v=4" />
 </head>
 <body>
 
@@ -46,6 +47,66 @@
         <i class="fa-brands fa-instagram"></i>
      </a>
       <a class="icon-link whats" href="https://wa.me/5511988849236" target="_blank" aria-label="WhatsApp">◉</a>
+
+      <div class="header-account" id="headerAccount">
+        <button
+          id="headerAccountButton"
+          class="header-account-button"
+          type="button"
+          aria-label="Abrir menu da conta"
+          aria-expanded="false"
+        >
+          <span class="header-account-avatar" id="headerAccountAvatar">👤</span>
+
+          <span class="header-account-info">
+            <small id="headerAccountGreeting">Olá, visitante</small>
+            <strong id="headerAccountTitle">Entrar</strong>
+          </span>
+
+          <i class="fa-solid fa-chevron-down header-account-arrow"></i>
+        </button>
+
+        <div id="headerAccountDropdown" class="header-account-dropdown">
+          <div id="headerAccountGuest" class="header-account-guest">
+            <strong>Bem-vindo à MugArt</strong>
+            <p>Faça login para acompanhar seus pedidos e usar seus endereços salvos.</p>
+            <a class="header-account-primary" href="conta/login.html">
+              Entrar ou criar conta
+            </a>
+          </div>
+
+          <div id="headerAccountLogged" class="header-account-logged hidden">
+            <div class="header-account-customer">
+              <span id="headerAccountInitial">M</span>
+              <div>
+                <small>Conta MugArt</small>
+                <strong id="headerAccountCustomerName">Cliente</strong>
+              </div>
+            </div>
+
+            <a href="conta/minha-conta.html">
+              <i class="fa-regular fa-user"></i>
+              Minha conta
+            </a>
+
+            <a href="conta/minha-conta.html#orders">
+              <i class="fa-solid fa-box"></i>
+              Meus pedidos
+            </a>
+
+            <a href="conta/minha-conta.html#addresses">
+              <i class="fa-solid fa-location-dot"></i>
+              Meus endereços
+            </a>
+
+            <button id="headerAccountLogout" type="button">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              Sair
+            </button>
+          </div>
+        </div>
+      </div>
+
       <a class="quote-btn" href="#personalize">Fazer orçamento <span>›</span></a>
     </div>
   </header>
@@ -227,7 +288,8 @@
 <!-- END Widget WhastApp -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/supabase-config.js"></script>
+<script src="/js/supabase-config.js?v=5"></script>
+<script src="/js/header-account.js?v=4"></script>
 <script src="/js/analytics-loader.js?v=3"></script>
 <script src="/js/footer.js?v=5"></script>
 <script src="/js/cookie-consent.js?v=1"></script>
