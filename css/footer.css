@@ -1,87 +1,150 @@
-.mugart-footer {
+
+:host {
+  all: initial;
+  display: block;
+  width: 100%;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.footer-shell {
+  width: 100%;
   margin-top: 64px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: #050608;
-  color: #ffffff;
+  padding: 44px max(20px, calc((100vw - 1380px) / 2)) 26px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(circle at 9% 0%, rgba(255,212,0,.055), transparent 28%),
+    #050608;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.mugart-footer-wrap {
-  width: min(1380px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 44px 0 24px;
-}
-
-.mugart-footer-top {
+.footer-grid {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  gap: 26px;
+  gap: 28px;
   align-items: start;
 }
 
-.mugart-footer-logo img {
+.brand-logo {
+  display: inline-block;
+}
+
+.brand-logo img {
   display: block;
   width: 190px;
   max-width: 100%;
   height: auto;
 }
 
-.mugart-footer-brand > p {
-  max-width: 245px;
-  margin: 14px 0 26px;
-  color: rgba(255, 255, 255, 0.68);
+.brand-copy {
+  max-width: 250px;
+  margin: 14px 0 27px;
+  color: rgba(255,255,255,.68);
+  font-size: 15px;
   line-height: 1.55;
 }
 
-.mugart-footer-brand h3 {
+.brand-area h3 {
   margin: 22px 0 11px;
   color: #ffd400;
   font-size: 13px;
   font-weight: 900;
+  letter-spacing: .04em;
   text-transform: uppercase;
 }
 
-.mugart-footer-badges {
+.payment-grid,
+.delivery-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.mugart-footer-badges span {
+.pay-badge,
+.delivery-badge {
   display: inline-flex;
-  min-height: 35px;
+  min-height: 38px;
   align-items: center;
-  padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 12px;
+  gap: 7px;
+  padding: 5px 11px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 11px;
+  background: rgba(255,255,255,.035);
+  color: rgba(255,255,255,.85);
+  font-size: 11px;
   font-weight: 800;
 }
 
-.mugart-footer-links-card {
+.pay-badge svg,
+.delivery-badge svg {
+  width: 27px;
+  height: 22px;
+  overflow: visible;
+}
+
+.pay-badge svg rect {
+  fill: transparent;
+  stroke: rgba(255,255,255,.28);
+}
+
+.pay-badge svg text {
+  fill: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  font-family: Arial, sans-serif;
+}
+
+.pix-badge svg {
+  fill: #35d5c5;
+}
+
+.master-badge svg circle:first-child {
+  fill: #eb001b;
+}
+
+.master-badge svg circle:last-child {
+  fill: #f79e1b;
+  opacity: .88;
+}
+
+.mp-badge svg path {
+  fill: none;
+  stroke: #49b6ff;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.delivery-badge svg {
+  fill: #49b6ff;
+}
+
+.links-panel {
   display: grid;
-  grid-template-columns: 1.2fr 1.15fr 1fr 1fr 0.9fr;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  grid-template-columns: 1.2fr 1.15fr 1fr 1fr .9fr;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.12);
   border-radius: 20px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255,255,255,.02);
 }
 
-/* Esta é a principal correção:
-   a caixa deixa de ficar alta e espaçada demais. */
-.mugart-footer-column {
+.link-column {
   min-width: 0;
-  min-height: 280px;
+  min-height: 285px;
   padding: 24px 22px;
-  border-right: 1px solid rgba(255, 255, 255, 0.09);
+  border-right: 1px solid rgba(255,255,255,.09);
 }
 
-.mugart-footer-column:last-child {
+.link-column:last-child {
   border-right: 0;
 }
 
-.mugart-footer-column h2 {
+.link-column h2 {
   margin: 0 0 18px;
   color: #ffd400;
   font-size: 13px;
@@ -89,101 +152,114 @@
   text-transform: uppercase;
 }
 
-.mugart-footer-column nav {
+.link-column nav {
   display: grid;
   gap: 13px;
 }
 
-.mugart-footer-column a {
+.link-column a {
   display: grid;
   gap: 3px;
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(255,255,255,.77);
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.42;
   text-decoration: none;
-  transition: color 0.2s ease;
 }
 
-.mugart-footer-column a:hover {
+.link-column a:hover {
   color: #ffd400;
 }
 
-.mugart-footer-column small {
-  color: rgba(255, 255, 255, 0.47);
+.link-column small,
+.security-item small,
+.social-note {
+  color: rgba(255,255,255,.48);
   font-size: 11px;
-}
-
-.mugart-footer-info {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 20px;
-}
-
-.mugart-footer-info strong {
-  font-size: 13px;
-}
-
-.mugart-footer-info span,
-.mugart-footer-social-note {
-  color: rgba(255, 255, 255, 0.52);
-  font-size: 12px;
   line-height: 1.45;
 }
 
-.mugart-footer-social-note {
-  margin: 22px 0 0;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.security-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
 }
 
-.mugart-footer-newsletter {
+.security-item svg {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.security-item div {
   display: grid;
-  grid-template-columns: 1fr minmax(360px, 0.95fr);
+  gap: 4px;
+}
+
+.security-item strong {
+  font-size: 13px;
+}
+
+.social-note {
+  margin: 22px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.newsletter {
+  display: grid;
+  grid-template-columns: 1fr minmax(360px, .95fr);
   gap: 26px;
   align-items: center;
   margin-top: 25px;
   padding: 21px 25px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255,255,255,.12);
   border-radius: 17px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255,255,255,.02);
 }
 
-.mugart-footer-newsletter > div {
+.newsletter > div {
   display: grid;
   gap: 5px;
 }
 
-.mugart-footer-newsletter strong {
+.newsletter strong {
   font-size: 14px;
   text-transform: uppercase;
 }
 
-.mugart-footer-newsletter span {
-  color: rgba(255, 255, 255, 0.55);
+.newsletter span {
+  color: rgba(255,255,255,.55);
   font-size: 13px;
 }
 
-.mugart-footer-newsletter-form {
+.newsletter form {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
 }
 
-.mugart-footer-newsletter-form input {
+.newsletter input {
+  width: 100%;
+  min-width: 0;
   min-height: 46px;
   padding: 0 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255,255,255,.12);
   border-radius: 12px;
   outline: none;
-  background: rgba(255, 255, 255, 0.035);
-  color: #ffffff;
+  background: rgba(255,255,255,.035);
+  color: #fff;
 }
 
-.mugart-footer-newsletter-form input:focus {
+.newsletter input:focus {
   border-color: #ffd400;
 }
 
-.mugart-footer-newsletter-form button {
+.newsletter button {
   min-height: 46px;
   padding: 0 27px;
   border: 1px solid #ffd400;
@@ -194,41 +270,41 @@
   cursor: pointer;
 }
 
-.mugart-footer-newsletter-form button:hover {
+.newsletter button:hover {
   background: #ffd400;
-  color: #111111;
+  color: #111;
 }
 
-.mugart-footer-bottom {
+.footer-bottom {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 25px;
   align-items: center;
   margin-top: 25px;
   padding-top: 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255,255,255,.10);
 }
 
-.mugart-footer-bottom p {
+.copyright p {
   margin: 0 0 4px;
-  color: rgba(255, 255, 255, 0.47);
+  color: rgba(255,255,255,.47);
   font-size: 12px;
   line-height: 1.5;
 }
 
-.mugart-footer-benefits {
+.benefits {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
 }
 
-.mugart-footer-benefits span {
-  color: rgba(255, 255, 255, 0.58);
+.benefits span {
+  color: rgba(255,255,255,.58);
   font-size: 12px;
   white-space: nowrap;
 }
 
-.mugart-footer-cookie-button {
+.footer-bottom button {
   border: 0;
   background: transparent;
   color: #ffd400;
@@ -239,63 +315,62 @@
 }
 
 @media (max-width: 1180px) {
-  .mugart-footer-top {
-    grid-template-columns: 230px minmax(0, 1fr);
+  .footer-grid {
+    grid-template-columns: 1fr;
   }
 
-  .mugart-footer-links-card {
+  .links-panel {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .mugart-footer-column {
+  .link-column {
     min-height: auto;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    border-bottom: 1px solid rgba(255,255,255,.09);
   }
 }
 
 @media (max-width: 900px) {
-  .mugart-footer-top,
-  .mugart-footer-newsletter,
-  .mugart-footer-bottom {
+  .newsletter,
+  .footer-bottom {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 700px) {
-  .mugart-footer-links-card {
+  .links-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 540px) {
-  .mugart-footer-wrap {
-    width: calc(100% - 20px);
-    padding-top: 30px;
+  .footer-shell {
+    padding-right: 10px;
+    padding-left: 10px;
   }
 
-  .mugart-footer-links-card {
+  .links-panel {
     grid-template-columns: 1fr;
   }
 
-  .mugart-footer-column {
+  .link-column {
     min-height: auto;
     border-right: 0;
-    padding: 21px 19px;
   }
 
-  .mugart-footer-newsletter {
+  .newsletter {
+    grid-template-columns: 1fr;
     padding: 20px;
   }
 
-  .mugart-footer-newsletter-form {
+  .newsletter form {
     grid-template-columns: 1fr;
   }
 
-  .mugart-footer-newsletter-form button {
+  .newsletter button {
     width: 100%;
   }
 
-  .mugart-footer-benefits {
+  .benefits {
     display: grid;
     gap: 9px;
   }
