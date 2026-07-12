@@ -1,0 +1,190 @@
+<section
+  class="mugart-consent-banner"
+  data-consent-banner
+  aria-label="Preferências de cookies"
+  aria-live="polite"
+>
+  <div class="mugart-consent-banner__content">
+    <div>
+      <p class="mugart-consent-eyebrow">
+        Privacidade
+      </p>
+
+      <h2>
+        Cookies e privacidade
+      </h2>
+
+      <p>
+        Usamos cookies necessários para o funcionamento da loja e,
+        com sua autorização, cookies de análise, preferências e
+        marketing. Você pode alterar sua escolha a qualquer momento.
+      </p>
+
+      <a href="/politica-de-cookies.html">
+        Consulte nossa Política de Cookies
+      </a>
+    </div>
+
+    <div class="mugart-consent-banner__actions">
+      <button
+        type="button"
+        class="mugart-consent-button mugart-consent-button--secondary"
+        data-consent-reject
+      >
+        Recusar opcionais
+      </button>
+
+      <button
+        type="button"
+        class="mugart-consent-button mugart-consent-button--outline"
+        data-consent-customize
+      >
+        Personalizar
+      </button>
+
+      <button
+        type="button"
+        class="mugart-consent-button mugart-consent-button--primary"
+        data-consent-accept
+      >
+        Aceitar todos
+      </button>
+    </div>
+  </div>
+</section>
+
+<div
+  class="mugart-consent-modal"
+  data-consent-modal
+  aria-hidden="true"
+>
+  <button
+    type="button"
+    class="mugart-consent-modal__backdrop"
+    data-consent-close
+    aria-label="Fechar preferências"
+  ></button>
+
+  <section
+    class="mugart-consent-modal__card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="mugartConsentTitle"
+  >
+    <header class="mugart-consent-modal__header">
+      <div>
+        <p class="mugart-consent-eyebrow">
+          Privacidade
+        </p>
+
+        <h2 id="mugartConsentTitle">
+          Preferências de cookies
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="mugart-consent-modal__close"
+        data-consent-close
+        aria-label="Fechar"
+      >
+        ×
+      </button>
+    </header>
+
+    <div class="mugart-consent-modal__body">
+      <article class="mugart-consent-category">
+        <div>
+          <h3>Necessários</h3>
+
+          <p>
+            Essenciais para login, segurança, carrinho,
+            checkout e preferências de privacidade.
+          </p>
+        </div>
+
+        <span class="mugart-consent-always">
+          Sempre ativos
+        </span>
+      </article>
+
+      <article class="mugart-consent-category">
+        <div>
+          <h3>Analytics</h3>
+
+          <p>
+            Permitem medir visitas, páginas acessadas e desempenho
+            do site para melhorar a experiência.
+          </p>
+        </div>
+
+        <label class="mugart-consent-switch">
+          <input
+            type="checkbox"
+            data-consent-analytics
+          >
+
+          <span></span>
+        </label>
+      </article>
+
+      <article class="mugart-consent-category">
+        <div>
+          <h3>Preferências</h3>
+
+          <p>
+            Lembram escolhas que tornam a navegação
+            mais conveniente.
+          </p>
+        </div>
+
+        <label class="mugart-consent-switch">
+          <input
+            type="checkbox"
+            data-consent-preferences
+          >
+
+          <span></span>
+        </label>
+      </article>
+
+      <article class="mugart-consent-category">
+        <div>
+          <h3>Marketing</h3>
+
+          <p>
+            Permitem medir campanhas, conversões e,
+            quando aplicável, personalizar anúncios.
+          </p>
+        </div>
+
+        <label class="mugart-consent-switch">
+          <input
+            type="checkbox"
+            data-consent-marketing
+          >
+
+          <span></span>
+        </label>
+      </article>
+    </div>
+
+    <footer class="mugart-consent-modal__footer">
+      <button
+        type="button"
+        class="mugart-consent-button mugart-consent-button--secondary"
+        data-consent-modal-reject
+      >
+        Recusar opcionais
+      </button>
+
+      <button
+        type="button"
+        class="mugart-consent-button mugart-consent-button--primary"
+        data-consent-save
+      >
+        Salvar preferências
+      </button>
+    </footer>
+  </section>
+</div>
