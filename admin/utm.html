@@ -13,7 +13,7 @@
     content="noindex, nofollow"
   >
 
-  <title>Gerador de UTM | MugArt</title>
+  <title>Central de Marketing | MugArt</title>
 
   <link
     rel="stylesheet"
@@ -22,7 +22,7 @@
 
   <link
     rel="stylesheet"
-    href="/admin/css/utm.css?v=1"
+    href="/admin/css/utm.css?v=2"
   >
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -30,7 +30,7 @@
   <script defer src="/js/supabase-config.js?v=5"></script>
   <script defer src="/admin/js/admin-auth.js?v=1"></script>
   <script defer src="/admin/js/admin.js?v=5"></script>
-  <script defer src="/admin/js/utm.js?v=1"></script>
+  <script defer src="/admin/js/utm.js?v=2"></script>
 </head>
 
 <body class="admin-body">
@@ -72,7 +72,7 @@
         href="/admin/utm.html"
         class="active"
       >
-        Gerador de UTM
+        Marketing
       </a>
 
       <a href="/admin/configuracoes.html">
@@ -97,22 +97,21 @@
     </button>
   </aside>
 
-  <main class="admin-main utm-admin-main">
+  <main class="admin-main marketing-admin-main">
 
-    <header class="admin-header">
+    <header class="admin-header marketing-header">
       <div>
-        <p class="eyebrow">
-          Marketing
-        </p>
+        <p class="eyebrow">Ferramentas de divulgação</p>
 
-        <h1>Gerador de UTM</h1>
+        <h1>Central de Marketing</h1>
 
-        <p class="utm-description">
-          Crie links rastreáveis para campanhas da MugArt.
+        <p class="marketing-description">
+          Crie links rastreáveis, links de WhatsApp, produtos,
+          kits e promoções da MugArt.
         </p>
       </div>
 
-      <div class="utm-admin-user">
+      <div class="marketing-admin-user">
         <span>Administrador</span>
 
         <small id="admin-user-email">
@@ -121,299 +120,941 @@
       </div>
     </header>
 
-    <section class="utm-grid">
+    <!-- ABAS -->
+    <section class="marketing-tabs" aria-label="Ferramentas de marketing">
 
-      <article class="admin-panel utm-form-panel">
+      <button
+        type="button"
+        class="marketing-tab active"
+        data-marketing-tab="utm"
+      >
+        Gerador de UTM
+      </button>
 
-        <div class="panel-head">
-          <div>
-            <p class="eyebrow">
-              Nova campanha
-            </p>
+      <button
+        type="button"
+        class="marketing-tab"
+        data-marketing-tab="whatsapp"
+      >
+        Link do WhatsApp
+      </button>
 
-            <h2>Informações do link</h2>
-          </div>
-        </div>
+      <button
+        type="button"
+        class="marketing-tab"
+        data-marketing-tab="product"
+      >
+        Link de Produto
+      </button>
 
-        <form id="utm-form">
-
-          <div class="utm-field utm-field-full">
-            <label for="utm-url">
-              URL de destino
-            </label>
-
-            <input
-              id="utm-url"
-              type="url"
-              placeholder="https://mugart.com.br/loja.html"
-              value="https://mugart.com.br/"
-              required
-            >
-          </div>
-
-          <div class="utm-presets">
-            <span>Preenchimento rápido</span>
-
-            <div class="utm-preset-list">
-              <button
-                type="button"
-                class="utm-preset"
-                data-source="instagram"
-                data-medium="organic_social"
-              >
-                Instagram orgânico
-              </button>
-
-              <button
-                type="button"
-                class="utm-preset"
-                data-source="instagram"
-                data-medium="paid_social"
-              >
-                Instagram Ads
-              </button>
-
-              <button
-                type="button"
-                class="utm-preset"
-                data-source="facebook"
-                data-medium="paid_social"
-              >
-                Facebook Ads
-              </button>
-
-              <button
-                type="button"
-                class="utm-preset"
-                data-source="whatsapp"
-                data-medium="messaging"
-              >
-                WhatsApp
-              </button>
-
-              <button
-                type="button"
-                class="utm-preset"
-                data-source="google"
-                data-medium="cpc"
-              >
-                Google Ads
-              </button>
-
-              <button
-                type="button"
-                class="utm-preset"
-                data-source="email"
-                data-medium="email"
-              >
-                E-mail
-              </button>
-
-              <button
-                type="button"
-                class="utm-preset"
-                data-source="qrcode"
-                data-medium="offline"
-              >
-                QR Code
-              </button>
-            </div>
-          </div>
-
-          <div class="utm-form-grid">
-
-            <div class="utm-field">
-              <label for="utm-source">
-                Origem
-              </label>
-
-              <input
-                id="utm-source"
-                type="text"
-                placeholder="instagram"
-                required
-              >
-
-              <small>utm_source</small>
-            </div>
-
-            <div class="utm-field">
-              <label for="utm-medium">
-                Mídia
-              </label>
-
-              <input
-                id="utm-medium"
-                type="text"
-                placeholder="paid_social"
-                required
-              >
-
-              <small>utm_medium</small>
-            </div>
-
-            <div class="utm-field">
-              <label for="utm-campaign">
-                Campanha
-              </label>
-
-              <input
-                id="utm-campaign"
-                type="text"
-                placeholder="dia_dos_pais_2026"
-                required
-              >
-
-              <small>utm_campaign</small>
-            </div>
-
-            <div class="utm-field">
-              <label for="utm-content">
-                Conteúdo
-              </label>
-
-              <input
-                id="utm-content"
-                type="text"
-                placeholder="caneca_pai_modelo_01"
-              >
-
-              <small>utm_content</small>
-            </div>
-
-            <div class="utm-field utm-field-full">
-              <label for="utm-term">
-                Termo
-              </label>
-
-              <input
-                id="utm-term"
-                type="text"
-                placeholder="caneca_personalizada"
-              >
-
-              <small>utm_term</small>
-            </div>
-
-          </div>
-
-          <div class="utm-form-actions">
-            <button
-              type="submit"
-              class="admin-action"
-            >
-              Gerar link
-            </button>
-
-            <button
-              id="utm-clear-button"
-              type="button"
-              class="utm-secondary-button"
-            >
-              Limpar
-            </button>
-          </div>
-
-        </form>
-      </article>
-
-      <article class="admin-panel utm-result-panel">
-
-        <div class="panel-head">
-          <div>
-            <p class="eyebrow">
-              Resultado
-            </p>
-
-            <h2>Link rastreável</h2>
-          </div>
-        </div>
-
-        <div
-          id="utm-empty-result"
-          class="utm-empty-result"
-        >
-          O link gerado aparecerá aqui.
-        </div>
-
-        <div
-          id="utm-result-container"
-          class="hidden"
-        >
-          <textarea
-            id="utm-result"
-            rows="7"
-            readonly
-          ></textarea>
-
-          <div class="utm-result-actions">
-            <button
-              id="utm-copy-button"
-              type="button"
-              class="admin-action"
-            >
-              Copiar link
-            </button>
-
-            <button
-              id="utm-open-button"
-              type="button"
-              class="utm-secondary-button"
-            >
-              Abrir link
-            </button>
-          </div>
-
-          <p id="utm-feedback"></p>
-        </div>
-
-      </article>
+      <button
+        type="button"
+        class="marketing-tab"
+        data-marketing-tab="promotion"
+      >
+        Kits e Promoções
+      </button>
 
     </section>
 
-    <section class="admin-panel utm-history-panel">
+    <!-- =====================================================
+         ABA UTM
+    ====================================================== -->
+    <section
+      id="marketing-panel-utm"
+      class="marketing-panel active"
+      data-marketing-panel="utm"
+    >
+
+      <div class="marketing-grid">
+
+        <article class="admin-panel marketing-form-panel">
+
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Nova campanha</p>
+              <h2>Gerador de UTM</h2>
+            </div>
+          </div>
+
+          <form id="utm-form">
+
+            <div class="marketing-field marketing-field-full">
+              <label for="utm-url">
+                URL de destino
+              </label>
+
+              <input
+                id="utm-url"
+                type="url"
+                value="https://mugart.com.br/"
+                placeholder="https://mugart.com.br/loja.html"
+                required
+              >
+            </div>
+
+            <div class="marketing-presets">
+              <span>Preenchimento rápido</span>
+
+              <div class="marketing-preset-list">
+
+                <button
+                  type="button"
+                  class="utm-preset"
+                  data-source="instagram"
+                  data-medium="organic_social"
+                >
+                  Instagram orgânico
+                </button>
+
+                <button
+                  type="button"
+                  class="utm-preset"
+                  data-source="instagram"
+                  data-medium="paid_social"
+                >
+                  Instagram Ads
+                </button>
+
+                <button
+                  type="button"
+                  class="utm-preset"
+                  data-source="facebook"
+                  data-medium="paid_social"
+                >
+                  Facebook Ads
+                </button>
+
+                <button
+                  type="button"
+                  class="utm-preset"
+                  data-source="whatsapp"
+                  data-medium="messaging"
+                >
+                  WhatsApp
+                </button>
+
+                <button
+                  type="button"
+                  class="utm-preset"
+                  data-source="google"
+                  data-medium="cpc"
+                >
+                  Google Ads
+                </button>
+
+                <button
+                  type="button"
+                  class="utm-preset"
+                  data-source="email"
+                  data-medium="email"
+                >
+                  E-mail
+                </button>
+
+                <button
+                  type="button"
+                  class="utm-preset"
+                  data-source="qrcode"
+                  data-medium="offline"
+                >
+                  QR Code
+                </button>
+
+              </div>
+            </div>
+
+            <div class="marketing-form-grid">
+
+              <div class="marketing-field">
+                <label for="utm-source">Origem</label>
+
+                <input
+                  id="utm-source"
+                  type="text"
+                  placeholder="instagram"
+                  required
+                >
+
+                <small>utm_source</small>
+              </div>
+
+              <div class="marketing-field">
+                <label for="utm-medium">Mídia</label>
+
+                <input
+                  id="utm-medium"
+                  type="text"
+                  placeholder="paid_social"
+                  required
+                >
+
+                <small>utm_medium</small>
+              </div>
+
+              <div class="marketing-field">
+                <label for="utm-campaign">Campanha</label>
+
+                <input
+                  id="utm-campaign"
+                  type="text"
+                  placeholder="dia_dos_pais_2026"
+                  required
+                >
+
+                <small>utm_campaign</small>
+              </div>
+
+              <div class="marketing-field">
+                <label for="utm-content">Conteúdo</label>
+
+                <input
+                  id="utm-content"
+                  type="text"
+                  placeholder="caneca_pai_modelo_01"
+                >
+
+                <small>utm_content</small>
+              </div>
+
+              <div class="marketing-field marketing-field-full">
+                <label for="utm-term">Termo</label>
+
+                <input
+                  id="utm-term"
+                  type="text"
+                  placeholder="caneca_personalizada"
+                >
+
+                <small>utm_term — opcional</small>
+              </div>
+
+            </div>
+
+            <div class="marketing-form-actions">
+              <button
+                type="submit"
+                class="admin-action"
+              >
+                Gerar link
+              </button>
+
+              <button
+                id="utm-clear-button"
+                type="button"
+                class="marketing-secondary-button"
+              >
+                Limpar
+              </button>
+            </div>
+
+          </form>
+        </article>
+
+        <article class="admin-panel marketing-result-panel">
+
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Resultado</p>
+              <h2>Link rastreável</h2>
+            </div>
+          </div>
+
+          <div
+            id="utm-empty-result"
+            class="marketing-empty-result"
+          >
+            O link UTM aparecerá aqui.
+          </div>
+
+          <div
+            id="utm-result-container"
+            class="marketing-result-container hidden"
+          >
+            <textarea
+              id="utm-result"
+              rows="8"
+              readonly
+            ></textarea>
+
+            <div class="marketing-result-actions">
+              <button
+                id="utm-copy-button"
+                type="button"
+                class="admin-action"
+              >
+                Copiar link
+              </button>
+
+              <button
+                id="utm-open-button"
+                type="button"
+                class="marketing-secondary-button"
+              >
+                Abrir link
+              </button>
+            </div>
+
+            <p
+              id="utm-feedback"
+              class="marketing-feedback"
+            ></p>
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+    <!-- =====================================================
+         ABA WHATSAPP
+    ====================================================== -->
+    <section
+      id="marketing-panel-whatsapp"
+      class="marketing-panel"
+      data-marketing-panel="whatsapp"
+    >
+
+      <div class="marketing-grid">
+
+        <article class="admin-panel marketing-form-panel">
+
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Atendimento</p>
+              <h2>Criador de link para WhatsApp</h2>
+            </div>
+          </div>
+
+          <form id="whatsapp-form">
+
+            <div class="marketing-form-grid">
+
+              <div class="marketing-field">
+                <label for="whatsapp-country-code">
+                  Código do país
+                </label>
+
+                <input
+                  id="whatsapp-country-code"
+                  type="text"
+                  value="55"
+                  maxlength="4"
+                  inputmode="numeric"
+                  required
+                >
+              </div>
+
+              <div class="marketing-field">
+                <label for="whatsapp-phone">
+                  Telefone com DDD
+                </label>
+
+                <input
+                  id="whatsapp-phone"
+                  type="text"
+                  value="11988849236"
+                  placeholder="11988849236"
+                  inputmode="numeric"
+                  required
+                >
+              </div>
+
+              <div class="marketing-field marketing-field-full">
+                <label for="whatsapp-message">
+                  Mensagem automática
+                </label>
+
+                <textarea
+                  id="whatsapp-message"
+                  rows="8"
+                  placeholder="Olá! Gostaria de saber mais sobre as canecas personalizadas da MugArt."
+                  required
+                >Olá! Gostaria de saber mais sobre as canecas personalizadas da MugArt.</textarea>
+              </div>
+
+            </div>
+
+            <div class="marketing-message-presets">
+
+              <button
+                type="button"
+                class="whatsapp-message-preset"
+                data-message="Olá! Gostaria de saber mais sobre as canecas personalizadas da MugArt."
+              >
+                Informações
+              </button>
+
+              <button
+                type="button"
+                class="whatsapp-message-preset"
+                data-message="Olá! Gostaria de solicitar um orçamento para uma caneca personalizada."
+              >
+                Orçamento
+              </button>
+
+              <button
+                type="button"
+                class="whatsapp-message-preset"
+                data-message="Olá! Vi uma promoção da MugArt e gostaria de saber mais detalhes."
+              >
+                Promoção
+              </button>
+
+              <button
+                type="button"
+                class="whatsapp-message-preset"
+                data-message="Olá! Gostaria de personalizar uma caneca para presente. Podem me ajudar?"
+              >
+                Presente
+              </button>
+
+            </div>
+
+            <div class="marketing-form-actions">
+              <button
+                type="submit"
+                class="admin-action"
+              >
+                Gerar link
+              </button>
+
+              <button
+                id="whatsapp-clear-button"
+                type="button"
+                class="marketing-secondary-button"
+              >
+                Limpar
+              </button>
+            </div>
+
+          </form>
+        </article>
+
+        <article class="admin-panel marketing-result-panel">
+
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Resultado</p>
+              <h2>Link do WhatsApp</h2>
+            </div>
+          </div>
+
+          <div
+            id="whatsapp-empty-result"
+            class="marketing-empty-result"
+          >
+            O link do WhatsApp aparecerá aqui.
+          </div>
+
+          <div
+            id="whatsapp-result-container"
+            class="marketing-result-container hidden"
+          >
+            <textarea
+              id="whatsapp-result"
+              rows="8"
+              readonly
+            ></textarea>
+
+            <div class="marketing-result-actions">
+              <button
+                id="whatsapp-copy-button"
+                type="button"
+                class="admin-action"
+              >
+                Copiar link
+              </button>
+
+              <button
+                id="whatsapp-open-button"
+                type="button"
+                class="marketing-secondary-button"
+              >
+                Abrir WhatsApp
+              </button>
+            </div>
+
+            <p
+              id="whatsapp-feedback"
+              class="marketing-feedback"
+            ></p>
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+    <!-- =====================================================
+         ABA PRODUTO
+    ====================================================== -->
+    <section
+      id="marketing-panel-product"
+      class="marketing-panel"
+      data-marketing-panel="product"
+    >
+
+      <div class="marketing-grid">
+
+        <article class="admin-panel marketing-form-panel">
+
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Catálogo MugArt</p>
+              <h2>Gerador de link de produto</h2>
+            </div>
+          </div>
+
+          <form id="product-link-form">
+
+            <div class="marketing-field marketing-field-full">
+              <label for="product-selector">
+                Produto cadastrado
+              </label>
+
+              <select id="product-selector">
+                <option value="">
+                  Carregando produtos...
+                </option>
+              </select>
+
+              <small>
+                Os produtos são carregados do Supabase.
+              </small>
+            </div>
+
+            <div class="marketing-field marketing-field-full">
+              <label for="product-destination-url">
+                URL do produto
+              </label>
+
+              <input
+                id="product-destination-url"
+                type="url"
+                placeholder="https://mugart.com.br/loja.html?produto=..."
+                required
+              >
+            </div>
+
+            <label class="marketing-checkbox">
+              <input
+                id="product-add-utm"
+                type="checkbox"
+              >
+
+              <span>Adicionar parâmetros UTM</span>
+            </label>
+
+            <div
+              id="product-utm-fields"
+              class="marketing-optional-box hidden"
+            >
+
+              <div class="marketing-form-grid">
+
+                <div class="marketing-field">
+                  <label for="product-utm-source">
+                    Origem
+                  </label>
+
+                  <input
+                    id="product-utm-source"
+                    type="text"
+                    placeholder="instagram"
+                  >
+                </div>
+
+                <div class="marketing-field">
+                  <label for="product-utm-medium">
+                    Mídia
+                  </label>
+
+                  <input
+                    id="product-utm-medium"
+                    type="text"
+                    placeholder="paid_social"
+                  >
+                </div>
+
+                <div class="marketing-field">
+                  <label for="product-utm-campaign">
+                    Campanha
+                  </label>
+
+                  <input
+                    id="product-utm-campaign"
+                    type="text"
+                    placeholder="dia_dos_pais_2026"
+                  >
+                </div>
+
+                <div class="marketing-field">
+                  <label for="product-utm-content">
+                    Conteúdo
+                  </label>
+
+                  <input
+                    id="product-utm-content"
+                    type="text"
+                    placeholder="produto_caneca_branca"
+                  >
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="marketing-form-actions">
+              <button
+                type="submit"
+                class="admin-action"
+              >
+                Gerar link
+              </button>
+
+              <button
+                id="product-clear-button"
+                type="button"
+                class="marketing-secondary-button"
+              >
+                Limpar
+              </button>
+            </div>
+
+          </form>
+        </article>
+
+        <article class="admin-panel marketing-result-panel">
+
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Resultado</p>
+              <h2>Link do produto</h2>
+            </div>
+          </div>
+
+          <div
+            id="product-empty-result"
+            class="marketing-empty-result"
+          >
+            Selecione um produto para gerar o link.
+          </div>
+
+          <div
+            id="product-result-container"
+            class="marketing-result-container hidden"
+          >
+            <textarea
+              id="product-result"
+              rows="8"
+              readonly
+            ></textarea>
+
+            <div class="marketing-result-actions">
+              <button
+                id="product-copy-button"
+                type="button"
+                class="admin-action"
+              >
+                Copiar link
+              </button>
+
+              <button
+                id="product-open-button"
+                type="button"
+                class="marketing-secondary-button"
+              >
+                Abrir produto
+              </button>
+            </div>
+
+            <p
+              id="product-feedback"
+              class="marketing-feedback"
+            ></p>
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+    <!-- =====================================================
+         ABA KIT E PROMOÇÃO
+    ====================================================== -->
+    <section
+      id="marketing-panel-promotion"
+      class="marketing-panel"
+      data-marketing-panel="promotion"
+    >
+
+      <div class="marketing-grid">
+
+        <article class="admin-panel marketing-form-panel">
+
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Campanhas comerciais</p>
+              <h2>Gerador de kits e promoções</h2>
+            </div>
+          </div>
+
+          <form id="promotion-form">
+
+            <div class="marketing-form-grid">
+
+              <div class="marketing-field">
+                <label for="promotion-type">
+                  Tipo do link
+                </label>
+
+                <select id="promotion-type">
+                  <option value="promotion">
+                    Promoção
+                  </option>
+
+                  <option value="kit">
+                    Kit
+                  </option>
+                </select>
+              </div>
+
+              <div class="marketing-field">
+                <label for="promotion-name">
+                  Nome da campanha
+                </label>
+
+                <input
+                  id="promotion-name"
+                  type="text"
+                  placeholder="Dia dos Pais"
+                  required
+                >
+              </div>
+
+              <div class="marketing-field marketing-field-full">
+                <label for="promotion-base-url">
+                  URL de destino
+                </label>
+
+                <input
+                  id="promotion-base-url"
+                  type="url"
+                  value="https://mugart.com.br/loja.html"
+                  required
+                >
+              </div>
+
+              <div class="marketing-field">
+                <label for="promotion-coupon">
+                  Cupom
+                </label>
+
+                <input
+                  id="promotion-coupon"
+                  type="text"
+                  placeholder="PAI10"
+                >
+              </div>
+
+              <div class="marketing-field">
+                <label for="promotion-discount">
+                  Desconto
+                </label>
+
+                <input
+                  id="promotion-discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  placeholder="10"
+                >
+              </div>
+
+              <div class="marketing-field">
+                <label for="promotion-valid-until">
+                  Validade
+                </label>
+
+                <input
+                  id="promotion-valid-until"
+                  type="date"
+                >
+              </div>
+
+              <div class="marketing-field">
+                <label for="promotion-source">
+                  Origem
+                </label>
+
+                <input
+                  id="promotion-source"
+                  type="text"
+                  placeholder="instagram"
+                >
+              </div>
+
+              <div class="marketing-field">
+                <label for="promotion-medium">
+                  Mídia
+                </label>
+
+                <input
+                  id="promotion-medium"
+                  type="text"
+                  placeholder="paid_social"
+                >
+              </div>
+
+              <div class="marketing-field">
+                <label for="promotion-content">
+                  Conteúdo
+                </label>
+
+                <input
+                  id="promotion-content"
+                  type="text"
+                  placeholder="banner_promocional_01"
+                >
+              </div>
+
+            </div>
+
+            <div class="marketing-field marketing-field-full">
+              <label>Produtos do kit ou promoção</label>
+
+              <div
+                id="promotion-products-list"
+                class="promotion-products-list"
+              >
+                <div class="marketing-loading">
+                  Carregando produtos...
+                </div>
+              </div>
+            </div>
+
+            <div class="marketing-form-actions">
+              <button
+                type="submit"
+                class="admin-action"
+              >
+                Gerar link
+              </button>
+
+              <button
+                id="promotion-clear-button"
+                type="button"
+                class="marketing-secondary-button"
+              >
+                Limpar
+              </button>
+            </div>
+
+          </form>
+        </article>
+
+        <article class="admin-panel marketing-result-panel">
+
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Resultado</p>
+              <h2>Link do kit ou promoção</h2>
+            </div>
+          </div>
+
+          <div
+            id="promotion-empty-result"
+            class="marketing-empty-result"
+          >
+            Configure a campanha para gerar o link.
+          </div>
+
+          <div
+            id="promotion-result-container"
+            class="marketing-result-container hidden"
+          >
+            <textarea
+              id="promotion-result"
+              rows="9"
+              readonly
+            ></textarea>
+
+            <div class="marketing-result-actions">
+              <button
+                id="promotion-copy-button"
+                type="button"
+                class="admin-action"
+              >
+                Copiar link
+              </button>
+
+              <button
+                id="promotion-open-button"
+                type="button"
+                class="marketing-secondary-button"
+              >
+                Abrir link
+              </button>
+            </div>
+
+            <p
+              id="promotion-feedback"
+              class="marketing-feedback"
+            ></p>
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+    <!-- HISTÓRICO GERAL -->
+    <section class="admin-panel marketing-history-panel">
 
       <div class="panel-head">
         <div>
-          <p class="eyebrow">
-            Histórico
-          </p>
-
+          <p class="eyebrow">Histórico</p>
           <h2>Links criados</h2>
         </div>
 
         <button
-          id="utm-clear-history-button"
+          id="marketing-clear-history-button"
           type="button"
-          class="utm-danger-button"
+          class="marketing-danger-button"
         >
           Limpar histórico
         </button>
       </div>
 
       <div
-        id="utm-history-empty"
-        class="utm-history-empty"
+        id="marketing-history-empty"
+        class="marketing-history-empty"
       >
-        Nenhum link UTM criado ainda.
+        Nenhum link criado ainda.
       </div>
 
       <div class="table-wrap">
         <table
-          id="utm-history-table"
-          class="utm-history-table hidden"
+          id="marketing-history-table"
+          class="marketing-history-table hidden"
         >
           <thead>
             <tr>
-              <th>Campanha</th>
-              <th>Origem</th>
-              <th>Mídia</th>
+              <th>Tipo</th>
+              <th>Nome</th>
+              <th>Link</th>
               <th>Data</th>
               <th>Ações</th>
             </tr>
           </thead>
 
-          <tbody id="utm-history-body"></tbody>
+          <tbody id="marketing-history-body"></tbody>
         </table>
       </div>
 
