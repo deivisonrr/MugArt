@@ -1,44 +1,21 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
 
-  const STORAGE_KEY = "mugart_utm_history";
-  const MAX_HISTORY_ITEMS = 50;
+  const STORAGE_KEY = "mugart_marketing_history";
+  const MAX_HISTORY_ITEMS = 100;
 
-  const form = document.getElementById("utm-form");
+  let products = [];
 
-  if (!form) {
-    console.error("Formulário de UTM não encontrado.");
-    return;
+  const generatedLinks = {
+    utm: "",
+    whatsapp: "",
+    product: "",
+    promotion: ""
+  };
+
+  function byId(id) {
+    return document.getElementById(id);
   }
-
-  const urlInput = document.getElementById("utm-url");
-  const sourceInput = document.getElementById("utm-source");
-  const mediumInput = document.getElementById("utm-medium");
-  const campaignInput = document.getElementById("utm-campaign");
-  const contentInput = document.getElementById("utm-content");
-  const termInput = document.getElementById("utm-term");
-
-  const resultInput = document.getElementById("utm-result");
-  const resultContainer = document.getElementById(
-    "utm-result-container"
-  );
-  const emptyResult = document.getElementById("utm-empty-result");
-  const feedback = document.getElementById("utm-feedback");
-
-  const copyButton = document.getElementById("utm-copy-button");
-  const openButton = document.getElementById("utm-open-button");
-  const clearButton = document.getElementById("utm-clear-button");
-  const clearHistoryButton = document.getElementById(
-    "utm-clear-history-button"
-  );
-
-  const historyTable = document.getElementById("utm-history-table");
-  const historyBody = document.getElementById("utm-history-body");
-  const historyEmpty = document.getElementById("utm-history-empty");
-
-  const presetButtons = document.querySelectorAll(".utm-preset");
-
-  let currentGeneratedUrl = "";
 
   function normalizeValue(value) {
     return String(value || "")
@@ -51,115 +28,26 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/_+/g, "_");
   }
 
-  function normalizeBaseUrl(value) {
-    let normalizedUrl = String(value || "").trim();
+  function onlyNumbers(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
 
-    if (!normalizedUrl) {
-      throw new Error("Informe a URL de destino.");
-    }
+  function normalizeUrl(value) {
+    let urlValue = String(value || "").trim();
 
-    if (!/^https?:\/\//i.test(normalizedUrl)) {
-      normalizedUrl = `https://${normalizedUrl}`;
-    }
-
-    let url;
-
-    try {
-      url = new URL(normalizedUrl);
-    } catch (error) {
+    if (!urlValue) {
       throw new Error("Informe uma URL válida.");
     }
 
-    if (!["http:", "https:"].includes(url.protocol)) {
-      throw new Error("A URL deve começar com http ou https.");
+    if (!/^https?:\/\//i.test(urlValue)) {
+      urlValue = `https://${urlValue}`;
     }
 
-    return url;
-  }
-
-  function removeInvalidState() {
-    [
-      urlInput,
-      sourceInput,
-      mediumInput,
-      campaignInput
-    ].forEach((input) => {
-      input.classList.remove("is-invalid");
-    });
-  }
-
-  function validateRequiredFields() {
-    removeInvalidState();
-
-    if (!urlInput.value.trim()) {
-      urlInput.classList.add("is-invalid");
-      urlInput.focus();
-      throw new Error("Informe a URL de destino.");
+    try {
+      return new URL(urlValue);
+    } catch (error) {
+      throw new Error("Informe uma URL válida.");
     }
-
-    if (!sourceInput.value.trim()) {
-      sourceInput.classList.add("is-invalid");
-      sourceInput.focus();
-      throw new Error("Informe a origem da campanha.");
-    }
-
-    if (!mediumInput.value.trim()) {
-      mediumInput.classList.add("is-invalid");
-      mediumInput.focus();
-      throw new Error("Informe a mídia da campanha.");
-    }
-
-    if (!campaignInput.value.trim()) {
-      campaignInput.classList.add("is-invalid");
-      campaignInput.focus();
-      throw new Error("Informe o nome da campanha.");
-    }
-  }
-
-  function generateUtmData() {
-    validateRequiredFields();
-
-    const url = normalizeBaseUrl(urlInput.value);
-
-    const source = normalizeValue(sourceInput.value);
-    const medium = normalizeValue(mediumInput.value);
-    const campaign = normalizeValue(campaignInput.value);
-    const content = normalizeValue(contentInput.value);
-    const term = normalizeValue(termInput.value);
-
-    if (!source || !medium || !campaign) {
-      throw new Error(
-        "Origem, mídia e campanha precisam conter valores válidos."
-      );
-    }
-
-    url.searchParams.set("utm_source", source);
-    url.searchParams.set("utm_medium", medium);
-    url.searchParams.set("utm_campaign", campaign);
-
-    if (content) {
-      url.searchParams.set("utm_content", content);
-    } else {
-      url.searchParams.delete("utm_content");
-    }
-
-    if (term) {
-      url.searchParams.set("utm_term", term);
-    } else {
-      url.searchParams.delete("utm_term");
-    }
-
-    return {
-      id: generateId(),
-      url: url.toString(),
-      destinationUrl: `${url.origin}${url.pathname}`,
-      source,
-      medium,
-      campaign,
-      content,
-      term,
-      createdAt: new Date().toISOString()
-    };
   }
 
   function generateId() {
@@ -170,114 +58,140 @@ document.addEventListener("DOMContentLoaded", () => {
       return window.crypto.randomUUID();
     }
 
-    return `${Date.now()}-${Math.random()
-      .toString(16)
-      .slice(2)}`;
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
-  function showResult(url) {
-    currentGeneratedUrl = url;
-    resultInput.value = url;
+  function showFeedback(elementId, message, type = "success") {
+    const element = byId(elementId);
 
-    resultContainer.classList.remove("hidden");
-    emptyResult.classList.add("hidden");
-  }
+    if (!element) {
+      return;
+    }
 
-  function hideResult() {
-    currentGeneratedUrl = "";
-    resultInput.value = "";
+    element.textContent = message;
+    element.style.color =
+      type === "error" ? "#f87171" : "#4ade80";
 
-    resultContainer.classList.add("hidden");
-    emptyResult.classList.remove("hidden");
-    feedback.textContent = "";
-  }
+    window.clearTimeout(element.feedbackTimeout);
 
-  function showFeedback(message, type = "success") {
-    feedback.textContent = message;
-
-    feedback.style.color =
-      type === "error"
-        ? "#f87171"
-        : "#4ade80";
-
-    window.clearTimeout(showFeedback.timeoutId);
-
-    showFeedback.timeoutId = window.setTimeout(() => {
-      feedback.textContent = "";
+    element.feedbackTimeout = window.setTimeout(() => {
+      element.textContent = "";
     }, 3500);
+  }
+
+  function showResult(type, url) {
+    generatedLinks[type] = url;
+
+    byId(`${type}-result`).value = url;
+
+    byId(`${type}-result-container`).classList.remove("hidden");
+    byId(`${type}-empty-result`).classList.add("hidden");
+  }
+
+  function hideResult(type) {
+    generatedLinks[type] = "";
+
+    byId(`${type}-result`).value = "";
+
+    byId(`${type}-result-container`).classList.add("hidden");
+    byId(`${type}-empty-result`).classList.remove("hidden");
+  }
+
+  async function copyText(text) {
+    const value = String(text || "").trim();
+
+    if (!value) {
+      throw new Error("Nenhum link disponível para copiar.");
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const textarea = document.createElement("textarea");
+
+    textarea.value = value;
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    const copied = document.execCommand("copy");
+
+    document.body.removeChild(textarea);
+
+    if (!copied) {
+      throw new Error("Não foi possível copiar o link.");
+    }
+  }
+
+  function openLink(url) {
+    if (!url) {
+      throw new Error("Nenhum link disponível para abrir.");
+    }
+
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   function getHistory() {
     try {
-      const savedHistory = localStorage.getItem(STORAGE_KEY);
+      const data = localStorage.getItem(STORAGE_KEY);
 
-      if (!savedHistory) {
+      if (!data) {
         return [];
       }
 
-      const parsedHistory = JSON.parse(savedHistory);
+      const parsed = JSON.parse(data);
 
-      return Array.isArray(parsedHistory)
-        ? parsedHistory
-        : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
-      console.error(
-        "Erro ao carregar histórico de UTM:",
-        error
-      );
-
+      console.error("Erro ao carregar histórico:", error);
       return [];
     }
   }
 
   function saveHistory(history) {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(history)
-      );
-    } catch (error) {
-      console.error(
-        "Erro ao salvar histórico de UTM:",
-        error
-      );
-
-      showFeedback(
-        "Não foi possível salvar o histórico.",
-        "error"
-      );
-    }
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(history.slice(0, MAX_HISTORY_ITEMS))
+    );
   }
 
-  function addToHistory(data) {
+  function addHistory(type, name, url) {
     const history = getHistory();
 
-    const duplicateIndex = history.findIndex(
-      (item) => item.url === data.url
+    const existingIndex = history.findIndex(
+      (item) => item.url === url
     );
 
-    if (duplicateIndex >= 0) {
-      history.splice(duplicateIndex, 1);
+    if (existingIndex >= 0) {
+      history.splice(existingIndex, 1);
     }
 
-    history.unshift(data);
+    history.unshift({
+      id: generateId(),
+      type,
+      name,
+      url,
+      createdAt: new Date().toISOString()
+    });
 
-    saveHistory(
-      history.slice(0, MAX_HISTORY_ITEMS)
-    );
-
+    saveHistory(history);
     renderHistory();
   }
 
-  function deleteHistoryItem(id) {
-    const history = getHistory();
+  function typeLabel(type) {
+    const labels = {
+      utm: "UTM",
+      whatsapp: "WhatsApp",
+      product: "Produto",
+      promotion: "Promoção",
+      kit: "Kit"
+    };
 
-    const updatedHistory = history.filter(
-      (item) => item.id !== id
-    );
-
-    saveHistory(updatedHistory);
-    renderHistory();
+    return labels[type] || type;
   }
 
   function formatDate(value) {
@@ -303,34 +217,39 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderHistory() {
     const history = getHistory();
 
-    historyBody.innerHTML = "";
+    const table = byId("marketing-history-table");
+    const body = byId("marketing-history-body");
+    const empty = byId("marketing-history-empty");
+
+    body.innerHTML = "";
 
     if (!history.length) {
-      historyTable.classList.add("hidden");
-      historyEmpty.classList.remove("hidden");
+      table.classList.add("hidden");
+      empty.classList.remove("hidden");
       return;
     }
 
-    historyTable.classList.remove("hidden");
-    historyEmpty.classList.add("hidden");
+    table.classList.remove("hidden");
+    empty.classList.add("hidden");
 
     history.forEach((item) => {
       const row = document.createElement("tr");
 
       row.innerHTML = `
         <td>
-          ${escapeHtml(item.campaign)}
-          <small class="utm-url-preview">
+          <span class="marketing-type-badge">
+            ${escapeHtml(typeLabel(item.type))}
+          </span>
+        </td>
+
+        <td>
+          ${escapeHtml(item.name)}
+        </td>
+
+        <td>
+          <span class="marketing-history-link">
             ${escapeHtml(item.url)}
-          </small>
-        </td>
-
-        <td>
-          ${escapeHtml(item.source)}
-        </td>
-
-        <td>
-          ${escapeHtml(item.medium)}
+          </span>
         </td>
 
         <td>
@@ -338,39 +257,30 @@ document.addEventListener("DOMContentLoaded", () => {
         </td>
 
         <td>
-          <div class="utm-history-actions">
+          <div class="marketing-history-actions">
             <button
               type="button"
-              class="utm-table-button"
-              data-action="copy"
-              data-id="${escapeHtml(item.id)}"
+              class="marketing-table-button"
+              data-history-action="copy"
+              data-history-id="${escapeHtml(item.id)}"
             >
               Copiar
             </button>
 
             <button
               type="button"
-              class="utm-table-button"
-              data-action="open"
-              data-id="${escapeHtml(item.id)}"
+              class="marketing-table-button"
+              data-history-action="open"
+              data-history-id="${escapeHtml(item.id)}"
             >
               Abrir
             </button>
 
             <button
               type="button"
-              class="utm-table-button"
-              data-action="reuse"
-              data-id="${escapeHtml(item.id)}"
-            >
-              Reutilizar
-            </button>
-
-            <button
-              type="button"
-              class="utm-table-button delete"
-              data-action="delete"
-              data-id="${escapeHtml(item.id)}"
+              class="marketing-table-button delete"
+              data-history-action="delete"
+              data-history-id="${escapeHtml(item.id)}"
             >
               Excluir
             </button>
@@ -378,231 +288,545 @@ document.addEventListener("DOMContentLoaded", () => {
         </td>
       `;
 
-      historyBody.appendChild(row);
+      body.appendChild(row);
     });
   }
 
-  async function copyText(text) {
-    const value = String(text || "").trim();
+  // ABAS
+  document.querySelectorAll("[data-marketing-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const selectedTab = button.dataset.marketingTab;
 
-    if (!value) {
-      throw new Error(
-        "Nenhum link disponível para copiar."
-      );
-    }
-
-    if (
-      navigator.clipboard &&
-      window.isSecureContext
-    ) {
-      await navigator.clipboard.writeText(value);
-      return;
-    }
-
-    const textarea = document.createElement("textarea");
-
-    textarea.value = value;
-    textarea.setAttribute("readonly", "");
-    textarea.style.position = "fixed";
-    textarea.style.left = "-9999px";
-    textarea.style.opacity = "0";
-
-    document.body.appendChild(textarea);
-
-    textarea.select();
-    textarea.setSelectionRange(
-      0,
-      textarea.value.length
-    );
-
-    const copied = document.execCommand("copy");
-
-    document.body.removeChild(textarea);
-
-    if (!copied) {
-      throw new Error(
-        "Não foi possível copiar o link."
-      );
-    }
-  }
-
-  function reuseHistoryItem(item) {
-    const destinationUrl =
-      item.destinationUrl ||
-      removeUtmParameters(item.url);
-
-    urlInput.value = destinationUrl;
-    sourceInput.value = item.source || "";
-    mediumInput.value = item.medium || "";
-    campaignInput.value = item.campaign || "";
-    contentInput.value = item.content || "";
-    termInput.value = item.term || "";
-
-    showResult(item.url);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-
-    showFeedback(
-      "Campanha carregada para reutilização."
-    );
-  }
-
-  function removeUtmParameters(value) {
-    try {
-      const url = new URL(value);
-
-      [
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_content",
-        "utm_term"
-      ].forEach((parameter) => {
-        url.searchParams.delete(parameter);
+      document.querySelectorAll("[data-marketing-tab]").forEach((item) => {
+        item.classList.toggle(
+          "active",
+          item.dataset.marketingTab === selectedTab
+        );
       });
 
-      return url.toString();
-    } catch (error) {
-      return value;
-    }
-  }
-
-  function clearForm() {
-    form.reset();
-
-    urlInput.value =
-      "https://mugart.com.br/";
-
-    presetButtons.forEach((button) => {
-      button.classList.remove("active");
+      document.querySelectorAll("[data-marketing-panel]").forEach((panel) => {
+        panel.classList.toggle(
+          "active",
+          panel.dataset.marketingPanel === selectedTab
+        );
+      });
     });
+  });
 
-    removeInvalidState();
-    hideResult();
-
-    urlInput.focus();
-  }
-
-  presetButtons.forEach((button) => {
+  // UTM
+  document.querySelectorAll(".utm-preset").forEach((button) => {
     button.addEventListener("click", () => {
-      presetButtons.forEach((item) => {
+      document.querySelectorAll(".utm-preset").forEach((item) => {
         item.classList.remove("active");
       });
 
       button.classList.add("active");
 
-      sourceInput.value =
-        button.dataset.source || "";
-
-      mediumInput.value =
-        button.dataset.medium || "";
-
-      sourceInput.classList.remove("is-invalid");
-      mediumInput.classList.remove("is-invalid");
-
-      campaignInput.focus();
+      byId("utm-source").value = button.dataset.source || "";
+      byId("utm-medium").value = button.dataset.medium || "";
+      byId("utm-campaign").focus();
     });
   });
 
-  [
-    urlInput,
-    sourceInput,
-    mediumInput,
-    campaignInput
-  ].forEach((input) => {
-    input.addEventListener("input", () => {
-      input.classList.remove("is-invalid");
-    });
-  });
-
-  form.addEventListener("submit", (event) => {
+  byId("utm-form").addEventListener("submit", (event) => {
     event.preventDefault();
 
     try {
-      const data = generateUtmData();
+      const url = normalizeUrl(byId("utm-url").value);
 
-      sourceInput.value = data.source;
-      mediumInput.value = data.medium;
-      campaignInput.value = data.campaign;
-      contentInput.value = data.content;
-      termInput.value = data.term;
+      const source = normalizeValue(byId("utm-source").value);
+      const medium = normalizeValue(byId("utm-medium").value);
+      const campaign = normalizeValue(byId("utm-campaign").value);
+      const content = normalizeValue(byId("utm-content").value);
+      const term = normalizeValue(byId("utm-term").value);
 
-      showResult(data.url);
-      addToHistory(data);
+      if (!source || !medium || !campaign) {
+        throw new Error(
+          "Preencha a origem, a mídia e o nome da campanha."
+        );
+      }
+
+      url.searchParams.set("utm_source", source);
+      url.searchParams.set("utm_medium", medium);
+      url.searchParams.set("utm_campaign", campaign);
+
+      if (content) {
+        url.searchParams.set("utm_content", content);
+      }
+
+      if (term) {
+        url.searchParams.set("utm_term", term);
+      }
+
+      const finalUrl = url.toString();
+
+      showResult("utm", finalUrl);
+      addHistory("utm", campaign, finalUrl);
 
       showFeedback(
+        "utm-feedback",
         "Link UTM gerado com sucesso."
       );
     } catch (error) {
-      console.error(error);
-
-      showFeedback(
-        error.message ||
-          "Não foi possível gerar o link.",
-        "error"
-      );
+      showFeedback("utm-feedback", error.message, "error");
     }
   });
 
-  copyButton.addEventListener("click", async () => {
+  byId("utm-clear-button").addEventListener("click", () => {
+    byId("utm-form").reset();
+    byId("utm-url").value = "https://mugart.com.br/";
+
+    document.querySelectorAll(".utm-preset").forEach((button) => {
+      button.classList.remove("active");
+    });
+
+    hideResult("utm");
+  });
+
+  // WHATSAPP
+  document
+    .querySelectorAll(".whatsapp-message-preset")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        byId("whatsapp-message").value =
+          button.dataset.message || "";
+      });
+    });
+
+  byId("whatsapp-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+
     try {
-      await copyText(currentGeneratedUrl);
+      const countryCode = onlyNumbers(
+        byId("whatsapp-country-code").value
+      );
 
-      showFeedback("Link copiado.");
-    } catch (error) {
-      showFeedback(error.message, "error");
-    }
-  });
+      const phone = onlyNumbers(
+        byId("whatsapp-phone").value
+      );
 
-  openButton.addEventListener("click", () => {
-    if (!currentGeneratedUrl) {
+      const message = byId("whatsapp-message").value.trim();
+
+      if (!countryCode || !phone) {
+        throw new Error("Informe um telefone válido.");
+      }
+
+      if (!message) {
+        throw new Error("Informe a mensagem automática.");
+      }
+
+      const finalUrl =
+        `https://wa.me/${countryCode}${phone}` +
+        `?text=${encodeURIComponent(message)}`;
+
+      showResult("whatsapp", finalUrl);
+      addHistory("whatsapp", "Atendimento pelo WhatsApp", finalUrl);
+
       showFeedback(
-        "Nenhum link disponível para abrir.",
+        "whatsapp-feedback",
+        "Link do WhatsApp gerado com sucesso."
+      );
+    } catch (error) {
+      showFeedback(
+        "whatsapp-feedback",
+        error.message,
         "error"
       );
-
-      return;
     }
-
-    window.open(
-      currentGeneratedUrl,
-      "_blank",
-      "noopener,noreferrer"
-    );
   });
 
-  clearButton.addEventListener("click", () => {
-    clearForm();
+  byId("whatsapp-clear-button").addEventListener("click", () => {
+    byId("whatsapp-form").reset();
+    byId("whatsapp-country-code").value = "55";
+    byId("whatsapp-phone").value = "11988849236";
+    hideResult("whatsapp");
   });
 
-  clearHistoryButton.addEventListener(
-    "click",
-    () => {
-      const confirmed = window.confirm(
-        "Deseja apagar todo o histórico de links UTM?"
-      );
+  // PRODUTOS
+  async function loadProducts() {
+    const selector = byId("product-selector");
+    const productsList = byId("promotion-products-list");
 
-      if (!confirmed) {
+    try {
+      if (!window.supabaseClient) {
+        throw new Error("Cliente Supabase não encontrado.");
+      }
+
+      const { data, error } = await window.supabaseClient
+        .from("products")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      products = Array.isArray(data) ? data : [];
+
+      selector.innerHTML = `
+        <option value="">
+          Selecione um produto
+        </option>
+      `;
+
+      productsList.innerHTML = "";
+
+      if (!products.length) {
+        selector.innerHTML = `
+          <option value="">
+            Nenhum produto encontrado
+          </option>
+        `;
+
+        productsList.innerHTML = `
+          <div class="marketing-loading">
+            Nenhum produto cadastrado.
+          </div>
+        `;
+
         return;
       }
 
-      localStorage.removeItem(STORAGE_KEY);
-      renderHistory();
+      products.forEach((product) => {
+        const productName =
+          product.name ||
+          product.nome ||
+          product.title ||
+          "Produto sem nome";
+
+        const option = document.createElement("option");
+
+        option.value = String(product.id);
+        option.textContent = productName;
+
+        selector.appendChild(option);
+
+        const productLabel = document.createElement("label");
+
+        productLabel.className = "promotion-product-option";
+
+        productLabel.innerHTML = `
+          <input
+            type="checkbox"
+            name="promotion-product"
+            value="${escapeHtml(product.id)}"
+          >
+
+          <span>${escapeHtml(productName)}</span>
+        `;
+
+        productsList.appendChild(productLabel);
+      });
+    } catch (error) {
+      console.error("Erro ao carregar produtos:", error);
+
+      selector.innerHTML = `
+        <option value="">
+          Não foi possível carregar os produtos
+        </option>
+      `;
+
+      productsList.innerHTML = `
+        <div class="marketing-loading">
+          Não foi possível carregar os produtos.
+        </div>
+      `;
+    }
+  }
+
+  function buildProductUrl(product) {
+    const explicitUrl =
+      product.url ||
+      product.product_url ||
+      product.link ||
+      product.permalink;
+
+    if (explicitUrl) {
+      return explicitUrl;
+    }
+
+    const slug =
+      product.slug ||
+      product.handle ||
+      normalizeValue(
+        product.name ||
+        product.nome ||
+        product.title ||
+        product.id
+      );
+
+    return (
+      "https://mugart.com.br/loja.html?produto=" +
+      encodeURIComponent(slug)
+    );
+  }
+
+  byId("product-selector").addEventListener("change", () => {
+    const productId = byId("product-selector").value;
+
+    const product = products.find(
+      (item) => String(item.id) === String(productId)
+    );
+
+    if (!product) {
+      byId("product-destination-url").value = "";
+      return;
+    }
+
+    byId("product-destination-url").value =
+      buildProductUrl(product);
+  });
+
+  byId("product-add-utm").addEventListener("change", () => {
+    byId("product-utm-fields").classList.toggle(
+      "hidden",
+      !byId("product-add-utm").checked
+    );
+  });
+
+  byId("product-link-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    try {
+      const url = normalizeUrl(
+        byId("product-destination-url").value
+      );
+
+      const productId = byId("product-selector").value;
+
+      const product = products.find(
+        (item) => String(item.id) === String(productId)
+      );
+
+      const productName =
+        product?.name ||
+        product?.nome ||
+        product?.title ||
+        "Produto MugArt";
+
+      if (byId("product-add-utm").checked) {
+        const source = normalizeValue(
+          byId("product-utm-source").value
+        );
+
+        const medium = normalizeValue(
+          byId("product-utm-medium").value
+        );
+
+        const campaign = normalizeValue(
+          byId("product-utm-campaign").value
+        );
+
+        const content = normalizeValue(
+          byId("product-utm-content").value
+        );
+
+        if (!source || !medium || !campaign) {
+          throw new Error(
+            "Preencha origem, mídia e campanha da UTM."
+          );
+        }
+
+        url.searchParams.set("utm_source", source);
+        url.searchParams.set("utm_medium", medium);
+        url.searchParams.set("utm_campaign", campaign);
+
+        if (content) {
+          url.searchParams.set("utm_content", content);
+        }
+      }
+
+      const finalUrl = url.toString();
+
+      showResult("product", finalUrl);
+      addHistory("product", productName, finalUrl);
 
       showFeedback(
-        "Histórico apagado com sucesso."
+        "product-feedback",
+        "Link do produto gerado com sucesso."
+      );
+    } catch (error) {
+      showFeedback(
+        "product-feedback",
+        error.message,
+        "error"
       );
     }
-  );
+  });
 
-  historyBody.addEventListener(
+  byId("product-clear-button").addEventListener("click", () => {
+    byId("product-link-form").reset();
+    byId("product-destination-url").value = "";
+    byId("product-utm-fields").classList.add("hidden");
+    hideResult("product");
+  });
+
+  // PROMOÇÕES E KITS
+  byId("promotion-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    try {
+      const url = normalizeUrl(
+        byId("promotion-base-url").value
+      );
+
+      const type = byId("promotion-type").value;
+
+      const name = normalizeValue(
+        byId("promotion-name").value
+      );
+
+      const coupon = String(
+        byId("promotion-coupon").value || ""
+      )
+        .trim()
+        .toUpperCase();
+
+      const discount = byId("promotion-discount").value;
+      const validUntil = byId("promotion-valid-until").value;
+
+      const source = normalizeValue(
+        byId("promotion-source").value
+      );
+
+      const medium = normalizeValue(
+        byId("promotion-medium").value
+      );
+
+      const content = normalizeValue(
+        byId("promotion-content").value
+      );
+
+      if (!name) {
+        throw new Error("Informe o nome da campanha.");
+      }
+
+      const selectedProducts = Array.from(
+        document.querySelectorAll(
+          'input[name="promotion-product"]:checked'
+        )
+      ).map((checkbox) => checkbox.value);
+
+      url.searchParams.set(
+        type === "kit" ? "kit" : "promocao",
+        name
+      );
+
+      if (selectedProducts.length) {
+        url.searchParams.set(
+          "produtos",
+          selectedProducts.join(",")
+        );
+      }
+
+      if (coupon) {
+        url.searchParams.set("cupom", coupon);
+      }
+
+      if (discount) {
+        url.searchParams.set("desconto", discount);
+      }
+
+      if (validUntil) {
+        url.searchParams.set("validade", validUntil);
+      }
+
+      if (source && medium) {
+        url.searchParams.set("utm_source", source);
+        url.searchParams.set("utm_medium", medium);
+        url.searchParams.set("utm_campaign", name);
+
+        if (content) {
+          url.searchParams.set("utm_content", content);
+        }
+      }
+
+      const finalUrl = url.toString();
+
+      showResult("promotion", finalUrl);
+      addHistory(type, name, finalUrl);
+
+      showFeedback(
+        "promotion-feedback",
+        type === "kit"
+          ? "Link do kit gerado com sucesso."
+          : "Link da promoção gerado com sucesso."
+      );
+    } catch (error) {
+      showFeedback(
+        "promotion-feedback",
+        error.message,
+        "error"
+      );
+    }
+  });
+
+  byId("promotion-clear-button").addEventListener("click", () => {
+    byId("promotion-form").reset();
+
+    byId("promotion-base-url").value =
+      "https://mugart.com.br/loja.html";
+
+    document
+      .querySelectorAll(
+        'input[name="promotion-product"]'
+      )
+      .forEach((checkbox) => {
+        checkbox.checked = false;
+      });
+
+    hideResult("promotion");
+  });
+
+  // BOTÕES DOS RESULTADOS
+  [
+    "utm",
+    "whatsapp",
+    "product",
+    "promotion"
+  ].forEach((type) => {
+    byId(`${type}-copy-button`).addEventListener(
+      "click",
+      async () => {
+        try {
+          await copyText(generatedLinks[type]);
+
+          showFeedback(
+            `${type}-feedback`,
+            "Link copiado."
+          );
+        } catch (error) {
+          showFeedback(
+            `${type}-feedback`,
+            error.message,
+            "error"
+          );
+        }
+      }
+    );
+
+    byId(`${type}-open-button`).addEventListener(
+      "click",
+      () => {
+        try {
+          openLink(generatedLinks[type]);
+        } catch (error) {
+          showFeedback(
+            `${type}-feedback`,
+            error.message,
+            "error"
+          );
+        }
+      }
+    );
+  });
+
+  // HISTÓRICO
+  byId("marketing-history-body").addEventListener(
     "click",
     async (event) => {
       const button = event.target.closest(
-        "[data-action]"
+        "[data-history-action]"
       );
 
       if (!button) {
@@ -613,69 +837,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const item = history.find(
         (historyItem) =>
-          historyItem.id === button.dataset.id
+          historyItem.id === button.dataset.historyId
       );
 
       if (!item) {
-        showFeedback(
-          "Link não encontrado no histórico.",
-          "error"
-        );
-
         return;
       }
 
-      const action = button.dataset.action;
+      const action = button.dataset.historyAction;
 
       if (action === "copy") {
-        try {
-          await copyText(item.url);
-
-          showFeedback(
-            "Link do histórico copiado."
-          );
-        } catch (error) {
-          showFeedback(
-            error.message,
-            "error"
-          );
-        }
-
+        await copyText(item.url);
         return;
       }
 
       if (action === "open") {
-        window.open(
-          item.url,
-          "_blank",
-          "noopener,noreferrer"
-        );
-
-        return;
-      }
-
-      if (action === "reuse") {
-        reuseHistoryItem(item);
+        openLink(item.url);
         return;
       }
 
       if (action === "delete") {
         const confirmed = window.confirm(
-          `Deseja excluir a campanha "${item.campaign}"?`
+          `Deseja excluir o link "${item.name}"?`
         );
 
         if (!confirmed) {
           return;
         }
 
-        deleteHistoryItem(item.id);
-
-        showFeedback(
-          "Link removido do histórico."
+        saveHistory(
+          history.filter(
+            (historyItem) => historyItem.id !== item.id
+          )
         );
+
+        renderHistory();
       }
     }
   );
 
+  byId("marketing-clear-history-button").addEventListener(
+    "click",
+    () => {
+      const confirmed = window.confirm(
+        "Deseja apagar todo o histórico de links?"
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      localStorage.removeItem(STORAGE_KEY);
+      renderHistory();
+    }
+  );
+
   renderHistory();
+  await loadProducts();
 });
