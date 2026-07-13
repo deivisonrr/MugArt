@@ -768,3 +768,221 @@ footer h4 {
   .store-benefits, .featured-products { grid-template-columns: 1fr; }
   .products-top { align-items: start; flex-direction: column; }
 }
+
+/* ==========================================================
+   Carrossel de variações
+========================================================== */
+
+.product-carousel {
+  min-width: 0;
+}
+
+.modal-product-image {
+  position: relative;
+  overflow: hidden;
+}
+
+.carousel-image-wrapper {
+  width: 100%;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.carousel-image-wrapper:active {
+  cursor: grabbing;
+}
+
+.carousel-image-wrapper img {
+  max-width: 88%;
+  max-height: 340px;
+  object-fit: contain;
+  transition:
+    opacity .2s ease,
+    transform .25s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  background: rgba(0,0,0,.68);
+  color: #fff;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.carousel-arrow:hover {
+  background: var(--yellow);
+  color: #111;
+  transform: translateY(-50%) scale(1.06);
+}
+
+.carousel-prev {
+  left: 14px;
+}
+
+.carousel-next {
+  right: 14px;
+}
+
+.carousel-position {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: rgba(255,255,255,.58);
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.carousel-position strong {
+  color: var(--yellow);
+}
+
+.variation-thumbnails {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(86px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.variation-thumbnail {
+  position: relative;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 15px;
+  background: rgba(255,255,255,.045);
+  color: #fff;
+  padding: 8px;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.variation-thumbnail:hover {
+  border-color: rgba(255,212,0,.55);
+  transform: translateY(-2px);
+}
+
+.variation-thumbnail.active {
+  border: 2px solid var(--yellow);
+  background: rgba(255,212,0,.09);
+  box-shadow: 0 0 0 3px rgba(255,212,0,.08);
+}
+
+.variation-thumbnail.sold-out {
+  opacity: .46;
+}
+
+.variation-thumbnail img {
+  width: 100%;
+  height: 72px;
+  object-fit: contain;
+  display: block;
+}
+
+.variation-thumbnail span {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.variation-thumbnail small {
+  display: block;
+  margin-top: 3px;
+  color: var(--red);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.selected-variation-box {
+  display: grid;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(0,216,255,.24);
+  border-radius: 16px;
+  background: rgba(0,216,255,.07);
+}
+
+.selected-variation-box small {
+  color: rgba(255,255,255,.63);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.selected-variation-box strong {
+  color: var(--cyan);
+  font-size: 19px;
+}
+
+.selected-variation-box span {
+  color: rgba(255,255,255,.7);
+  font-size: 12px;
+}
+
+.cart-variation-sku {
+  display: block;
+  color: rgba(255,255,255,.48);
+  font-size: 10px;
+  margin: -3px 0 8px;
+}
+
+@media (max-width: 760px) {
+  .product-modal {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .product-modal-card {
+    width: 100%;
+    max-height: 94vh;
+    padding: 18px;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .carousel-image-wrapper,
+  .modal-product-image {
+    min-height: 300px;
+  }
+
+  .carousel-image-wrapper img {
+    max-height: 285px;
+  }
+
+  .carousel-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .variation-thumbnails {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 7px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .variation-thumbnail {
+    flex: 0 0 92px;
+    scroll-snap-align: start;
+  }
+
+  .modal-product-info h2 {
+    font-size: 34px;
+  }
+}
