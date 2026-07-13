@@ -324,11 +324,15 @@ async function saveProductFromForm(event) {
     result = await mugartSupabase
       .from("products")
       .update(product)
-      .eq("id", currentId);
+      .eq("id", currentId)
+      .select()
+      .single();
   } else {
     result = await mugartSupabase
       .from("products")
-      .insert(product);
+      .insert(product)
+      .select()
+      .single();
   }
 
   if (result.error) {
@@ -337,10 +341,18 @@ async function saveProductFromForm(event) {
     return;
   }
 
-  clearProductForm();
+  const savedProduct = result.data;
+
+  $("#productId").value = savedProduct.id;
+  $("#productFormTitle").textContent = "Editar produto";
+
+  if (typeof window.initializeProductVariants === "function") {
+    await window.initializeProductVariants(savedProduct.id);
+  }
+
   await renderProductsTable();
 
-  alert("Produto salvo com sucesso.");
+  alert("Produto salvo com sucesso. Agora você pode cadastrar ou editar as variações.");
 }
 
 function clearProductForm() {
@@ -358,6 +370,10 @@ function clearProductForm() {
 
   if (placeholder) {
     placeholder.style.display = "block";
+  }
+
+  if (typeof window.initializeProductVariants === "function") {
+    window.initializeProductVariants(null);
   }
 }
 
@@ -433,6 +449,10 @@ window.editProduct = async function(id) {
   $("#productFormTitle").textContent = "Editar produto";
 
   updateImagePreviewFromUrl();
+
+  if (typeof window.initializeProductVariants === "function") {
+    await window.initializeProductVariants(product.id);
+  }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 };

@@ -1,0 +1,232 @@
+.hidden { display: none !important; }
+
+.product-variants-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+
+.variants-section-header,
+.variant-form-title,
+.variants-list-header,
+.variant-card-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.variants-section-header {
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.variants-section-header h3 {
+  margin: 4px 0 0;
+}
+
+.variant-form {
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  background: rgba(255,255,255,.035);
+}
+
+.variant-form.editing {
+  border-color: #ffd400;
+}
+
+.variant-form-title {
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.variant-form-title span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255,255,255,.62);
+  font-size: 12px;
+}
+
+.variant-cancel-edit {
+  border: 0;
+  background: transparent;
+  color: #ff3b7b;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.variant-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.variant-form-grid label,
+.variant-image-preview-box {
+  display: grid;
+  gap: 7px;
+}
+
+.variant-form-grid input,
+.variant-form-grid select {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 11px;
+  background: rgba(255,255,255,.06);
+  color: #fff;
+}
+
+.variant-form-grid select option {
+  color: #111;
+}
+
+.variant-image-field {
+  grid-column: span 2;
+}
+
+.variant-image-preview {
+  min-height: 100px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed rgba(255,255,255,.18);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.variant-image-preview img {
+  width: 100%;
+  height: 100px;
+  object-fit: contain;
+}
+
+.variants-list-header {
+  align-items: center;
+  margin: 22px 0 12px;
+}
+
+.variants-list {
+  display: grid;
+  gap: 12px;
+}
+
+.variants-message {
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 13px;
+  color: rgba(255,255,255,.65);
+  text-align: center;
+}
+
+.variant-card {
+  display: grid;
+  grid-template-columns: 115px 1fr;
+  gap: 14px;
+  padding: 13px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 15px;
+  background: rgba(255,255,255,.04);
+}
+
+.variant-card-inactive {
+  opacity: .6;
+}
+
+.variant-card-image {
+  min-height: 108px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255,255,255,.05);
+  overflow: hidden;
+}
+
+.variant-card-image img {
+  width: 100%;
+  height: 108px;
+  object-fit: contain;
+}
+
+.variant-card-image em {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.variant-card-image em.active { background: #20c463; }
+.variant-card-image em.inactive { background: #777; }
+
+.variant-card-title h4 {
+  margin: 0 0 4px;
+}
+
+.variant-card-title span,
+.variant-card-content p {
+  color: rgba(255,255,255,.62);
+  font-size: 12px;
+}
+
+.variant-card-price {
+  text-align: right;
+}
+
+.variant-card-price strong {
+  display: block;
+  color: #ffd400;
+}
+
+.variant-card-price small {
+  text-decoration: line-through;
+  color: rgba(255,255,255,.45);
+}
+
+.variant-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.variant-card-actions button {
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,.05);
+  color: #fff;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .variant-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .variant-image-field {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .variant-form-grid,
+  .variant-card {
+    grid-template-columns: 1fr;
+  }
+
+  .variants-section-header,
+  .variant-form-title,
+  .variant-card-title {
+    flex-direction: column;
+  }
+
+  .variant-card-price {
+    text-align: left;
+  }
+}

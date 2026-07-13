@@ -8,7 +8,8 @@
 
   <link rel="icon" href="../assets/favicon.ico" sizes="any">
   <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/admin.css?v=6" />
+  <link rel="stylesheet" href="css/product-variants.css?v=1" />
 </head>
 
 <body class="admin-body">
@@ -53,9 +54,96 @@
         </div>
 
         <div class="form-grid">
-                 </div>
+          <label>
+            Nome
+            <input id="productName" required placeholder="Caneca Coração Vermelha" />
+          </label>
 
-        <!-- VARIAÇÕES DO PRODUTO -->
+          <label>
+            SKU
+            <input id="productSku" required placeholder="MC-COR-VERM-001" />
+          </label>
+
+          <label>
+            Categoria
+            <select id="productCategory" required></select>
+          </label>
+
+          <label>
+            Cor
+            <input id="productColor" required placeholder="Vermelha" />
+          </label>
+
+          <label>
+            Preço
+            <input id="productPrice" type="number" min="0" step="0.01" required placeholder="44.90" />
+          </label>
+
+          <label>
+            Preço promocional
+            <input id="productOldPrice" type="number" min="0" step="0.01" placeholder="54.90" />
+          </label>
+
+          <label>
+            Estoque
+            <input id="productStock" type="number" min="0" step="1" required placeholder="10" />
+          </label>
+
+          <label class="full">
+            Imagem principal
+            <input id="productImage" required placeholder="A URL será preenchida automaticamente após upload" />
+
+            <div class="upload-box">
+              <div class="image-preview-wrap">
+                <img id="productImagePreview" src="" alt="Preview do produto" />
+                <span id="productImagePlaceholder">Nenhuma imagem selecionada</span>
+              </div>
+
+              <div class="upload-actions">
+                <label class="upload-btn">
+                  Escolher imagem
+                  <input id="productImageFile" type="file" accept="image/png,image/jpeg,image/webp" />
+                </label>
+
+                <button id="uploadProductImageBtn" type="button" class="upload-send-btn">
+                  Enviar imagem
+                </button>
+              </div>
+
+              <small class="upload-help">
+                Primeiro clique em <strong>Escolher imagem</strong>, depois em <strong>Enviar imagem</strong>.
+                A URL será preenchida automaticamente.
+              </small>
+            </div>
+          </label>
+
+          <label class="full">
+            Descrição
+            <textarea id="productDescription" rows="4" required placeholder="Descrição do produto"></textarea>
+          </label>
+
+          <label>
+            Produto ativo
+            <select id="productActive">
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </label>
+
+          <label>
+            Destaque
+            <select id="productFeatured">
+              <option value="false">Não</option>
+              <option value="true">Sim</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit">Salvar produto</button>
+          <button type="button" class="secondary" id="clearProductForm">Limpar</button>
+        </div>
+
         <section class="product-variants-section">
           <div class="variants-section-header">
             <div>
@@ -63,11 +151,7 @@
               <h3>Variações do produto</h3>
             </div>
 
-            <button
-              id="newVariantButton"
-              class="secondary"
-              type="button"
-            >
+            <button id="newVariantButton" class="secondary" type="button">
               Nova variação
             </button>
           </div>
@@ -75,136 +159,90 @@
           <input id="variantId" type="hidden">
           <input id="variantProductId" type="hidden">
 
-          <div id="variantForm" class="variant-form">
-            <div class="variant-form-title">
-              <div>
-                <strong id="variantFormTitle">
-                  Adicionar variação
-                </strong>
+          <div id="variantNoProduct" class="variants-message">
+            Salve ou edite um produto para cadastrar e gerenciar suas variações.
+          </div>
 
-                <span id="variantFormSubtitle">
-                  Salve o produto primeiro e depois cadastre as variações.
-                </span>
+          <div id="variantManager" class="hidden">
+            <div id="variantForm" class="variant-form">
+              <div class="variant-form-title">
+                <div>
+                  <strong id="variantFormTitle">Adicionar variação</strong>
+                  <span id="variantFormSubtitle">Cadastre uma nova opção para este produto.</span>
+                </div>
+
+                <button id="cancelVariantEdit" class="variant-cancel-edit hidden" type="button">
+                  Cancelar edição
+                </button>
               </div>
 
-              <button
-                id="cancelVariantEdit"
-                class="variant-cancel-edit hidden"
-                type="button"
-              >
-                Cancelar edição
-              </button>
+              <div class="variant-form-grid">
+                <label>
+                  Cor ou nome
+                  <input id="variantColor" type="text" placeholder="Ex: Azul">
+                </label>
+
+                <label>
+                  SKU
+                  <input id="variantSku" type="text" placeholder="Ex: CANECA-AZUL">
+                </label>
+
+                <label>
+                  Preço
+                  <input id="variantPrice" type="number" min="0" step="0.01" placeholder="37.90">
+                </label>
+
+                <label>
+                  Preço anterior
+                  <input id="variantOldPrice" type="number" min="0" step="0.01" placeholder="39.90">
+                </label>
+
+                <label>
+                  Estoque
+                  <input id="variantStock" type="number" min="0" step="1" value="0">
+                </label>
+
+                <label>
+                  Status
+                  <select id="variantActive">
+                    <option value="true">Ativa</option>
+                    <option value="false">Inativa</option>
+                  </select>
+                </label>
+
+                <label class="variant-image-field">
+                  URL da imagem
+                  <input id="variantImageUrl" type="url" placeholder="https://...">
+                </label>
+
+                <div class="variant-image-preview-box">
+                  <span>Prévia</span>
+                  <div class="variant-image-preview">
+                    <img id="variantImagePreview" class="hidden" src="" alt="Prévia da variação">
+                    <div id="variantImagePlaceholder">
+                      <span>Nenhuma imagem</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button id="saveVariantButton" type="button">
+                  <span id="saveVariantButtonText">Adicionar variação</span>
+                </button>
+              </div>
             </div>
 
-            <div class="variant-form-grid">
-              <label>
-                Cor ou nome
-                <input
-                  id="variantColor"
-                  type="text"
-                  placeholder="Ex: Azul"
-                >
-              </label>
-
-              <label>
-                SKU
-                <input
-                  id="variantSku"
-                  type="text"
-                  placeholder="Ex: CANECA-AZUL"
-                >
-              </label>
-
-              <label>
-                Preço
-                <input
-                  id="variantPrice"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="37.90"
-                >
-              </label>
-
-              <label>
-                Preço anterior
-                <input
-                  id="variantOldPrice"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="39.90"
-                >
-              </label>
-
-              <label>
-                Estoque
-                <input
-                  id="variantStock"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value="0"
-                >
-              </label>
-
-              <label>
-                Status
-                <select id="variantActive">
-                  <option value="true">Ativa</option>
-                  <option value="false">Inativa</option>
-                </select>
-              </label>
-
-              <label class="full">
-                URL da imagem
-                <input
-                  id="variantImageUrl"
-                  type="url"
-                  placeholder="https://..."
-                >
-              </label>
+            <div class="variants-list-header">
+              <strong>Variações cadastradas</strong>
+              <span id="variantsCount">0 variações</span>
             </div>
 
-            <div class="form-actions">
-              <button
-                id="saveVariantButton"
-                type="button"
-              >
-                <span id="saveVariantButtonText">
-                  Adicionar variação
-                </span>
-              </button>
-            </div>
+            <div id="variantsLoading" class="variants-message hidden">Carregando variações...</div>
+            <div id="variantsEmpty" class="variants-message hidden">Nenhuma variação cadastrada.</div>
+            <div id="variantsList" class="variants-list"></div>
           </div>
-
-          <div class="variants-list-header">
-            <strong>Variações cadastradas</strong>
-            <span id="variantsCount">0 variações</span>
-          </div>
-
-          <div id="variantsLoading" class="variants-message hidden">
-            Carregando variações...
-          </div>
-
-          <div id="variantsEmpty" class="variants-message hidden">
-            Nenhuma variação cadastrada para este produto.
-          </div>
-
-          <div id="variantsList" class="variants-list"></div>
         </section>
-
-        <div class="form-actions">
-          <button type="submit">Salvar produto</button>
-          <button type="button" class="secondary" id="clearProductForm">
-            Limpar
-          </button>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit">Salvar produto</button>
-          <button type="button" class="secondary" id="clearProductForm">Limpar</button>
-        </div>
       </form>
 
       <section class="admin-panel">
@@ -236,12 +274,12 @@
     </section>
   </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/supabase-config.js?v=5"></script>
-<script src="/admin/js/admin-auth.js?v=1"></script>
-<script src="/admin/js/admin.js?v=5"></script>
-<script src="js/catalogo-profissional.js"></script>
-<script src="js/admin-2.js"></script>
-  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-config.js?v=5"></script>
+  <script src="/admin/js/admin-auth.js?v=1"></script>
+  <script src="/admin/js/product-variants.js?v=1"></script>
+  <script src="/admin/js/admin.js?v=6"></script>
+  <script src="js/catalogo-profissional.js"></script>
+  <script src="js/admin-2.js"></script>
 </body>
 </html>
