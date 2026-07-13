@@ -28,8 +28,9 @@ var StoreState = {
     maxPrice: 9999
   },
   selectedProduct: null,
-  addingLock: false
-};
+selectedVariation: null,
+selectedVariationIndex: 0,
+addingLock: false
 
 function $(selector) {
   return document.querySelector(selector);
@@ -128,12 +129,16 @@ function restoreState() {
 
 async function loadProductsFromSupabase() {
   if (!window.mugartSupabase) {
-    showToast("Supabase não carregou na loja. Verifique js/supabase-config.js.", "error");
+    showToast(
+      "Supabase não carregou na loja. Verifique js/supabase-config.js.",
+      "error"
+    );
+
     StoreState.products = [];
     return;
   }
 
-  var result = await mugartSupabase
+  var productsResult = await mugartSupabase
     .from("products")
     .select(`
       id,
@@ -158,28 +163,111 @@ async function loadProductsFromSupabase() {
     .order("featured", { ascending: false })
     .order("created_at", { ascending: false });
 
-  if (result.error) {
-    console.error(result.error);
+  if (productsResult.error) {
+    console.error("Erro ao carregar produtos:", productsResult.error);
+
     showToast("Erro ao carregar produtos da loja.", "error");
+
     StoreState.products = [];
     return;
   }
 
-  StoreState.products = (result.data || []).map(function(product) {
+  var variationsResult = await mugartSupabase
+    .from("product_variations")
+    .select(`
+      id,
+      product_id,
+      color,
+      sku,
+      price,
+      old_price,
+      stock,
+      image_url,
+      active,
+      created_at
+    `)
+    .eq("active", true)
+    .order("created_at", { ascending: true });
+
+  if (variationsResult.error) {
+    console.error(
+      "Erro ao carregar variações:",
+      variationsResult.error
+    );
+
+    showToast(
+      "Os produtos carregaram, mas houve erro ao buscar as variações.",
+      "error"
+    );
+  }
+
+  var variations = variationsResult.data || [];
+
+  StoreState.products = (productsResult.data || []).map(function(product) {
+    var productVariations = variations
+      .filter(function(variation) {
+        return variation.product_id === product.id;
+      })
+      .map(function(variation) {
+        return {
+          id: variation.id,
+          productId: variation.product_id,
+          color: variation.color || "Variação",
+          name: variation.color || "Variação",
+          sku: variation.sku || product.sku || variation.id,
+          price: Number(
+            variation.price !== null && variation.price !== undefined
+              ? variation.price
+              : product.price || 0
+          ),
+          oldPrice: Number(variation.old_price || 0),
+          stock: Number(variation.stock || 0),
+          image: variation.image_url ||
+            product.image_url ||
+            "assets/hero-caneca.png",
+          active: variation.active
+        };
+      });
+
+    var totalVariationStock = productVariations.reduce(
+      function(total, variation) {
+        return total + Number(variation.stock || 0);
+      },
+      0
+    );
+
+    var minimumVariationPrice = productVariations.length
+      ? Math.min.apply(
+          null,
+          productVariations.map(function(variation) {
+            return Number(variation.price || 0);
+          })
+        )
+      : Number(product.price || 0);
+
     return {
       id: product.id,
       sku: product.sku || product.id,
       name: product.name || "Produto sem nome",
-      category: product.categories ? product.categories.name : "Sem categoria",
-      categoryId: product.categories ? product.categories.id : null,
+      category: product.categories
+        ? product.categories.name
+        : "Sem categoria",
+      categoryId: product.categories
+        ? product.categories.id
+        : null,
       color: product.color || "Não informado",
-      price: Number(product.price || 0),
+      price: minimumVariationPrice,
       oldPrice: Number(product.old_price || 0),
-      stock: Number(product.stock || 0),
+      stock: productVariations.length
+        ? totalVariationStock
+        : Number(product.stock || 0),
       image: product.image_url || "assets/hero-caneca.png",
-      description: product.description || "Produto MugArt pronta entrega.",
+      description:
+        product.description ||
+        "Produto MugArt pronta entrega.",
       active: product.active,
       featured: product.featured,
+      variations: productVariations,
       specs: {
         capacidade: "325ml",
         material: "Cerâmica",
@@ -190,11 +278,14 @@ async function loadProductsFromSupabase() {
         product.name || "",
         product.color || "",
         product.categories ? product.categories.name : ""
-      ]
+      ].concat(
+        productVariations.map(function(variation) {
+          return variation.color;
+        })
+      )
     };
   });
 }
-
 function configureMaxPriceFilter() {
   var priceMax = $("#priceMaxFilter");
   var label = $("#priceMaxLabel");
@@ -632,9 +723,16 @@ function bindProductCards() {
         var action = button.dataset.action;
 
         if (action === "add") {
-          addToCart(productId);
-          return;
-        }
+           var product = getProductById(productId);
+         
+           if (productHasVariations(product)) {
+             openProductModal(productId);
+           } else {
+             addToCart(productId);
+           }
+         
+           return;
+         }
 
         if (action === "view") {
           openProductModal(productId);
@@ -657,6 +755,42 @@ function getProductById(productId) {
   return StoreState.products.find(function(product) {
     return product.id === productId;
   });
+}
+
+function getProductVariation(product, variationId) {
+  if (!product || !product.variations) {
+    return null;
+  }
+
+  return product.variations.find(function(variation) {
+    return variation.id === variationId;
+  }) || null;
+}
+
+function getActiveProductOption(product) {
+  if (StoreState.selectedVariation) {
+    return StoreState.selectedVariation;
+  }
+
+  return {
+    id: null,
+    productId: product.id,
+    color: product.color,
+    name: product.color,
+    sku: product.sku,
+    price: product.price,
+    oldPrice: product.oldPrice,
+    stock: product.stock,
+    image: product.image
+  };
+}
+
+function productHasVariations(product) {
+  return Boolean(
+    product &&
+    product.variations &&
+    product.variations.length
+  );
 }
 
 function openProductModal(productId) {
@@ -740,42 +874,26 @@ function openProductModal(productId) {
   });
 }
 
-function closeProductModal() {
+function openProductModal(productId) {
+  var product = getProductById(productId);
   var modal = $("#productModal");
 
-  if (!modal) return;
+  if (!product || !modal) return;
 
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-}
+  StoreState.selectedProduct = product;
+  StoreState.selectedVariationIndex = 0;
 
-function toggleFavorite(productId) {
-  var product = getProductById(productId);
+  StoreState.selectedVariation = productHasVariations(product)
+    ? product.variations[0]
+    : null;
 
-  if (!product) return;
+  renderProductModal();
 
-  var exists = StoreState.favorites.indexOf(productId) >= 0;
-
-  if (exists) {
-    StoreState.favorites = StoreState.favorites.filter(function(id) {
-      return id !== productId;
-    });
-
-    showToast("Produto removido dos favoritos.", "info");
-  } else {
-    StoreState.favorites.push(productId);
-
-    showToast("Produto adicionado aos favoritos.");
-  }
-
-  saveToStorage(MUGART_CONFIG.storageKeys.favorites, StoreState.favorites);
-
-  renderProducts();
-  renderFeaturedProducts();
-  updateCounters();
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
 
   pushDataLayer({
-    event: exists ? "remove_from_wishlist" : "add_to_wishlist",
+    event: "view_item",
     ecommerce: {
       currency: MUGART_CONFIG.currency,
       value: product.price,
@@ -784,7 +902,355 @@ function toggleFavorite(productId) {
   });
 }
 
-function addToCart(productId, quantity) {
+function renderProductModal() {
+  var product = StoreState.selectedProduct;
+  var content = $("#modalContent");
+
+  if (!product || !content) return;
+
+  var option = getActiveProductOption(product);
+  var hasVariations = productHasVariations(product);
+
+  var variationLabel = hasVariations
+    ? option.color
+    : product.color;
+
+  var thumbnailsHtml = "";
+
+  if (hasVariations) {
+    thumbnailsHtml =
+      '<div class="variation-thumbnails">' +
+        product.variations.map(function(variation, index) {
+          var active =
+            StoreState.selectedVariation &&
+            variation.id === StoreState.selectedVariation.id
+              ? "active"
+              : "";
+
+          var soldOut = variation.stock <= 0
+            ? "sold-out"
+            : "";
+
+          return (
+            '<button ' +
+              'class="variation-thumbnail ' +
+                active +
+                " " +
+                soldOut +
+              '" ' +
+              'type="button" ' +
+              'data-variation-index="' +
+                index +
+              '" ' +
+              'aria-label="Selecionar variação ' +
+                variation.color +
+              '">' +
+              '<img src="' +
+                variation.image +
+              '" alt="' +
+                product.name +
+                " " +
+                variation.color +
+              '">' +
+              '<span>' +
+                variation.color +
+              "</span>" +
+              (variation.stock <= 0
+                ? "<small>Esgotada</small>"
+                : "") +
+            "</button>"
+          );
+        }).join("") +
+      "</div>";
+  }
+
+  content.innerHTML =
+    '<div class="modal-product">' +
+
+      '<div class="product-carousel">' +
+        '<div class="modal-product-image">' +
+
+          (hasVariations
+            ? '<button class="carousel-arrow carousel-prev" ' +
+                'id="variationPrev" type="button" ' +
+                'aria-label="Variação anterior">' +
+                '<i class="fa-solid fa-chevron-left"></i>' +
+              "</button>"
+            : "") +
+
+          '<div class="carousel-image-wrapper" id="carouselImageWrapper">' +
+            '<img id="modalVariationImage" ' +
+              'src="' +
+                option.image +
+              '" ' +
+              'alt="' +
+                product.name +
+                " " +
+                variationLabel +
+              '">' +
+          "</div>" +
+
+          (hasVariations
+            ? '<button class="carousel-arrow carousel-next" ' +
+                'id="variationNext" type="button" ' +
+                'aria-label="Próxima variação">' +
+                '<i class="fa-solid fa-chevron-right"></i>' +
+              "</button>"
+            : "") +
+
+        "</div>" +
+
+        (hasVariations
+          ? '<div class="carousel-position">' +
+              '<strong id="carouselCurrent">' +
+                (StoreState.selectedVariationIndex + 1) +
+              "</strong>" +
+              "<span>/</span>" +
+              "<span>" +
+                product.variations.length +
+              "</span>" +
+            "</div>"
+          : "") +
+
+        thumbnailsHtml +
+      "</div>" +
+
+      '<div class="modal-product-info">' +
+        '<span class="product-category">' +
+          product.category +
+        "</span>" +
+
+        "<h2>" +
+          product.name +
+        "</h2>" +
+
+        "<p>" +
+          product.description +
+        "</p>" +
+
+        (hasVariations
+          ? '<div class="selected-variation-box">' +
+              "<small>Variação selecionada</small>" +
+              '<strong id="selectedVariationName">' +
+                option.color +
+              "</strong>" +
+              '<span id="selectedVariationSku">SKU: ' +
+                option.sku +
+              "</span>" +
+            "</div>"
+          : "") +
+
+        '<div class="modal-price">' +
+          '<strong id="modalVariationPrice">' +
+            formatMoney(option.price) +
+          "</strong>" +
+
+          (option.oldPrice &&
+          option.oldPrice > option.price
+            ? '<small id="modalVariationOldPrice">' +
+                formatMoney(option.oldPrice) +
+              "</small>"
+            : "") +
+        "</div>" +
+
+        '<div id="modalVariationStock" ' +
+          'class="modal-stock ' +
+          (option.stock <= 3 ? "low" : "") +
+        '">' +
+          (option.stock > 0
+            ? option.stock +
+              " unidade(s) disponível(is)"
+            : "Variação esgotada") +
+        "</div>" +
+
+        '<div class="modal-specs">' +
+          Object.keys(product.specs).map(function(key) {
+            return (
+              "<div>" +
+                "<span>" +
+                  key +
+                "</span>" +
+                "<strong>" +
+                  product.specs[key] +
+                "</strong>" +
+              "</div>"
+            );
+          }).join("") +
+        "</div>" +
+
+        '<div class="modal-actions">' +
+          '<button class="add-cart-btn" ' +
+            'id="modalAddCart" ' +
+            'type="button" ' +
+            (option.stock <= 0 ? "disabled" : "") +
+          ">" +
+            (option.stock > 0
+              ? "Adicionar ao carrinho"
+              : "Variação esgotada") +
+          "</button>" +
+
+          '<button class="whatsapp-product-btn" ' +
+            'id="modalWhatsapp" type="button">' +
+            "Consultar no WhatsApp" +
+          "</button>" +
+        "</div>" +
+      "</div>" +
+    "</div>";
+
+  bindProductModalActions();
+  bindVariationCarousel();
+}
+
+function bindProductModalActions() {
+  var product = StoreState.selectedProduct;
+  var option = getActiveProductOption(product);
+
+  var modalClose = $("#modalClose");
+  var modalAddCart = $("#modalAddCart");
+  var modalWhatsapp = $("#modalWhatsapp");
+
+  if (modalClose) {
+    modalClose.onclick = closeProductModal;
+  }
+
+  if (modalAddCart) {
+    modalAddCart.onclick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      addToCart(
+        product.id,
+        1,
+        StoreState.selectedVariation
+          ? StoreState.selectedVariation.id
+          : null
+      );
+    };
+  }
+
+  if (modalWhatsapp) {
+    modalWhatsapp.onclick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      sendProductToWhatsapp(
+        product.id,
+        option.id
+      );
+    };
+  }
+}
+
+function bindVariationCarousel() {
+  var product = StoreState.selectedProduct;
+
+  if (!productHasVariations(product)) {
+    return;
+  }
+
+  var previousButton = $("#variationPrev");
+  var nextButton = $("#variationNext");
+  var imageWrapper = $("#carouselImageWrapper");
+
+  if (previousButton) {
+    previousButton.onclick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      selectPreviousVariation();
+    };
+  }
+
+  if (nextButton) {
+    nextButton.onclick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      selectNextVariation();
+    };
+  }
+
+  $all("[data-variation-index]").forEach(function(button) {
+    button.addEventListener("click", function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      selectVariationByIndex(
+        Number(button.dataset.variationIndex)
+      );
+    });
+  });
+
+  if (imageWrapper) {
+    var touchStartX = 0;
+    var touchEndX = 0;
+
+    imageWrapper.addEventListener(
+      "touchstart",
+      function(event) {
+        touchStartX =
+          event.changedTouches[0].screenX;
+      },
+      { passive: true }
+    );
+
+    imageWrapper.addEventListener(
+      "touchend",
+      function(event) {
+        touchEndX =
+          event.changedTouches[0].screenX;
+
+        var distance = touchStartX - touchEndX;
+
+        if (Math.abs(distance) < 45) {
+          return;
+        }
+
+        if (distance > 0) {
+          selectNextVariation();
+        } else {
+          selectPreviousVariation();
+        }
+      },
+      { passive: true }
+    );
+  }
+}
+
+function selectVariationByIndex(index) {
+  var product = StoreState.selectedProduct;
+
+  if (!productHasVariations(product)) return;
+
+  if (index < 0) {
+    index = product.variations.length - 1;
+  }
+
+  if (index >= product.variations.length) {
+    index = 0;
+  }
+
+  StoreState.selectedVariationIndex = index;
+  StoreState.selectedVariation =
+    product.variations[index];
+
+  renderProductModal();
+}
+
+function selectNextVariation() {
+  selectVariationByIndex(
+    StoreState.selectedVariationIndex + 1
+  );
+}
+
+function selectPreviousVariation() {
+  selectVariationByIndex(
+    StoreState.selectedVariationIndex - 1
+  );
+}
+
+
+function addToCart(productId, quantity, variationId) {
   if (StoreState.addingLock) return;
 
   StoreState.addingLock = true;
@@ -795,19 +1261,57 @@ function addToCart(productId, quantity) {
 
   var product = getProductById(productId);
 
+  if (!product) return;
+
+  var variation = variationId
+    ? getProductVariation(product, variationId)
+    : null;
+
+  if (productHasVariations(product) && !variation) {
+    openProductModal(productId);
+
+    showToast(
+      "Escolha uma variação antes de adicionar.",
+      "info"
+    );
+
+    return;
+  }
+
+  var option = variation || {
+    id: null,
+    sku: product.sku,
+    color: product.color,
+    price: product.price,
+    stock: product.stock,
+    image: product.image
+  };
+
   quantity = Number(quantity || 1);
 
-  if (!product || product.stock <= 0) return;
+  if (option.stock <= 0) {
+    showToast("Esta variação está esgotada.", "error");
+    return;
+  }
 
   var existing = StoreState.cart.find(function(item) {
-    return item.productId === productId;
+    return (
+      item.productId === productId &&
+      (item.variationId || null) ===
+        (variationId || null)
+    );
   });
 
   if (existing) {
-    var newQty = Number(existing.quantity || 1) + quantity;
+    var newQty =
+      Number(existing.quantity || 1) + quantity;
 
-    if (newQty > product.stock) {
-      showToast("Quantidade maior que o estoque disponível.", "error");
+    if (newQty > option.stock) {
+      showToast(
+        "Quantidade maior que o estoque disponível.",
+        "error"
+      );
+
       return;
     }
 
@@ -815,6 +1319,7 @@ function addToCart(productId, quantity) {
   } else {
     StoreState.cart.push({
       productId: productId,
+      variationId: variationId || null,
       quantity: quantity
     });
   }
@@ -822,20 +1327,30 @@ function addToCart(productId, quantity) {
   persistCart();
   renderCart();
   updateCounters();
+  closeProductModal();
   openCart();
 
-  showToast("Produto adicionado ao carrinho.");
+  showToast(
+    variation
+      ? "Variação " +
+          variation.color +
+          " adicionada ao carrinho."
+      : "Produto adicionado ao carrinho."
+  );
 
   pushDataLayer({
     event: "add_to_cart",
     ecommerce: {
       currency: MUGART_CONFIG.currency,
-      value: product.price * quantity,
-      items: [
-        Object.assign({}, ga4Item(product), {
-          quantity: quantity
-        })
-      ]
+      value: option.price * quantity,
+      items: [{
+        item_id: option.sku,
+        item_name: product.name,
+        item_category: product.category,
+        item_variant: option.color,
+        price: option.price,
+        quantity: quantity
+      }]
     }
   });
 }
@@ -903,11 +1418,32 @@ function getCartItemsDetailed() {
 
     if (!product) return null;
 
+    var variation = item.variationId
+      ? getProductVariation(
+          product,
+          item.variationId
+        )
+      : null;
+
+    var option = variation || {
+      id: null,
+      color: product.color,
+      sku: product.sku,
+      price: product.price,
+      stock: product.stock,
+      image: product.image
+    };
+
     return {
       productId: item.productId,
-      quantity: item.quantity,
+      variationId: item.variationId || null,
+      quantity: Number(item.quantity || 1),
       product: product,
-      subtotal: product.price * item.quantity
+      variation: variation,
+      option: option,
+      subtotal:
+        Number(option.price || 0) *
+        Number(item.quantity || 1)
     };
   }).filter(Boolean);
 }
@@ -934,82 +1470,240 @@ function renderCart() {
   var items = getCartItemsDetailed();
   var subtotal = getCartSubtotal();
 
-  if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
-  if (checkoutTotal) checkoutTotal.textContent = formatMoney(subtotal);
+  if (subtotalEl) {
+    subtotalEl.textContent = formatMoney(subtotal);
+  }
+
+  if (checkoutTotal) {
+    checkoutTotal.textContent = formatMoney(subtotal);
+  }
 
   if (!items.length) {
     container.innerHTML =
       '<div class="empty-cart">' +
-        '<h4>Seu carrinho está vazio</h4>' +
-        '<p>Adicione canecas pronta entrega para continuar.</p>' +
-      '</div>';
+        "<h4>Seu carrinho está vazio</h4>" +
+        "<p>Adicione canecas pronta entrega para continuar.</p>" +
+      "</div>";
+
     return;
   }
 
   container.innerHTML = items.map(function(item) {
-    return "" +
-      '<div class="cart-item" data-product-id="' + item.product.id + '">' +
-        '<img src="' + item.product.image + '" alt="' + item.product.name + '" />' +
+    var cartKey =
+      item.productId +
+      "::" +
+      (item.variationId || "principal");
+
+    return (
+      '<div class="cart-item" ' +
+        'data-cart-key="' +
+          cartKey +
+        '">' +
+
+        '<img src="' +
+          item.option.image +
+        '" alt="' +
+          item.product.name +
+        '">' +
+
         '<div class="cart-item-info">' +
-          '<h4>' + item.product.name + '</h4>' +
-          '<span>' + item.product.color + " • " + formatMoney(item.product.price) + '</span>' +
+          "<h4>" +
+            item.product.name +
+          "</h4>" +
+
+          "<span>" +
+            item.option.color +
+            " • " +
+            formatMoney(item.option.price) +
+          "</span>" +
+
+          (item.variation
+            ? '<small class="cart-variation-sku">SKU: ' +
+                item.option.sku +
+              "</small>"
+            : "") +
+
           '<div class="cart-item-controls">' +
             '<button type="button" data-cart-action="decrease">−</button>' +
-            '<input type="number" min="1" max="' + item.product.stock + '" value="' + item.quantity + '" data-cart-action="quantity" />' +
+
+            '<input type="number" ' +
+              'min="1" ' +
+              'max="' +
+                item.option.stock +
+              '" ' +
+              'value="' +
+                item.quantity +
+              '" ' +
+              'data-cart-action="quantity">' +
+
             '<button type="button" data-cart-action="increase">+</button>' +
-          '</div>' +
-        '</div>' +
+          "</div>" +
+        "</div>" +
+
         '<div class="cart-item-total">' +
-          '<strong>' + formatMoney(item.subtotal) + '</strong>' +
-          '<button type="button" data-cart-action="remove">Remover</button>' +
-        '</div>' +
-      '</div>';
+          "<strong>" +
+            formatMoney(item.subtotal) +
+          "</strong>" +
+
+          '<button type="button" data-cart-action="remove">' +
+            "Remover" +
+          "</button>" +
+        "</div>" +
+      "</div>"
+    );
   }).join("");
 
   bindCartItemButtons();
 }
 
+
+
 function bindCartItemButtons() {
   $all(".cart-item").forEach(function(itemEl) {
-    var productId = itemEl.dataset.productId;
+    var cartKey = itemEl.dataset.cartKey;
 
     var item = StoreState.cart.find(function(cartItem) {
-      return cartItem.productId === productId;
+      var itemKey =
+        cartItem.productId +
+        "::" +
+        (cartItem.variationId || "principal");
+
+      return itemKey === cartKey;
     });
 
     if (!item) return;
 
-    itemEl.querySelectorAll("[data-cart-action]").forEach(function(control) {
-      if (control.dataset.bound === "true") return;
-      control.dataset.bound = "true";
+    itemEl
+      .querySelectorAll("[data-cart-action]")
+      .forEach(function(control) {
+        if (control.dataset.bound === "true") return;
 
-      control.addEventListener("click", function(event) {
-        event.preventDefault();
-        event.stopPropagation();
+        control.dataset.bound = "true";
 
-        var action = control.dataset.cartAction;
+        control.addEventListener(
+          "click",
+          function(event) {
+            event.preventDefault();
+            event.stopPropagation();
 
-        if (action === "increase") {
-          changeCartQuantity(productId, Number(item.quantity || 1) + 1);
-        }
+            var action =
+              control.dataset.cartAction;
 
-        if (action === "decrease") {
-          changeCartQuantity(productId, Number(item.quantity || 1) - 1);
-        }
+            if (action === "increase") {
+              changeCartItemQuantity(
+                item.productId,
+                item.variationId,
+                Number(item.quantity || 1) + 1
+              );
+            }
 
-        if (action === "remove") {
-          removeFromCart(productId);
+            if (action === "decrease") {
+              changeCartItemQuantity(
+                item.productId,
+                item.variationId,
+                Number(item.quantity || 1) - 1
+              );
+            }
+
+            if (action === "remove") {
+              removeCartItem(
+                item.productId,
+                item.variationId
+              );
+            }
+          }
+        );
+
+        if (
+          control.dataset.cartAction === "quantity"
+        ) {
+          control.addEventListener(
+            "change",
+            function(event) {
+              changeCartItemQuantity(
+                item.productId,
+                item.variationId,
+                event.target.value
+              );
+            }
+          );
         }
       });
-
-      if (control.dataset.cartAction === "quantity") {
-        control.addEventListener("change", function(event) {
-          changeCartQuantity(productId, event.target.value);
-        });
-      }
-    });
   });
 }
+
+function removeCartItem(productId, variationId) {
+  StoreState.cart = StoreState.cart.filter(
+    function(item) {
+      return !(
+        item.productId === productId &&
+        (item.variationId || null) ===
+          (variationId || null)
+      );
+    }
+  );
+
+  persistCart();
+  renderCart();
+  updateCounters();
+
+  showToast(
+    "Produto removido do carrinho.",
+    "info"
+  );
+}
+
+function changeCartItemQuantity(
+  productId,
+  variationId,
+  quantity
+) {
+  var product = getProductById(productId);
+
+  if (!product) return;
+
+  var variation = variationId
+    ? getProductVariation(product, variationId)
+    : null;
+
+  var stock = variation
+    ? variation.stock
+    : product.stock;
+
+  var item = StoreState.cart.find(function(cartItem) {
+    return (
+      cartItem.productId === productId &&
+      (cartItem.variationId || null) ===
+        (variationId || null)
+    );
+  });
+
+  if (!item) return;
+
+  var newQuantity = Number(quantity);
+
+  if (newQuantity <= 0) {
+    removeCartItem(productId, variationId);
+    return;
+  }
+
+  if (newQuantity > stock) {
+    showToast(
+      "Quantidade maior que o estoque disponível.",
+      "error"
+    );
+
+    renderCart();
+    return;
+  }
+
+  item.quantity = newQuantity;
+
+  persistCart();
+  renderCart();
+  updateCounters();
+}
+
 
 function bindCartActions() {
   var checkoutBtn = $("#checkoutBtn");
@@ -1094,29 +1788,50 @@ function closeCheckout() {
   // Checkout antigo removido.
 }
 
-function sendProductToWhatsapp(productId) {
+function sendProductToWhatsapp(
+  productId,
+  variationId
+) {
   var product = getProductById(productId);
 
   if (!product) return;
 
+  var variation = variationId
+    ? getProductVariation(product, variationId)
+    : null;
+
+  var option = variation || {
+    sku: product.sku,
+    color: product.color,
+    price: product.price,
+    stock: product.stock
+  };
+
   var message =
     "Olá! Vim pela loja da MugArt e gostaria de saber mais sobre este produto:\n\n" +
     "Produto: " + product.name + "\n" +
-    "SKU: " + product.sku + "\n" +
-    "Cor: " + product.color + "\n" +
-    "Preço: " + formatMoney(product.price) + "\n" +
-    "Estoque: " + product.stock + "\n\n" +
+    "Variação: " + option.color + "\n" +
+    "SKU: " + option.sku + "\n" +
+    "Preço: " + formatMoney(option.price) + "\n" +
+    "Estoque: " + option.stock + "\n\n" +
     "Link da página: " + window.location.href;
 
   pushDataLayer({
     event: "click_whatsapp_product",
     product_id: product.id,
+    variation_id: variation
+      ? variation.id
+      : null,
     product_name: product.name,
-    product_price: product.price
+    item_variant: option.color,
+    product_price: option.price
   });
 
   window.open(
-    "https://wa.me/" + MUGART_CONFIG.whatsapp + "?text=" + encodeURIComponent(message),
+    "https://wa.me/" +
+      MUGART_CONFIG.whatsapp +
+      "?text=" +
+      encodeURIComponent(message),
     "_blank"
   );
 }
