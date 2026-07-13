@@ -239,7 +239,7 @@ async function loadProductsFromSupabase() {
                 id: null,
                 productId: product.id,
                 color: product.color || "Modelo principal",
-                name: product.color || "Modelo principal",
+                name: "Modelo principal",
                 sku: product.sku || product.id,
                 price: Number(product.price || 0),
                 oldPrice: Number(product.old_price || 0),
@@ -750,10 +750,19 @@ function getProductById(productId) {
 
 
 function getProductVariation(product, variationId) {
-  if (!product || !Array.isArray(product.variations)) return null;
+  if (
+    !product ||
+    !Array.isArray(product.variations) ||
+    !variationId
+  ) {
+    return null;
+  }
 
   return product.variations.find(function(variation) {
-    return String(variation.id) === String(variationId);
+    return (
+      !variation.isMainProduct &&
+      String(variation.id) === String(variationId)
+    );
   }) || null;
 }
 
@@ -927,7 +936,9 @@ function bindProductModalActions() {
   var modalAddCart = $("#modalAddCart");
   var modalWhatsapp = $("#modalWhatsapp");
 
-  if (modalClose) modalClose.onclick = closeProductModal;
+  if (modalClose) {
+    modalClose.onclick = closeProductModal;
+  }
 
   if (modalAddCart) {
     modalAddCart.onclick = function(event) {
@@ -935,18 +946,25 @@ function bindProductModalActions() {
       event.stopPropagation();
 
       addToCart(
-  product.id,
-     1,
-     StoreState.selectedVariation &&
-     !StoreState.selectedVariation.isMainProduct
-       ? StoreState.selectedVariation.id
-       : null
-   );
+        product.id,
+        1,
+        StoreState.selectedVariation &&
+        !StoreState.selectedVariation.isMainProduct
+          ? StoreState.selectedVariation.id
+          : null
+      );
+    };
+  }
+
   if (modalWhatsapp) {
     modalWhatsapp.onclick = function(event) {
       event.preventDefault();
       event.stopPropagation();
-      sendProductToWhatsapp(product.id, option.id);
+
+      sendProductToWhatsapp(
+        product.id,
+        option && !option.isMainProduct ? option.id : null
+      );
     };
   }
 }
@@ -1085,30 +1103,36 @@ function addToCart(productId, quantity, variationId) {
 
   if (!product) return;
 
-  var variation = null;
+  var variation = variationId
+    ? getProductVariation(product, variationId)
+    : null;
 
-   if (variationId) {
-     variation = getProductVariation(product, variationId);
-   } else if (
-     StoreState.selectedVariation &&
-     StoreState.selectedVariation.isMainProduct
-   ) {
-     variation = StoreState.selectedVariation;
-   }
+  var selectedMainProduct =
+    StoreState.selectedVariation &&
+    StoreState.selectedVariation.isMainProduct
+      ? StoreState.selectedVariation
+      : null;
 
-  if (productHasVariations(product) && !variation) {
+  if (
+    productHasVariations(product) &&
+    !variation &&
+    !selectedMainProduct
+  ) {
     openProductModal(productId);
-    showToast("Escolha uma variação antes de adicionar.", "info");
+    showToast("Escolha uma opção antes de adicionar.", "info");
     return;
   }
 
-  var option = variation || {
+  var option = variation || selectedMainProduct || {
     id: null,
     sku: product.sku,
     color: product.color,
+    name: product.color,
     price: product.price,
+    oldPrice: product.oldPrice,
     stock: product.stock,
-    image: product.image
+    image: product.image,
+    isMainProduct: true
   };
 
   quantity = Number(quantity || 1);
@@ -1118,31 +1142,45 @@ function addToCart(productId, quantity, variationId) {
     return;
   }
 
+  var cartVariationId =
+    option.isMainProduct ? null : option.id;
+
   var existing = StoreState.cart.find(function(item) {
     return (
       String(item.productId) === String(productId) &&
-      String(item.variationId || "") === String(variationId || "")
+      String(item.variationId || "") ===
+        String(cartVariationId || "")
     );
   });
 
   if (existing) {
-    var newQty = Number(existing.quantity || 1) + quantity;
+    var newQty =
+      Number(existing.quantity || 1) + quantity;
 
     if (newQty > option.stock) {
-      showToast("Quantidade maior que o estoque disponível.", "error");
+      showToast(
+        "Quantidade maior que o estoque disponível.",
+        "error"
+      );
       return;
     }
 
     existing.quantity = newQty;
+    existing.unitPrice = option.price;
+    existing.variationColor = option.color;
+    existing.variationSku = option.sku;
+    existing.image = option.image;
   } else {
     StoreState.cart.push({
-  productId: productId,
-  variationId:
-    variation && !variation.isMainProduct
-      ? variation.id
-      : null,
-  quantity: quantity
-});
+      productId: productId,
+      variationId: cartVariationId,
+      variationColor: option.color,
+      variationSku: option.sku,
+      unitPrice: option.price,
+      image: option.image,
+      quantity: quantity
+    });
+  }
 
   persistCart();
   renderCart();
@@ -1151,9 +1189,11 @@ function addToCart(productId, quantity, variationId) {
   openCart();
 
   showToast(
-    variation
-      ? "Variação " + variation.color + " adicionada ao carrinho."
-      : "Produto adicionado ao carrinho."
+    option.isMainProduct
+      ? "Produto principal adicionado ao carrinho."
+      : "Variação " +
+          option.color +
+          " adicionada ao carrinho."
   );
 
   pushDataLayer({
