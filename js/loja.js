@@ -171,7 +171,7 @@ async function loadProductsFromSupabase() {
     var variations = [];
 
     var variationsResult = await window.mugartSupabase
-      .from("product_variations")
+      .from("product_variants")
       .select(`
         id,
         product_id,
