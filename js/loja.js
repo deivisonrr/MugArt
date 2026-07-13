@@ -220,19 +220,6 @@ async function loadProductsFromSupabase() {
       var displayPrice = Number(product.price || 0);
       var displayStock = Number(product.stock || 0);
 
-      if (productVariations.length) {
-        displayPrice = Math.min.apply(
-          null,
-          productVariations.map(function(variation) {
-            return variation.price;
-          })
-        );
-
-        displayStock = productVariations.reduce(function(total, variation) {
-          return total + variation.stock;
-        }, 0);
-      }
-
       return {
         id: product.id,
         sku: product.sku || product.id,
@@ -247,8 +234,23 @@ async function loadProductsFromSupabase() {
         description: product.description || "Produto MugArt pronta entrega.",
         active: product.active,
         featured: product.featured,
-        variations: productVariations,
-        specs: {
+          variations: [
+              {
+                id: null,
+                productId: product.id,
+                color: product.color || "Modelo principal",
+                name: product.color || "Modelo principal",
+                sku: product.sku || product.id,
+                price: Number(product.price || 0),
+                oldPrice: Number(product.old_price || 0),
+                stock: Number(product.stock || 0),
+                image: product.image_url || "assets/hero-caneca.png",
+                active: true,
+                isMainProduct: true
+              }
+            ].concat(productVariations),
+         
+          specs: {
           capacidade: "325ml",
           material: "Cerâmica",
           acabamento: "Brilhante",
@@ -933,13 +935,13 @@ function bindProductModalActions() {
       event.stopPropagation();
 
       addToCart(
-        product.id,
-        1,
-        StoreState.selectedVariation ? StoreState.selectedVariation.id : null
-      );
-    };
-  }
-
+  product.id,
+     1,
+     StoreState.selectedVariation &&
+     !StoreState.selectedVariation.isMainProduct
+       ? StoreState.selectedVariation.id
+       : null
+   );
   if (modalWhatsapp) {
     modalWhatsapp.onclick = function(event) {
       event.preventDefault();
@@ -1083,9 +1085,16 @@ function addToCart(productId, quantity, variationId) {
 
   if (!product) return;
 
-  var variation = variationId
-    ? getProductVariation(product, variationId)
-    : null;
+  var variation = null;
+
+   if (variationId) {
+     variation = getProductVariation(product, variationId);
+   } else if (
+     StoreState.selectedVariation &&
+     StoreState.selectedVariation.isMainProduct
+   ) {
+     variation = StoreState.selectedVariation;
+   }
 
   if (productHasVariations(product) && !variation) {
     openProductModal(productId);
@@ -1127,15 +1136,13 @@ function addToCart(productId, quantity, variationId) {
     existing.quantity = newQty;
   } else {
     StoreState.cart.push({
-      productId: productId,
-      variationId: variationId || null,
-      quantity: quantity,
-      variationColor: option.color,
-      variationSku: option.sku,
-      unitPrice: option.price,
-      image: option.image
-    });
-  }
+  productId: productId,
+  variationId:
+    variation && !variation.isMainProduct
+      ? variation.id
+      : null,
+  quantity: quantity
+});
 
   persistCart();
   renderCart();
