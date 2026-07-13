@@ -1029,13 +1029,53 @@ function selectVariationByIndex(index) {
 
   if (!productHasVariations(product)) return;
 
-  if (index < 0) index = product.variations.length - 1;
-  if (index >= product.variations.length) index = 0;
+  if (index < 0) {
+    index = product.variations.length - 1;
+  }
+
+  if (index >= product.variations.length) {
+    index = 0;
+  }
 
   StoreState.selectedVariationIndex = index;
   StoreState.selectedVariation = product.variations[index];
 
+  var selectedOption = StoreState.selectedVariation;
+
   renderProductModal();
+
+  pushDataLayer({
+    event: "select_item_variant",
+
+    product_id: product.id,
+    product_name: product.name,
+
+    variation_id: selectedOption.isMainProduct
+      ? null
+      : selectedOption.id,
+
+    item_id: selectedOption.sku,
+    item_name: product.name,
+    item_category: product.category,
+    item_variant: selectedOption.color,
+    price: selectedOption.price,
+    stock: selectedOption.stock,
+
+    ecommerce: {
+      currency: MUGART_CONFIG.currency,
+      value: selectedOption.price,
+      items: [
+        {
+          item_id: selectedOption.sku,
+          item_name: product.name,
+          item_category: product.category,
+          item_variant: selectedOption.color,
+          price: selectedOption.price,
+          quantity: 1
+        }
+      ]
+    }
+  });
 }
 
 function selectNextVariation() {
