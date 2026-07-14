@@ -435,20 +435,65 @@ main {
 }
 
 .product-share-buttons button {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255,255,255,.14);
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.15);
   border-radius: 50%;
-  background: rgba(255,255,255,.05);
-  color: white;
+  background: #181818;
   cursor: pointer;
+  transition: all .25s ease;
+  font-size: 18px;
 }
 
-.product-share-buttons button:hover {
-  background: var(--cyan);
-  color: #111;
+/* WhatsApp */
+#shareWhatsapp{
+    color:#25D366;
+}
+
+#shareWhatsapp:hover{
+    background:#25D366;
+    color:#fff;
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(37,211,102,.45);
+}
+
+/* Facebook */
+#shareFacebook{
+    color:#1877F2;
+}
+
+#shareFacebook:hover{
+    background:#1877F2;
+    color:#fff;
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(24,119,242,.45);
+}
+
+/* Pinterest */
+#sharePinterest{
+    color:#E60023;
+}
+
+#sharePinterest:hover{
+    background:#E60023;
+    color:#fff;
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(230,0,35,.45);
+}
+
+/* Copiar Link */
+#copyProductLink{
+    color:#FFD400;
+}
+
+#copyProductLink:hover{
+    background:#FFD400;
+    color:#111;
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(255,212,0,.45);
 }
 
 .product-share small {
