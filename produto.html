@@ -19,6 +19,7 @@
   <meta id="ogUrl" property="og:url" content="https://mugart.com.br/produto.html">
   <meta property="og:type" content="product">
   <meta property="og:site_name" content="MugArt">
+  <meta property="og:locale" content="pt_BR">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta id="twitterTitle" name="twitter:title" content="Produto | MugArt">
@@ -28,7 +29,7 @@
   <link rel="icon" href="assets/favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="css/header-account.css?v=4">
-  <link rel="stylesheet" href="css/produto.css?v=1">
+  <link rel="stylesheet" href="css/produto.css?v=2">
 
   <script id="productStructuredData" type="application/ld+json">{}</script>
 </head>
@@ -68,12 +69,35 @@
         <span>›</span>
         <a href="loja.html">Loja</a>
         <span>›</span>
+        <span id="breadcrumbCategory">Canecas</span>
+        <span>›</span>
         <span id="breadcrumbProduct">Produto</span>
       </nav>
 
       <section class="product-detail">
         <div class="product-media-column">
-          <div class="product-main-media" id="productMainMedia"></div>
+          <div class="product-main-media-shell">
+            <button id="previousMedia" class="product-media-arrow previous" type="button" aria-label="Mídia anterior">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+
+            <div
+              class="product-main-media"
+              id="productMainMedia"
+              aria-live="polite"
+            ></div>
+
+            <button id="nextMedia" class="product-media-arrow next" type="button" aria-label="Próxima mídia">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+
+            <button id="openMediaLightbox" class="product-zoom-button" type="button">
+              <i class="fa-solid fa-expand"></i>
+              Ampliar
+            </button>
+          </div>
+
+          <div class="product-media-position" id="productMediaPosition"></div>
           <div class="product-media-thumbnails" id="productMediaThumbnails"></div>
         </div>
 
@@ -107,11 +131,93 @@
             Consultar pelo WhatsApp
           </button>
 
+          <section class="product-share">
+            <strong>Compartilhar</strong>
+
+            <div class="product-share-buttons">
+              <button id="shareWhatsapp" type="button" aria-label="Compartilhar no WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+              </button>
+
+              <button id="shareFacebook" type="button" aria-label="Compartilhar no Facebook">
+                <i class="fa-brands fa-facebook-f"></i>
+              </button>
+
+              <button id="sharePinterest" type="button" aria-label="Compartilhar no Pinterest">
+                <i class="fa-brands fa-pinterest-p"></i>
+              </button>
+
+              <button id="copyProductLink" type="button" aria-label="Copiar link">
+                <i class="fa-solid fa-link"></i>
+              </button>
+            </div>
+
+            <small id="copyProductLinkStatus"></small>
+          </section>
+
           <div class="product-benefits">
             <div><i class="fa-solid fa-truck-fast"></i> Envio para todo o Brasil</div>
             <div><i class="fa-solid fa-credit-card"></i> Pix e cartão</div>
             <div><i class="fa-solid fa-shield-halved"></i> Compra segura</div>
+            <div><i class="fa-solid fa-mug-hot"></i> Produção com qualidade MugArt</div>
           </div>
+        </div>
+      </section>
+
+      <section class="product-information">
+        <div>
+          <span>Material</span>
+          <strong>Cerâmica</strong>
+        </div>
+        <div>
+          <span>Capacidade</span>
+          <strong>325 ml</strong>
+        </div>
+        <div>
+          <span>Acabamento</span>
+          <strong>Brilhante</strong>
+        </div>
+        <div>
+          <span>Personalização</span>
+          <strong>Sublimação</strong>
+        </div>
+      </section>
+
+      <section class="related-products-section">
+        <div class="section-heading">
+          <span>Recomendados</span>
+          <h2>Você também pode gostar</h2>
+        </div>
+
+        <div id="relatedProducts" class="related-products-grid"></div>
+      </section>
+
+      <section class="product-faq-section">
+        <div class="section-heading">
+          <span>Dúvidas frequentes</span>
+          <h2>Informações importantes</h2>
+        </div>
+
+        <div class="product-faq-list">
+          <details>
+            <summary>Como funciona o prazo de produção?</summary>
+            <p>O prazo de produção começa após a confirmação do pagamento e da aprovação da arte. O prazo de entrega é calculado separadamente no checkout.</p>
+          </details>
+
+          <details>
+            <summary>Posso enviar minha própria arte?</summary>
+            <p>Sim. Você pode enviar sua arte pela área de personalização do site ou encaminhá-la durante o atendimento pelo WhatsApp.</p>
+          </details>
+
+          <details>
+            <summary>As cores podem variar?</summary>
+            <p>Pequenas diferenças de tonalidade podem ocorrer por causa da tela do dispositivo e do processo de impressão.</p>
+          </details>
+
+          <details>
+            <summary>Como devo cuidar da caneca?</summary>
+            <p>Evite produtos abrasivos e impactos. Para preservar melhor a estampa, lave com esponja macia.</p>
+          </details>
         </div>
       </section>
     </article>
@@ -122,17 +228,42 @@
       <h2>Seu carrinho</h2>
       <button id="closeProductCart" type="button">×</button>
     </div>
+
     <div id="productCartItems" class="product-cart-items"></div>
+
     <div class="product-cart-footer">
-      <div><span>Subtotal</span><strong id="productCartSubtotal">R$ 0,00</strong></div>
+      <div>
+        <span>Subtotal</span>
+        <strong id="productCartSubtotal">R$ 0,00</strong>
+      </div>
+
       <a href="checkout.html">Finalizar compra</a>
     </div>
   </aside>
+
   <div id="productCartOverlay" class="product-cart-overlay"></div>
+
+  <div id="mediaLightbox" class="media-lightbox" aria-hidden="true">
+    <button id="closeMediaLightbox" class="media-lightbox-close" type="button" aria-label="Fechar">
+      ×
+    </button>
+
+    <button id="lightboxPrevious" class="media-lightbox-arrow previous" type="button" aria-label="Mídia anterior">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+
+    <div id="mediaLightboxContent" class="media-lightbox-content"></div>
+
+    <button id="lightboxNext" class="media-lightbox-arrow next" type="button" aria-label="Próxima mídia">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  </div>
+
+  <div id="productToast" class="product-toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/supabase-config.js?v=5"></script>
-  <script src="/js/produto.js?v=1"></script>
+  <script src="/js/produto.js?v=2"></script>
   <script src="/js/analytics-loader.js?v=3"></script>
   <script src="/js/cookie-consent.js?v=1"></script>
 </body>
