@@ -26,10 +26,8 @@ function slugify(text) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9._~-]+/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^[-._~]+|[-._~]+$/g, "");
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
 }
 
 async function initializeAdminFeatures() {
@@ -185,6 +183,17 @@ function generateProductSlug(value) {
   return slugify(value).slice(0, 180);
 }
 
+function sanitizeProductSlug(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFC")
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{L}\p{N}._~+@-]+/gu, "")
+    .replace(/-+/g, "-")
+    .replace(/^[-._~+@]+|[-._~+@]+$/g, "")
+    .slice(0, 180);
+}
+
 function bindProductSeoFields() {
   const nameInput = $("#productName");
   const slugInput = $("#productSlug");
@@ -207,7 +216,7 @@ function bindProductSeoFields() {
 
   slugInput?.addEventListener("input", () => {
     slugInput.dataset.edited = "true";
-    slugInput.value = generateProductSlug(slugInput.value);
+    slugInput.value = sanitizeProductSlug(slugInput.value);
     updateProductSeoPreview();
   });
 
