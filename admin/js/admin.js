@@ -233,7 +233,11 @@ function updateProductSeoPreview() {
   const generatedUrl =
     `https://mugart.com.br/produto.html?slug=${encodeURIComponent(slug)}`;
 
-  $("#slugPreview").textContent = slug;
+  const previewUrl =
+    "https://mugart.com.br/produto.html?slug=" + slug;
+
+$("#seoPreviewUrl").textContent =
+    $("#productCanonicalUrl").value.trim() || previewUrl;
   $("#seoTitleCount").textContent = String(
     $("#productSeoTitle")?.value.length || 0
   );
