@@ -29,7 +29,7 @@
   <link rel="icon" href="assets/favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="css/header-account.css?v=4">
-  <link rel="stylesheet" href="css/produto.css?v=2">
+  <link rel="stylesheet" href="css/produto.css?v=3">
 
   <script id="productStructuredData" type="application/ld+json">{}</script>
 </head>
@@ -77,6 +77,17 @@
       <section class="product-detail">
         <div class="product-media-column">
           <div class="product-main-media-shell">
+            <span id="productBadge" class="product-badge hidden"></span>
+
+            <button
+              id="favoriteProductButton"
+              class="favorite-product-button"
+              type="button"
+              aria-label="Adicionar aos favoritos"
+              aria-pressed="false"
+            >
+              <i class="fa-regular fa-heart"></i>
+            </button>
             <button id="previousMedia" class="product-media-arrow previous" type="button" aria-label="Mídia anterior">
               <i class="fa-solid fa-chevron-left"></i>
             </button>
@@ -113,6 +124,14 @@
             <small id="productOldPrice"></small>
           </div>
 
+          <div id="productInstallments" class="product-installments"></div>
+          <div id="productPixDiscount" class="product-pix-discount"></div>
+
+          <div id="productCountdown" class="product-countdown hidden">
+            <span>Oferta termina em</span>
+            <strong id="productCountdownValue">00d 00h 00m 00s</strong>
+          </div>
+
           <div id="productStock" class="product-stock"></div>
 
           <div class="product-purchase-row">
@@ -125,6 +144,36 @@
               Adicionar ao carrinho
             </button>
           </div>
+
+
+          <section class="product-shipping-calculator">
+            <strong>Calcular frete</strong>
+
+            <div class="product-shipping-form">
+              <input
+                id="shippingPostalCode"
+                type="text"
+                inputmode="numeric"
+                maxlength="9"
+                placeholder="Digite seu CEP"
+              >
+
+              <button id="calculateProductShipping" type="button">
+                Calcular
+              </button>
+            </div>
+
+            <small id="shippingPostalCodeHint">
+              Informe o CEP para consultar prazo e valor.
+            </small>
+
+            <div id="productShippingLoading" class="shipping-message hidden">
+              Calculando frete...
+            </div>
+
+            <div id="productShippingError" class="shipping-message error hidden"></div>
+            <div id="productShippingOptions" class="product-shipping-options"></div>
+          </section>
 
           <button id="productWhatsapp" class="product-whatsapp" type="button">
             <i class="fa-brands fa-whatsapp"></i>
@@ -263,7 +312,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/supabase-config.js?v=5"></script>
-  <script src="/js/produto.js?v=3"></script>
+  <script src="/js/produto.js?v=4"></script>
   <script src="/js/analytics-loader.js?v=3"></script>
   <script src="/js/cookie-consent.js?v=1"></script>
 </body>
