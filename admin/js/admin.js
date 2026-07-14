@@ -183,17 +183,6 @@ function generateProductSlug(value) {
   return slugify(value).slice(0, 180);
 }
 
-function sanitizeProductSlug(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFC")
-    .replace(/\s+/g, "-")
-    .replace(/[^\p{L}\p{N}._~+@-]+/gu, "")
-    .replace(/-+/g, "-")
-    .replace(/^[-._~+@]+|[-._~+@]+$/g, "")
-    .slice(0, 180);
-}
-
 function bindProductSeoFields() {
   const nameInput = $("#productName");
   const slugInput = $("#productSlug");
@@ -215,8 +204,12 @@ function bindProductSeoFields() {
   });
 
   slugInput?.addEventListener("input", () => {
+    /*
+     * Quando o usuário edita manualmente, preserva exatamente
+     * os caracteres digitados. A codificação segura acontece
+     * somente ao gerar a URL final com encodeURIComponent.
+     */
     slugInput.dataset.edited = "true";
-    slugInput.value = sanitizeProductSlug(slugInput.value);
     updateProductSeoPreview();
   });
 
@@ -233,28 +226,52 @@ function bindProductSeoFields() {
 }
 
 function updateProductSeoPreview() {
-  const productName = $("#productName")?.value.trim() || "Título do produto";
-  const slug = $("#productSlug")?.value.trim() || "";
-  const title = $("#productSeoTitle")?.value.trim() || `${productName} | MugArt`;
-  const description = $("#productSeoDescription")?.value.trim() || "A descrição SEO aparecerá aqui.";
-  const generatedUrl = slug
-    ? `https://mugart.com.br/produto.html?slug=${encodeURIComponent(slug)}`
+  const productName =
+    $("#productName")?.value.trim() ||
+    "Título do produto";
+
+  const rawSlug =
+    $("#productSlug")?.value.trim() ||
+    "";
+
+  const title =
+    $("#productSeoTitle")?.value.trim() ||
+    `${productName} | MugArt`;
+
+  const description =
+    $("#productSeoDescription")?.value.trim() ||
+    "A descrição SEO aparecerá aqui.";
+
+  /*
+   * O campo permanece exatamente como foi digitado.
+   * Somente a URL recebe codificação para funcionar no navegador.
+   */
+  const generatedUrl = rawSlug
+    ? `https://mugart.com.br/produto.html?slug=${encodeURIComponent(rawSlug)}`
     : "";
 
   if ($("#slugFullPreview")) {
-    $("#slugFullPreview").textContent = generatedUrl || "Preencha o slug para gerar a URL.";
+    $("#slugFullPreview").textContent =
+      generatedUrl ||
+      "Preencha o slug para gerar a URL.";
   }
 
   if ($("#productCanonicalPreview")) {
-    $("#productCanonicalPreview").textContent = generatedUrl || "Será gerada automaticamente após preencher o slug.";
+    $("#productCanonicalPreview").textContent =
+      generatedUrl ||
+      "Será gerada automaticamente após preencher o slug.";
   }
 
   if ($("#seoTitleCount")) {
-    $("#seoTitleCount").textContent = String($("#productSeoTitle")?.value.length || 0);
+    $("#seoTitleCount").textContent = String(
+      $("#productSeoTitle")?.value.length || 0
+    );
   }
 
   if ($("#seoDescriptionCount")) {
-    $("#seoDescriptionCount").textContent = String($("#productSeoDescription")?.value.length || 0);
+    $("#seoDescriptionCount").textContent = String(
+      $("#productSeoDescription")?.value.length || 0
+    );
   }
 
   if ($("#seoPreviewTitle")) {
@@ -262,15 +279,18 @@ function updateProductSeoPreview() {
   }
 
   if ($("#seoPreviewUrl")) {
-    $("#seoPreviewUrl").textContent = generatedUrl || "https://mugart.com.br/produto.html?slug=...";
+    $("#seoPreviewUrl").textContent =
+      generatedUrl ||
+      "https://mugart.com.br/produto.html?slug=...";
   }
 
   if ($("#seoPreviewDescription")) {
-    $("#seoPreviewDescription").textContent = description;
+    $("#seoPreviewDescription").textContent =
+      description;
   }
 
   const complete =
-    Boolean(slug) &&
+    Boolean(rawSlug) &&
     Boolean($("#productSeoTitle")?.value.trim()) &&
     Boolean($("#productSeoDescription")?.value.trim()) &&
     Boolean($("#productImageAlt")?.value.trim());
@@ -278,8 +298,15 @@ function updateProductSeoPreview() {
   const completion = $("#seoCompletion");
 
   if (completion) {
-    completion.textContent = complete ? "SEO completo" : "SEO incompleto";
-    completion.classList.toggle("complete", complete);
+    completion.textContent =
+      complete
+        ? "SEO completo"
+        : "SEO incompleto";
+
+    completion.classList.toggle(
+      "complete",
+      complete
+    );
   }
 }
 
@@ -426,7 +453,9 @@ async function saveProductFromForm(event) {
     seo_title: $("#productSeoTitle").value.trim() || null,
     seo_description: $("#productSeoDescription").value.trim() || null,
     image_alt: $("#productImageAlt").value.trim() || null,
-    canonical_url: $("#productSlug").value.trim() ? `https://mugart.com.br/produto.html?slug=${encodeURIComponent($("#productSlug").value.trim())}` : null,
+    canonical_url: $("#productSlug").value.trim()
+      ? `https://mugart.com.br/produto.html?slug=${encodeURIComponent($("#productSlug").value.trim())}`
+      : null,
     noindex: $("#productNoindex").value === "true"
   };
 
