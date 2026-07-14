@@ -84,41 +84,76 @@
       return;
     }
 
-    var productResult = await window.mugartSupabase
-      .from("products")
-      .select(`
+    const productSelect = `
+      id,
+      name,
+      sku,
+      description,
+      color,
+      price,
+      old_price,
+      stock,
+      image_url,
+      active,
+      featured,
+      slug,
+      seo_title,
+      seo_description,
+      image_alt,
+      canonical_url,
+      noindex,
+      categories (
         id,
         name,
-        sku,
-        description,
-        color,
-        price,
-        old_price,
-        stock,
-        image_url,
-        active,
-        featured,
-        slug,
-        seo_title,
-        seo_description,
-        image_alt,
-        canonical_url,
-        noindex,
-        categories (
-          id,
-          name,
-          slug
-        )
-      `)
+        slug
+      )
+    `;
+
+    /*
+     * Busca primeiro pelo slug exato.
+     * Não usamos .or(), pois caracteres especiais no slug podem
+     * quebrar a sintaxe do filtro PostgREST.
+     */
+    var productResult = await window.mugartSupabase
+      .from("products")
+      .select(productSelect)
       .eq("active", true)
-      .or(`slug.eq.${slug},id.eq.${slug}`)
+      .eq("slug", slug)
       .maybeSingle();
 
+    /*
+     * Compatibilidade: se a URL recebeu um UUID antigo em vez
+     * de slug, tenta buscar pelo ID.
+     */
     if (
-      productResult.error ||
-      !productResult.data
+      !productResult.error &&
+      !productResult.data &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(slug)
     ) {
-      console.error(productResult.error);
+      productResult = await window.mugartSupabase
+        .from("products")
+        .select(productSelect)
+        .eq("active", true)
+        .eq("id", slug)
+        .maybeSingle();
+    }
+
+    if (productResult.error) {
+      console.error(
+        "[Produto] Erro ao buscar produto:",
+        productResult.error
+      );
+
+      showError();
+      return;
+    }
+
+    if (!productResult.data) {
+      console.warn(
+        "[Produto] Nenhum produto ativo encontrado para o slug:",
+        slug
+      );
+
       showError();
       return;
     }
