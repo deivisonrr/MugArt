@@ -350,6 +350,10 @@ async function saveProductFromForm(event) {
     await window.initializeProductVariants(savedProduct.id);
   }
 
+  if (typeof window.initializeProductImages === "function") {
+    await window.initializeProductImages(savedProduct.id);
+  }
+
   await renderProductsTable();
 
   alert("Produto salvo com sucesso. Agora você pode cadastrar ou editar as variações.");
@@ -374,6 +378,10 @@ function clearProductForm() {
 
   if (typeof window.initializeProductVariants === "function") {
     window.initializeProductVariants(null);
+  }
+
+  if (typeof window.initializeProductImages === "function") {
+    window.initializeProductImages(null);
   }
 }
 
@@ -452,6 +460,10 @@ window.editProduct = async function(id) {
 
   if (typeof window.initializeProductVariants === "function") {
     await window.initializeProductVariants(product.id);
+  }
+
+  if (typeof window.initializeProductImages === "function") {
+    await window.initializeProductImages(product.id);
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });

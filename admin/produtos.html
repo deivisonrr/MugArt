@@ -10,6 +10,7 @@
   <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="css/admin.css?v=6" />
   <link rel="stylesheet" href="css/product-variants.css?v=1" />
+  <link rel="stylesheet" href="css/product-images.css?v=2" />
 </head>
 
 <body class="admin-body">
@@ -243,6 +244,56 @@
             <div id="variantsList" class="variants-list"></div>
           </div>
         </section>
+
+        <section class="product-images-section">
+          <div class="product-images-header">
+            <div>
+              <p class="eyebrow">Galeria</p>
+              <h3>Fotos e vídeos do produto</h3>
+            </div>
+          </div>
+
+          <div id="productImagesNoProduct" class="product-images-message">
+            Salve ou edite um produto para cadastrar fotos adicionais.
+          </div>
+
+          <div id="productImagesManager" class="hidden">
+            <div class="product-images-upload">
+              <label class="product-images-file-label">
+                Selecionar fotos
+                <input
+                  id="productImagesFiles"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,video/mp4,video/webm"
+                  multiple
+                >
+              </label>
+
+              <button id="uploadProductImagesButton" type="button">
+                Enviar fotos
+              </button>
+
+              <small>
+                Você pode selecionar várias imagens e vídeos curtos. Formatos: PNG, JPG, WEBP, MP4 e WEBM.
+              </small>
+            </div>
+
+            <div class="product-images-list-head">
+              <strong>Mídias cadastradas</strong>
+              <span id="productImagesCount">0 imagens</span>
+            </div>
+
+            <div id="productImagesLoading" class="product-images-message hidden">
+              Carregando imagens...
+            </div>
+
+            <div id="productImagesEmpty" class="product-images-message hidden">
+              Nenhuma foto ou vídeo adicional cadastrado.
+            </div>
+
+            <div id="productImagesList" class="product-images-list"></div>
+          </div>
+        </section>
       </form>
 
       <section class="admin-panel">
@@ -278,7 +329,8 @@
   <script src="/js/supabase-config.js?v=5"></script>
   <script src="/admin/js/admin-auth.js?v=1"></script>
   <script src="/admin/js/product-variants.js?v=1"></script>
-  <script src="/admin/js/admin.js?v=6"></script>
+  <script src="/admin/js/product-images.js?v=2"></script>
+  <script src="/admin/js/admin.js?v=7"></script>
   <script src="js/catalogo-profissional.js"></script>
   <script src="js/admin-2.js"></script>
 </body>

@@ -30,6 +30,7 @@ var StoreState = {
   selectedProduct: null,
   selectedVariation: null,
   selectedVariationIndex: 0,
+  selectedImageIndex: 0,
   addingLock: false
 };
 
@@ -193,6 +194,21 @@ async function loadProductsFromSupabase() {
       variations = variationsResult.data || [];
     }
 
+    var productImages = [];
+
+    var productImagesResult = await window.mugartSupabase
+      .from("product_images")
+      .select("id, product_id, image_url, sort_order, is_main, media_type, thumbnail_url, created_at")
+      .order("is_main", { ascending: false })
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+
+    if (productImagesResult.error) {
+      console.warn("As imagens adicionais não puderam ser carregadas:", productImagesResult.error);
+    } else {
+      productImages = productImagesResult.data || [];
+    }
+
     StoreState.products = (productsResult.data || []).map(function(product) {
       var productVariations = variations
         .filter(function(variation) {
@@ -217,6 +233,41 @@ async function loadProductsFromSupabase() {
           };
         });
 
+      var galleryImages = productImages
+        .filter(function(image) {
+          return String(image.product_id) === String(product.id);
+        })
+        .map(function(image) {
+          return {
+            id: image.id,
+            url: image.image_url,
+            sortOrder: Number(image.sort_order || 0),
+            isMain: image.is_main === true,
+            mediaType: image.media_type || "image",
+            thumbnailUrl: image.thumbnail_url || null
+          };
+        });
+
+      var hasMainProductImage = galleryImages.some(function(image) {
+        return image.url === product.image_url;
+      });
+
+      if (product.image_url && !hasMainProductImage) {
+        galleryImages.unshift({
+          id: "main-" + product.id,
+          url: product.image_url,
+          sortOrder: 0,
+          isMain: galleryImages.length === 0,
+          mediaType: "image",
+          thumbnailUrl: null
+        });
+      }
+
+      galleryImages.sort(function(a, b) {
+        if (a.isMain !== b.isMain) return a.isMain ? -1 : 1;
+        return a.sortOrder - b.sortOrder;
+      });
+
       var displayPrice = Number(product.price || 0);
       var displayStock = Number(product.stock || 0);
 
@@ -234,6 +285,7 @@ async function loadProductsFromSupabase() {
         description: product.description || "Produto MugArt pronta entrega.",
         active: product.active,
         featured: product.featured,
+        gallery: galleryImages,
           variations: [
               {
                 id: null,
@@ -792,6 +844,50 @@ function getActiveProductOption(product) {
   };
 }
 
+function getSelectedOptionMedia(product) {
+  var option = getActiveProductOption(product);
+
+  if (
+    option &&
+    option.isMainProduct &&
+    Array.isArray(product.gallery) &&
+    product.gallery.length
+  ) {
+    return product.gallery;
+  }
+
+  return [{
+    id: option.id || "option-" + product.id,
+    url: option.image || product.image,
+    mediaType: "image",
+    thumbnailUrl: null,
+    isMain: true,
+    sortOrder: 0
+  }];
+}
+
+function getCurrentSelectedMedia(product) {
+  var media = getSelectedOptionMedia(product);
+
+  if (!media.length) {
+    return {
+      url: product.image,
+      mediaType: "image",
+      thumbnailUrl: null
+    };
+  }
+
+  if (StoreState.selectedImageIndex < 0) {
+    StoreState.selectedImageIndex = media.length - 1;
+  }
+
+  if (StoreState.selectedImageIndex >= media.length) {
+    StoreState.selectedImageIndex = 0;
+  }
+
+  return media[StoreState.selectedImageIndex];
+}
+
 function openProductModal(productId) {
   var product = getProductById(productId);
   var modal = $("#productModal");
@@ -800,6 +896,7 @@ function openProductModal(productId) {
 
   StoreState.selectedProduct = product;
   StoreState.selectedVariationIndex = 0;
+  StoreState.selectedImageIndex = 0;
   StoreState.selectedVariation = productHasVariations(product)
     ? product.variations[0]
     : null;
@@ -828,6 +925,36 @@ function renderProductModal() {
 
   var option = getActiveProductOption(product);
   var hasVariations = productHasVariations(product);
+  var selectedMedia = getSelectedOptionMedia(product);
+  var currentMedia = getCurrentSelectedMedia(product);
+  var hasMultipleImages = selectedMedia.length > 1;
+
+  var galleryThumbnailsHtml = "";
+
+  if (hasMultipleImages) {
+    galleryThumbnailsHtml =
+      '<div class="product-gallery-thumbnails">' +
+        selectedMedia.map(function(mediaItem, imageIndex) {
+          var thumbUrl =
+            mediaItem.thumbnailUrl ||
+            (mediaItem.mediaType === "image" ? mediaItem.url : "");
+
+          return (
+            '<button class="product-gallery-thumbnail ' +
+              (imageIndex === StoreState.selectedImageIndex ? "active" : "") +
+            '" type="button" data-gallery-index="' + imageIndex + '">' +
+              (mediaItem.mediaType === "video"
+                ? '<span class="product-gallery-video-thumb">' +
+                    (thumbUrl
+                      ? '<img src="' + thumbUrl + '" alt="Vídeo de ' + product.name + '">'
+                      : '<i class="fa-solid fa-play"></i>') +
+                  '</span>'
+                : '<img src="' + mediaItem.url + '" alt="' + product.name + '">') +
+            '</button>'
+          );
+        }).join("") +
+      '</div>';
+  }
 
   var thumbnailsHtml = "";
 
@@ -859,27 +986,30 @@ function renderProductModal() {
     '<div class="modal-product">' +
       '<div class="product-carousel">' +
         '<div class="modal-product-image">' +
-          (hasVariations
+          (hasMultipleImages
             ? '<button class="carousel-arrow carousel-prev" id="variationPrev" type="button" aria-label="Variação anterior">' +
                 '<i class="fa-solid fa-chevron-left"></i>' +
               '</button>'
             : '') +
           '<div class="carousel-image-wrapper" id="carouselImageWrapper">' +
-            '<img id="modalVariationImage" src="' + option.image + '" alt="' + product.name + " " + option.color + '">' +
+            (currentMedia.mediaType === "video"
+              ? '<video id="modalVariationVideo" src="' + currentMedia.url + '" controls muted playsinline preload="metadata"></video>'
+              : '<img id="modalVariationImage" src="' + currentMedia.url + '" alt="' + product.name + " " + option.color + '">') +
           '</div>' +
-          (hasVariations
+          (hasMultipleImages
             ? '<button class="carousel-arrow carousel-next" id="variationNext" type="button" aria-label="Próxima variação">' +
                 '<i class="fa-solid fa-chevron-right"></i>' +
               '</button>'
             : '') +
         '</div>' +
-        (hasVariations
+        (hasMultipleImages
           ? '<div class="carousel-position">' +
-              '<strong>' + (StoreState.selectedVariationIndex + 1) + '</strong>' +
+              '<strong>' + (StoreState.selectedImageIndex + 1) + '</strong>' +
               '<span>/</span>' +
-              '<span>' + product.variations.length + '</span>' +
+              '<span>' + selectedMedia.length + '</span>' +
             '</div>'
           : '') +
+        galleryThumbnailsHtml +
         thumbnailsHtml +
       '</div>' +
 
@@ -982,7 +1112,7 @@ function bindVariationCarousel() {
     previousButton.onclick = function(event) {
       event.preventDefault();
       event.stopPropagation();
-      selectPreviousVariation();
+      selectPreviousImage();
     };
   }
 
@@ -990,9 +1120,21 @@ function bindVariationCarousel() {
     nextButton.onclick = function(event) {
       event.preventDefault();
       event.stopPropagation();
-      selectNextVariation();
+      selectNextImage();
     };
   }
+
+  $all("[data-gallery-index]").forEach(function(button) {
+    button.addEventListener("click", function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      StoreState.selectedImageIndex =
+        Number(button.dataset.galleryIndex || 0);
+
+      renderProductModal();
+    });
+  });
 
   $all("[data-variation-index]").forEach(function(button) {
     button.addEventListener("click", function(event) {
@@ -1016,9 +1158,9 @@ function bindVariationCarousel() {
       if (Math.abs(distance) < 45) return;
 
       if (distance > 0) {
-        selectNextVariation();
+        selectNextImage();
       } else {
-        selectPreviousVariation();
+        selectPreviousImage();
       }
     }, { passive: true });
   }
@@ -1029,53 +1171,38 @@ function selectVariationByIndex(index) {
 
   if (!productHasVariations(product)) return;
 
-  if (index < 0) {
-    index = product.variations.length - 1;
-  }
-
-  if (index >= product.variations.length) {
-    index = 0;
-  }
+  if (index < 0) index = product.variations.length - 1;
+  if (index >= product.variations.length) index = 0;
 
   StoreState.selectedVariationIndex = index;
   StoreState.selectedVariation = product.variations[index];
-
-  var selectedOption = StoreState.selectedVariation;
+  StoreState.selectedImageIndex = 0;
 
   renderProductModal();
+}
 
-  pushDataLayer({
-    event: "select_item_variant",
+function selectNextImage() {
+  var product = StoreState.selectedProduct;
+  var images = getSelectedOptionMedia(product);
 
-    product_id: product.id,
-    product_name: product.name,
+  if (!images.length) return;
 
-    variation_id: selectedOption.isMainProduct
-      ? null
-      : selectedOption.id,
+  StoreState.selectedImageIndex =
+    (StoreState.selectedImageIndex + 1) % images.length;
 
-    item_id: selectedOption.sku,
-    item_name: product.name,
-    item_category: product.category,
-    item_variant: selectedOption.color,
-    price: selectedOption.price,
-    stock: selectedOption.stock,
+  renderProductModal();
+}
 
-    ecommerce: {
-      currency: MUGART_CONFIG.currency,
-      value: selectedOption.price,
-      items: [
-        {
-          item_id: selectedOption.sku,
-          item_name: product.name,
-          item_category: product.category,
-          item_variant: selectedOption.color,
-          price: selectedOption.price,
-          quantity: 1
-        }
-      ]
-    }
-  });
+function selectPreviousImage() {
+  var product = StoreState.selectedProduct;
+  var images = getSelectedOptionMedia(product);
+
+  if (!images.length) return;
+
+  StoreState.selectedImageIndex =
+    (StoreState.selectedImageIndex - 1 + images.length) % images.length;
+
+  renderProductModal();
 }
 
 function selectNextVariation() {
