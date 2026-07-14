@@ -151,6 +151,7 @@ async function renderDashboard() {
 async function initProductsPage() {
   await populateCategorySelect();
   bindProductImageUpload();
+  bindProductSeoFields();
   await renderProductsTable();
 
   $("#productForm").addEventListener("submit", saveProductFromForm);
@@ -174,6 +175,86 @@ function bindProductImageUpload() {
 
   if (urlInput) {
     urlInput.addEventListener("input", updateImagePreviewFromUrl);
+  }
+}
+
+
+function generateProductSlug(value) {
+  return slugify(value).slice(0, 180);
+}
+
+function bindProductSeoFields() {
+  const nameInput = $("#productName");
+  const slugInput = $("#productSlug");
+  const titleInput = $("#productSeoTitle");
+  const descriptionInput = $("#productSeoDescription");
+
+  nameInput?.addEventListener("input", () => {
+    if (!slugInput.dataset.edited) {
+      slugInput.value = generateProductSlug(nameInput.value);
+    }
+
+    if (!titleInput.dataset.edited) {
+      titleInput.value = nameInput.value
+        ? `${nameInput.value} | MugArt`
+        : "";
+    }
+
+    updateProductSeoPreview();
+  });
+
+  slugInput?.addEventListener("input", () => {
+    slugInput.dataset.edited = "true";
+    slugInput.value = generateProductSlug(slugInput.value);
+    updateProductSeoPreview();
+  });
+
+  titleInput?.addEventListener("input", () => {
+    titleInput.dataset.edited = "true";
+    updateProductSeoPreview();
+  });
+
+  descriptionInput?.addEventListener("input", updateProductSeoPreview);
+  $("#productImageAlt")?.addEventListener("input", updateProductSeoPreview);
+  $("#productCanonicalUrl")?.addEventListener("input", updateProductSeoPreview);
+  $("#productNoindex")?.addEventListener("change", updateProductSeoPreview);
+
+  updateProductSeoPreview();
+}
+
+function updateProductSeoPreview() {
+  const productName = $("#productName")?.value.trim() || "Título do produto";
+  const slug = $("#productSlug")?.value.trim() || "...";
+  const title = $("#productSeoTitle")?.value.trim() || `${productName} | MugArt`;
+  const description =
+    $("#productSeoDescription")?.value.trim() ||
+    "A descrição SEO aparecerá aqui.";
+
+  const generatedUrl =
+    `https://mugart.com.br/produto.html?slug=${encodeURIComponent(slug)}`;
+
+  $("#slugPreview").textContent = slug;
+  $("#seoTitleCount").textContent = String(
+    $("#productSeoTitle")?.value.length || 0
+  );
+  $("#seoDescriptionCount").textContent = String(
+    $("#productSeoDescription")?.value.length || 0
+  );
+  $("#seoPreviewTitle").textContent = title;
+  $("#seoPreviewUrl").textContent =
+    $("#productCanonicalUrl")?.value.trim() || generatedUrl;
+  $("#seoPreviewDescription").textContent = description;
+
+  const complete =
+    Boolean($("#productSlug")?.value.trim()) &&
+    Boolean($("#productSeoTitle")?.value.trim()) &&
+    Boolean($("#productSeoDescription")?.value.trim()) &&
+    Boolean($("#productImageAlt")?.value.trim());
+
+  const completion = $("#seoCompletion");
+  if (completion) {
+    completion.textContent = complete ? "SEO completo" : "SEO incompleto";
+    completion.classList.toggle("complete", complete);
   }
 }
 
@@ -315,7 +396,13 @@ async function saveProductFromForm(event) {
     image_url: $("#productImage").value.trim(),
     description: $("#productDescription").value.trim(),
     active: $("#productActive").value === "true",
-    featured: $("#productFeatured").value === "true"
+    featured: $("#productFeatured").value === "true",
+    slug: $("#productSlug").value.trim() || generateProductSlug($("#productName").value),
+    seo_title: $("#productSeoTitle").value.trim() || null,
+    seo_description: $("#productSeoDescription").value.trim() || null,
+    image_alt: $("#productImageAlt").value.trim() || null,
+    canonical_url: $("#productCanonicalUrl").value.trim() || null,
+    noindex: $("#productNoindex").value === "true"
   };
 
   let result;
@@ -363,6 +450,16 @@ function clearProductForm() {
   $("#productForm").reset();
   $("#productId").value = "";
   $("#productFormTitle").textContent = "Novo produto";
+
+  if ($("#productSlug")) {
+    $("#productSlug").dataset.edited = "";
+  }
+
+  if ($("#productSeoTitle")) {
+    $("#productSeoTitle").dataset.edited = "";
+  }
+
+  updateProductSeoPreview();
 
   const preview = $("#productImagePreview");
   const placeholder = $("#productImagePlaceholder");
@@ -454,7 +551,17 @@ window.editProduct = async function(id) {
   $("#productDescription").value = product.description || "";
   $("#productActive").value = String(product.active);
   $("#productFeatured").value = String(product.featured);
+  $("#productSlug").value = product.slug || generateProductSlug(product.name);
+  $("#productSeoTitle").value = product.seo_title || "";
+  $("#productSeoDescription").value = product.seo_description || "";
+  $("#productImageAlt").value = product.image_alt || "";
+  $("#productCanonicalUrl").value = product.canonical_url || "";
+  $("#productNoindex").value = String(product.noindex === true);
+  $("#productSlug").dataset.edited = product.slug ? "true" : "";
+  $("#productSeoTitle").dataset.edited = product.seo_title ? "true" : "";
   $("#productFormTitle").textContent = "Editar produto";
+
+  updateProductSeoPreview();
 
   updateImagePreviewFromUrl();
 

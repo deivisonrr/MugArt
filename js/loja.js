@@ -151,6 +151,12 @@ async function loadProductsFromSupabase() {
         image_url,
         active,
         featured,
+        slug,
+        seo_title,
+        seo_description,
+        image_alt,
+        canonical_url,
+        noindex,
         created_at,
         categories (
           id,
@@ -285,6 +291,12 @@ async function loadProductsFromSupabase() {
         description: product.description || "Produto MugArt pronta entrega.",
         active: product.active,
         featured: product.featured,
+        slug: product.slug || "",
+        seoTitle: product.seo_title || "",
+        seoDescription: product.seo_description || "",
+        imageAlt: product.image_alt || product.name || "Produto MugArt",
+        canonicalUrl: product.canonical_url || "",
+        noindex: product.noindex === true,
         gallery: galleryImages,
           variations: [
               {
@@ -721,7 +733,7 @@ function productCardTemplate(product) {
       (discount ? '<span class="discount-badge">-' + discount + "%</span>" : "") +
 
       '<button class="product-image-btn" type="button" data-action="view">' +
-        '<img src="' + product.image + '" alt="' + product.name + '" loading="lazy" />' +
+        '<img src="' + product.image + '" alt="' + (product.imageAlt || product.name) + '" loading="lazy" />' +
       '</button>' +
 
       '<div class="product-info">' +
@@ -742,7 +754,7 @@ function productCardTemplate(product) {
         "</div>" +
 
         '<div class="product-actions">' +
-          '<button class="details-btn" type="button" data-action="view">Detalhes</button>' +
+          '<button class="details-btn" type="button" data-action="page">Ver produto</button>' +
           '<button class="add-cart-btn" type="button" data-action="add" ' + (product.stock <= 0 ? "disabled" : "") + ">" +
             (product.stock > 0 ? "Adicionar" : "Esgotado") +
           "</button>" +
@@ -779,6 +791,17 @@ function bindProductCards() {
 
         if (action === "view") {
           openProductModal(productId);
+          return;
+        }
+
+        if (action === "page") {
+          var selectedProduct = getProductById(productId);
+          var productSlug = selectedProduct && selectedProduct.slug
+            ? selectedProduct.slug
+            : productId;
+
+          window.location.href =
+            "produto.html?slug=" + encodeURIComponent(productSlug);
           return;
         }
 

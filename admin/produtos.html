@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/admin.css?v=6" />
   <link rel="stylesheet" href="css/product-variants.css?v=1" />
   <link rel="stylesheet" href="css/product-images.css?v=2" />
+  <link rel="stylesheet" href="css/product-seo.css?v=1" />
 </head>
 
 <body class="admin-body">
@@ -139,6 +140,84 @@
             </select>
           </label>
         </div>
+
+
+        <section class="product-seo-section">
+          <div class="product-seo-header">
+            <div>
+              <p class="eyebrow">SEO</p>
+              <h3>Google e compartilhamento</h3>
+            </div>
+            <span id="seoCompletion">SEO não preenchido</span>
+          </div>
+
+          <div class="form-grid product-seo-grid">
+            <label>
+              Slug da URL
+              <input
+                id="productSlug"
+                maxlength="180"
+                placeholder="caneca-personalizada-dia-dos-pais"
+              />
+              <small>A URL será: /produto.html?slug=<span id="slugPreview">...</span></small>
+            </label>
+
+            <label>
+              Texto alternativo da imagem
+              <input
+                id="productImageAlt"
+                maxlength="180"
+                placeholder="Caneca personalizada Dia dos Pais branca"
+              />
+            </label>
+
+            <label class="full">
+              Título SEO
+              <input
+                id="productSeoTitle"
+                maxlength="70"
+                placeholder="Caneca Personalizada Dia dos Pais | MugArt"
+              />
+              <small><span id="seoTitleCount">0</span>/70 caracteres</small>
+            </label>
+
+            <label class="full">
+              Meta description
+              <textarea
+                id="productSeoDescription"
+                rows="3"
+                maxlength="170"
+                placeholder="Descrição curta que aparecerá nos resultados do Google."
+              ></textarea>
+              <small><span id="seoDescriptionCount">0</span>/170 caracteres</small>
+            </label>
+
+            <label class="full">
+              URL canônica
+              <input
+                id="productCanonicalUrl"
+                type="url"
+                placeholder="https://mugart.com.br/produto.html?slug=..."
+              />
+              <small>Deixe em branco para o site gerar automaticamente.</small>
+            </label>
+
+            <label>
+              Indexar no Google
+              <select id="productNoindex">
+                <option value="false">Sim</option>
+                <option value="true">Não</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="seo-google-preview">
+            <small>Prévia do Google</small>
+            <strong id="seoPreviewTitle">Título do produto | MugArt</strong>
+            <span id="seoPreviewUrl">https://mugart.com.br/produto.html?slug=...</span>
+            <p id="seoPreviewDescription">A descrição SEO aparecerá aqui.</p>
+          </div>
+        </section>
 
         <div class="form-actions">
           <button type="submit">Salvar produto</button>
@@ -330,7 +409,7 @@
   <script src="/admin/js/admin-auth.js?v=1"></script>
   <script src="/admin/js/product-variants.js?v=1"></script>
   <script src="/admin/js/product-images.js?v=2"></script>
-  <script src="/admin/js/admin.js?v=7"></script>
+  <script src="/admin/js/admin.js?v=8"></script>
   <script src="js/catalogo-profissional.js"></script>
   <script src="js/admin-2.js"></script>
 </body>
