@@ -219,10 +219,340 @@ function bindProductSeoFields() {
   });
 
   descriptionInput?.addEventListener("input", updateProductSeoPreview);
+  $("#productFocusKeyword")?.addEventListener("input", updateProductSeoPreview);
   $("#productImageAlt")?.addEventListener("input", updateProductSeoPreview);
+  $("#productImage")?.addEventListener("input", updateProductSeoPreview);
   $("#productNoindex")?.addEventListener("change", updateProductSeoPreview);
 
   updateProductSeoPreview();
+}
+
+
+function normalizeSeoText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function seoIncludes(text, keyword) {
+  const normalizedKeyword = normalizeSeoText(keyword);
+
+  if (!normalizedKeyword) {
+    return false;
+  }
+
+  return normalizeSeoText(text).includes(
+    normalizedKeyword
+  );
+}
+
+function calculateProductSeoScore() {
+  const name =
+    $("#productName")?.value.trim() || "";
+
+  const slug =
+    $("#productSlug")?.value.trim() || "";
+
+  const title =
+    $("#productSeoTitle")?.value.trim() || "";
+
+  const description =
+    $("#productSeoDescription")?.value.trim() || "";
+
+  const imageAlt =
+    $("#productImageAlt")?.value.trim() || "";
+
+  const keyword =
+    $("#productFocusKeyword")?.value.trim() || "";
+
+  const productDescription =
+    $("#productDescription")?.value.trim() || "";
+
+  const imageUrl =
+    $("#productImage")?.value.trim() || "";
+
+  const checks = [
+    {
+      id: "keyword",
+      label: "Palavra-chave principal preenchida",
+      passed: Boolean(keyword),
+      points: 10
+    },
+    {
+      id: "slug",
+      label: "URL do produto preenchida",
+      passed: Boolean(slug),
+      points: 10
+    },
+    {
+      id: "title_length",
+      label: "Título SEO entre 45 e 65 caracteres",
+      passed:
+        title.length >= 45 &&
+        title.length <= 65,
+      points: 15
+    },
+    {
+      id: "description_length",
+      label: "Meta description entre 120 e 165 caracteres",
+      passed:
+        description.length >= 120 &&
+        description.length <= 165,
+      points: 15
+    },
+    {
+      id: "keyword_title",
+      label: "Palavra-chave presente no título SEO",
+      passed: seoIncludes(title, keyword),
+      points: 10
+    },
+    {
+      id: "keyword_description",
+      label: "Palavra-chave presente na meta description",
+      passed: seoIncludes(description, keyword),
+      points: 10
+    },
+    {
+      id: "keyword_slug",
+      label: "Palavra-chave relacionada ao slug",
+      passed:
+        Boolean(keyword) &&
+        normalizeSeoText(keyword)
+          .split(/\s+/)
+          .filter(Boolean)
+          .some((word) =>
+            normalizeSeoText(slug).includes(word)
+          ),
+      points: 10
+    },
+    {
+      id: "image_alt",
+      label: "Texto alternativo da imagem preenchido",
+      passed: Boolean(imageAlt),
+      points: 10
+    },
+    {
+      id: "image",
+      label: "Imagem principal cadastrada",
+      passed: Boolean(imageUrl),
+      points: 5
+    },
+    {
+      id: "content",
+      label: "Descrição do produto com pelo menos 80 caracteres",
+      passed: productDescription.length >= 80,
+      points: 5
+    }
+  ];
+
+  const score = checks.reduce(
+    (total, check) =>
+      total + (check.passed ? check.points : 0),
+    0
+  );
+
+  return {
+    score,
+    checks,
+    name,
+    slug,
+    title,
+    description,
+    imageAlt,
+    keyword,
+    imageUrl
+  };
+}
+
+function getSeoScoreLevel(score) {
+  if (score >= 80) {
+    return {
+      className: "good",
+      label: "Ótimo"
+    };
+  }
+
+  if (score >= 55) {
+    return {
+      className: "medium",
+      label: "Pode melhorar"
+    };
+  }
+
+  return {
+    className: "poor",
+    label: "Incompleto"
+  };
+}
+
+function renderSeoAnalysis() {
+  const analysis =
+    calculateProductSeoScore();
+
+  const level =
+    getSeoScoreLevel(analysis.score);
+
+  const circle =
+    $("#seoScoreCircle");
+
+  const value =
+    $("#seoScoreValue");
+
+  const checklist =
+    $("#seoChecklist");
+
+  if (value) {
+    value.textContent =
+      String(analysis.score);
+  }
+
+  if (circle) {
+    circle.classList.remove(
+      "poor",
+      "medium",
+      "good"
+    );
+
+    circle.classList.add(
+      level.className
+    );
+
+    circle.setAttribute(
+      "aria-label",
+      `SEO Score ${analysis.score} de 100: ${level.label}`
+    );
+  }
+
+  if (checklist) {
+    checklist.innerHTML =
+      analysis.checks
+        .map((check) => `
+          <div class="seo-check-item ${
+            check.passed
+              ? "passed"
+              : "failed"
+          }">
+            <span class="seo-check-icon">
+              ${
+                check.passed
+                  ? "✓"
+                  : "!"
+              }
+            </span>
+
+            <div>
+              <strong>
+                ${check.label}
+              </strong>
+
+              <small>
+                ${
+                  check.passed
+                    ? `+${check.points} pontos`
+                    : `${check.points} pontos disponíveis`
+                }
+              </small>
+            </div>
+          </div>
+        `)
+        .join("");
+  }
+
+  updateSeoCharacterStatus(
+    "#seoTitleCount",
+    analysis.title.length,
+    45,
+    65
+  );
+
+  updateSeoCharacterStatus(
+    "#seoDescriptionCount",
+    analysis.description.length,
+    120,
+    165
+  );
+}
+
+function updateSeoCharacterStatus(
+  selector,
+  length,
+  idealMin,
+  idealMax
+) {
+  const element =
+    $(selector);
+
+  if (!element) {
+    return;
+  }
+
+  element.classList.remove(
+    "counter-poor",
+    "counter-medium",
+    "counter-good"
+  );
+
+  if (
+    length >= idealMin &&
+    length <= idealMax
+  ) {
+    element.classList.add(
+      "counter-good"
+    );
+
+    return;
+  }
+
+  if (
+    length >= Math.max(1, idealMin - 15) &&
+    length <= idealMax + 10
+  ) {
+    element.classList.add(
+      "counter-medium"
+    );
+
+    return;
+  }
+
+  element.classList.add(
+    "counter-poor"
+  );
+}
+
+function updateSeoSocialPreview(
+  title,
+  description
+) {
+  const whatsappTitle =
+    $("#seoWhatsappTitle");
+
+  const whatsappDescription =
+    $("#seoWhatsappDescription");
+
+  const whatsappImage =
+    $("#seoWhatsappImage");
+
+  if (whatsappTitle) {
+    whatsappTitle.textContent =
+      title;
+  }
+
+  if (whatsappDescription) {
+    whatsappDescription.textContent =
+      description;
+  }
+
+  if (whatsappImage) {
+    whatsappImage.src =
+      $("#productImage")?.value.trim() ||
+      "../assets/hero-caneca.png";
+
+    whatsappImage.alt =
+      $("#productImageAlt")?.value.trim() ||
+      title;
+  }
 }
 
 function updateProductSeoPreview() {
@@ -289,8 +619,16 @@ function updateProductSeoPreview() {
       description;
   }
 
+  updateSeoSocialPreview(
+    title,
+    description
+  );
+
+  renderSeoAnalysis();
+
   const complete =
     Boolean(rawSlug) &&
+    Boolean($("#productFocusKeyword")?.value.trim()) &&
     Boolean($("#productSeoTitle")?.value.trim()) &&
     Boolean($("#productSeoDescription")?.value.trim()) &&
     Boolean($("#productImageAlt")?.value.trim());
@@ -452,6 +790,7 @@ async function saveProductFromForm(event) {
     slug: $("#productSlug").value.trim() || generateProductSlug($("#productName").value),
     seo_title: $("#productSeoTitle").value.trim() || null,
     seo_description: $("#productSeoDescription").value.trim() || null,
+    focus_keyword: $("#productFocusKeyword").value.trim() || null,
     image_alt: $("#productImageAlt").value.trim() || null,
     canonical_url: $("#productSlug").value.trim()
       ? `https://mugart.com.br/produto.html?slug=${encodeURIComponent($("#productSlug").value.trim())}`
@@ -608,6 +947,7 @@ window.editProduct = async function(id) {
   $("#productSlug").value = product.slug || generateProductSlug(product.name);
   $("#productSeoTitle").value = product.seo_title || "";
   $("#productSeoDescription").value = product.seo_description || "";
+  $("#productFocusKeyword").value = product.focus_keyword || "";
   $("#productImageAlt").value = product.image_alt || "";
   $("#productNoindex").value = String(product.noindex === true);
   $("#productSlug").dataset.edited = product.slug ? "true" : "";

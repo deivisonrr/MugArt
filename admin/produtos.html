@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/product-images.css?v=2" />
   <link rel="stylesheet" href="css/product-seo.css?v=1" />
   <link rel="stylesheet" href="css/product-seo-url.css?v=2" />
+  <link rel="stylesheet" href="css/product-seo-pro.css?v=1" />
 </head>
 
 <body class="admin-body">
@@ -157,13 +158,26 @@
               URL do produto
               <div class="slug-input-group">
                 <span class="slug-prefix">https://mugart.com.br/produto.html?slug=</span>
-                <input id="productSlug" type="text" maxlength="180" autocomplete="off" spellcheck="false" placeholder="caneca-dia-dos-pais_edição-2026" />
+                <input id="productSlug" type="text" maxlength="180" autocomplete="off" spellcheck="false" placeholder="caneca-dia-dos-pais_azul" />
               </div>
-              <small>Permitidos: letras com ou sem acento, números, hífen (-), underline (_), ponto (.), til (~), mais (+) e arroba (@).</small>
+              <small>Permitidos: letras, números, hífen (-), underline (_), ponto (.) e til (~).</small>
               <div class="slug-final-preview">
                 <span>URL final:</span>
                 <strong id="slugFullPreview">Preencha o slug para gerar a URL.</strong>
               </div>
+            </label>
+
+
+            <label class="full">
+              Palavra-chave principal
+              <input
+                id="productFocusKeyword"
+                maxlength="120"
+                placeholder="Ex: caneca personalizada dia dos pais"
+              />
+              <small>
+                Use a principal expressão que o cliente pesquisaria no Google.
+              </small>
             </label>
 
             <label>
@@ -216,6 +230,48 @@
             <strong id="seoPreviewTitle">Título do produto | MugArt</strong>
             <span id="seoPreviewUrl">https://mugart.com.br/produto.html?slug=...</span>
             <p id="seoPreviewDescription">A descrição SEO aparecerá aqui.</p>
+          </div>
+
+          <div class="seo-pro-grid">
+            <section class="seo-score-card">
+              <div class="seo-score-header">
+                <div>
+                  <small>Análise automática</small>
+                  <h4>SEO Score</h4>
+                </div>
+
+                <div id="seoScoreCircle" class="seo-score-circle poor">
+                  <strong id="seoScoreValue">0</strong>
+                  <span>/100</span>
+                </div>
+              </div>
+
+              <div id="seoChecklist" class="seo-checklist"></div>
+            </section>
+
+            <section class="seo-whatsapp-preview">
+              <small>Prévia no WhatsApp</small>
+
+              <div class="whatsapp-preview-card">
+                <div class="whatsapp-preview-image">
+                  <img
+                    id="seoWhatsappImage"
+                    src="../assets/hero-caneca.png"
+                    alt="Prévia de compartilhamento"
+                  />
+                </div>
+
+                <div class="whatsapp-preview-content">
+                  <span>MUGART.COM.BR</span>
+                  <strong id="seoWhatsappTitle">
+                    Título do produto | MugArt
+                  </strong>
+                  <p id="seoWhatsappDescription">
+                    A descrição SEO aparecerá aqui.
+                  </p>
+                </div>
+              </div>
+            </section>
           </div>
         </section>
 
