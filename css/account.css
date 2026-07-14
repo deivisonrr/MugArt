@@ -2144,3 +2144,152 @@ body.account-page.modal-open {
         border-radius: 0;
     }
 }
+
+/* =========================================================
+   FAVORITOS
+========================================================= */
+
+.account-favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.account-favorites-empty {
+    grid-column: 1 / -1;
+}
+
+.account-favorite-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--stroke);
+    border-radius: 23px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255,255,255,.065),
+            rgba(255,255,255,.025)
+        );
+    box-shadow: 0 20px 55px rgba(0,0,0,.18);
+    transition: .22s ease;
+}
+
+.account-favorite-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(255,212,0,.38);
+}
+
+.account-favorite-image {
+    height: 235px;
+    display: grid;
+    place-items: center;
+    background: rgba(255,255,255,.035);
+}
+
+.account-favorite-image img {
+    width: 92%;
+    height: 215px;
+    object-fit: contain;
+    transition: transform .22s ease;
+}
+
+.account-favorite-card:hover .account-favorite-image img {
+    transform: scale(1.04);
+}
+
+.account-favorite-content {
+    padding: 18px;
+}
+
+.account-favorite-content > span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--cyan);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.account-favorite-content h3 {
+    font-size: 27px;
+    line-height: 1.05;
+}
+
+.account-favorite-content p {
+    min-height: 58px;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.account-favorite-stock {
+    margin-top: 12px;
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.account-favorite-stock.out {
+    color: #ff7b7b;
+}
+
+.account-favorite-price {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    margin-top: 8px;
+}
+
+.account-favorite-price strong {
+    color: var(--yellow);
+    font-size: 23px;
+}
+
+.account-favorite-price small {
+    color: rgba(255,255,255,.45);
+    text-decoration: line-through;
+}
+
+.account-favorite-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 9px;
+    margin-top: 16px;
+}
+
+.account-favorite-actions .account-primary-button {
+    min-height: 42px;
+    padding: 10px 13px;
+    display: grid;
+    place-items: center;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.account-remove-favorite {
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid rgba(255,59,123,.28);
+    border-radius: 999px;
+    background: rgba(255,59,123,.09);
+    color: var(--pink);
+    font-weight: 900;
+}
+
+.account-remove-favorite:hover {
+    background: var(--pink);
+    color: #fff;
+}
+
+@media (max-width: 1250px) {
+    .account-favorites-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .account-favorites-grid {
+        grid-template-columns: 1fr;
+    }
+}

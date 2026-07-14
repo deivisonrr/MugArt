@@ -8,7 +8,7 @@
   <title>Minha Conta | MugArt</title>
 
   <link rel="icon" href="../assets/favicon.ico">
-  <link rel="stylesheet" href="../css/account.css?v=6">
+  <link rel="stylesheet" href="../css/account.css?v=7">
   <link rel="stylesheet" href="../css/account-tracking.css?v=1">
 </head>
 
@@ -82,6 +82,15 @@
           >
             <span>📦</span>
             Meus pedidos
+          </button>
+
+          <button
+            class="account-menu-button"
+            type="button"
+            data-account-section="favorites"
+          >
+            <span>❤️</span>
+            Meus favoritos
           </button>
 
           <button
@@ -162,6 +171,20 @@
                 <small>Pedidos</small>
                 <strong id="dashboardOrdersCount">0</strong>
                 <p>Acompanhe suas compras</p>
+              </div>
+            </button>
+
+            <button
+              class="account-summary-card"
+              type="button"
+              data-open-section="favorites"
+            >
+              <span class="account-summary-icon">❤️</span>
+
+              <div>
+                <small>Favoritos</small>
+                <strong id="dashboardFavoritesCount">0</strong>
+                <p>Produtos que você salvou</p>
               </div>
             </button>
 
@@ -291,6 +314,35 @@
             class="account-orders-list"
           ></div>
 
+        </section>
+
+        <!-- FAVORITOS -->
+        <section
+          id="sectionFavorites"
+          class="account-section"
+          data-section-name="favorites"
+        >
+          <div class="account-section-header">
+            <div>
+              <span>Lista de desejos</span>
+              <h1>Meus favoritos</h1>
+              <p>
+                Consulte os produtos que você salvou para comprar depois.
+              </p>
+            </div>
+          </div>
+
+          <div
+            id="favoritesLoading"
+            class="account-loading-inline hidden"
+          >
+            Carregando favoritos...
+          </div>
+
+          <div
+            id="favoritesList"
+            class="account-favorites-grid"
+          ></div>
         </section>
 
                 <!-- ENDEREÇOS -->
@@ -739,8 +791,9 @@
   <script src="../js/supabase-config.js?v=4"></script>
   
   <script src="../js/account/common.js?v=4"></script>
-  <script src="../js/account/account.js?v=4"></script>
+  <script src="../js/account/account.js?v=5"></script>
   <script src="../js/account/orders.js?v=5"></script>
+  <script src="../js/account/favorites.js?v=1"></script>
   <script src="../js/account/addresses.js?v=4"></script>
   <script src="../js/account/profile.js?v=4"></script>
   <script src="../js/account/security.js?v=4"></script>

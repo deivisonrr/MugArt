@@ -42,6 +42,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             await Account.loadAddresses();
         }
 
+        if (typeof Account.loadFavorites === "function") {
+            await Account.loadFavorites();
+        }
+
         if (typeof Account.fillProfileForm === "function") {
             Account.fillProfileForm();
         }
@@ -76,7 +80,7 @@ function bindAccountNavigation() {
     document
         .querySelectorAll("[data-account-section]")
         .forEach((button) => {
-            button.addEventListener("click", () => {
+            button.addEventListener("click", async () => {
                 const section =
                     button.dataset.accountSection;
 
@@ -97,6 +101,13 @@ function bindAccountNavigation() {
                 }
 
                 if (
+                    section === "favorites" &&
+                    typeof Account.loadFavorites === "function"
+                ) {
+                    await Account.loadFavorites();
+                }
+
+                if (
                     section === "profile" &&
                     typeof Account.fillProfileForm === "function"
                 ) {
@@ -108,10 +119,18 @@ function bindAccountNavigation() {
     document
         .querySelectorAll("[data-open-section]")
         .forEach((button) => {
-            button.addEventListener("click", () => {
-                Account.openSection(
-                    button.dataset.openSection
-                );
+            button.addEventListener("click", async () => {
+                const section =
+                    button.dataset.openSection;
+
+                Account.openSection(section);
+
+                if (
+                    section === "favorites" &&
+                    typeof Account.loadFavorites === "function"
+                ) {
+                    await Account.loadFavorites();
+                }
             });
         });
 

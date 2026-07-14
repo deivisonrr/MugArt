@@ -107,6 +107,7 @@ document.addEventListener("DOMContentLoaded", async function() {
   bindCartActions();
 
   await loadProductsFromSupabase();
+  await synchronizeFavoritesWithAccount();
 
   configureMaxPriceFilter();
   renderCategories();
@@ -338,6 +339,142 @@ async function loadProductsFromSupabase() {
     console.error("Erro inesperado ao carregar a loja:", error);
     StoreState.products = [];
     showToast("Erro inesperado ao carregar a loja.", "error");
+  }
+}
+
+
+async function synchronizeFavoritesWithAccount() {
+  if (!window.mugartSupabase) return;
+
+  try {
+    var sessionResult =
+      await window.mugartSupabase.auth.getSession();
+
+    var user =
+      sessionResult.data.session &&
+      sessionResult.data.session.user;
+
+    if (!user) {
+      return;
+    }
+
+    var localFavorites = Array.from(
+      new Set(
+        StoreState.favorites.map(String)
+      )
+    );
+
+    if (localFavorites.length) {
+      var rows =
+        localFavorites.map(function(productId) {
+          return {
+            user_id: user.id,
+            product_id: productId
+          };
+        });
+
+      var migrateResult =
+        await window.mugartSupabase
+          .from("customer_favorites")
+          .upsert(rows, {
+            onConflict: "user_id,product_id",
+            ignoreDuplicates: true
+          });
+
+      if (migrateResult.error) {
+        console.warn(
+          "Não foi possível migrar favoritos locais:",
+          migrateResult.error
+        );
+      }
+    }
+
+    var favoritesResult =
+      await window.mugartSupabase
+        .from("customer_favorites")
+        .select("product_id")
+        .eq("user_id", user.id);
+
+    if (favoritesResult.error) {
+      console.warn(
+        "Não foi possível sincronizar favoritos:",
+        favoritesResult.error
+      );
+      return;
+    }
+
+    StoreState.favorites =
+      (favoritesResult.data || [])
+        .map(function(row) {
+          return String(row.product_id);
+        });
+
+    saveToStorage(
+      MUGART_CONFIG.storageKeys.favorites,
+      StoreState.favorites
+    );
+
+  } catch (error) {
+    console.warn(
+      "Erro ao sincronizar favoritos:",
+      error
+    );
+  }
+}
+
+async function persistFavoriteForCurrentUser(
+  productId,
+  shouldFavorite
+) {
+  if (!window.mugartSupabase) return;
+
+  try {
+    var sessionResult =
+      await window.mugartSupabase.auth.getSession();
+
+    var user =
+      sessionResult.data.session &&
+      sessionResult.data.session.user;
+
+    if (!user) return;
+
+    if (shouldFavorite) {
+      var insertResult =
+        await window.mugartSupabase
+          .from("customer_favorites")
+          .upsert(
+            {
+              user_id: user.id,
+              product_id: productId
+            },
+            {
+              onConflict: "user_id,product_id"
+            }
+          );
+
+      if (insertResult.error) {
+        throw insertResult.error;
+      }
+
+      return;
+    }
+
+    var deleteResult =
+      await window.mugartSupabase
+        .from("customer_favorites")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("product_id", productId);
+
+    if (deleteResult.error) {
+      throw deleteResult.error;
+    }
+
+  } catch (error) {
+    console.error(
+      "Erro ao salvar favorito na conta:",
+      error
+    );
   }
 }
 
@@ -726,8 +863,9 @@ function productCardTemplate(product) {
 
   return "" +
     '<article class="store-product-card" data-product-id="' + product.id + '">' +
-      '<button class="favorite-btn ' + (isFavorite ? "active" : "") + '" type="button" data-action="favorite" aria-label="Favoritar produto">' +
-        (isFavorite ? "♥" : "♡") +
+      '<button class="favorite-btn ' + (isFavorite ? "active" : "") + '" type="button" data-action="favorite" aria-label="' +
+        (isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos") + '">' +
+        '<i class="' + (isFavorite ? "fa-solid" : "fa-regular") + ' fa-heart"></i>' +
       '</button>' +
 
       (discount ? '<span class="discount-badge">-' + discount + "%</span>" : "") +
@@ -1245,7 +1383,7 @@ function closeProductModal() {
   modal.setAttribute("aria-hidden", "true");
 }
 
-function toggleFavorite(productId) {
+async function toggleFavorite(productId) {
   var product = getProductById(productId);
 
   if (!product) return;
@@ -1264,7 +1402,15 @@ function toggleFavorite(productId) {
     showToast("Produto adicionado aos favoritos.");
   }
 
-  saveToStorage(MUGART_CONFIG.storageKeys.favorites, StoreState.favorites);
+  saveToStorage(
+    MUGART_CONFIG.storageKeys.favorites,
+    StoreState.favorites
+  );
+
+  await persistFavoriteForCurrentUser(
+    productId,
+    !exists
+  );
 
   renderProducts();
   renderFeaturedProducts();

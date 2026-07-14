@@ -1059,3 +1059,33 @@ footer h4 {
   font-size: 20px;
   text-shadow: 0 2px 8px #000;
 }
+
+/* Favoritos visíveis nos cards */
+.favorite-btn {
+  display: grid !important;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(3,4,6,.82);
+  color: #fff;
+  box-shadow: 0 7px 20px rgba(0,0,0,.34);
+  transition:
+    transform .2s ease,
+    background .2s ease,
+    color .2s ease;
+}
+
+.favorite-btn i {
+  pointer-events: none;
+}
+
+.favorite-btn:hover {
+  transform: translateY(-2px) scale(1.06);
+  border-color: var(--pink);
+  color: var(--pink);
+}
+
+.favorite-btn.active {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #fff;
+}
