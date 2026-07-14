@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="css/product-variants.css?v=1" />
   <link rel="stylesheet" href="css/product-images.css?v=2" />
   <link rel="stylesheet" href="css/product-seo.css?v=1" />
-  <link rel="stylesheet" href="css/product-seo-url.css?v=1" />
+  <link rel="stylesheet" href="css/product-seo-url.css?v=2" />
 </head>
 
 <body class="admin-body">
@@ -155,31 +155,14 @@
           <div class="form-grid product-seo-grid">
             <label class="full">
               URL do produto
-
               <div class="slug-input-group">
-                <span class="slug-prefix">
-                  https://mugart.com.br/produto.html?slug=
-                </span>
-
-                <input
-                  id="productSlug"
-                  type="text"
-                  maxlength="180"
-                  autocomplete="off"
-                  spellcheck="false"
-                  placeholder="caneca-personalizada-dia-dos-pais"
-                />
+                <span class="slug-prefix">https://mugart.com.br/produto.html?slug=</span>
+                <input id="productSlug" type="text" maxlength="180" autocomplete="off" spellcheck="false" placeholder="caneca-dia-dos-pais_azul" />
               </div>
-
-              <small>
-                Edite somente a parte final da URL. O domínio e o caminho permanecem fixos.
-              </small>
-
+              <small>Permitidos: letras, números, hífen (-), underline (_), ponto (.) e til (~).</small>
               <div class="slug-final-preview">
                 <span>URL final:</span>
-                <strong id="slugFullPreview">
-                  https://mugart.com.br/produto.html?slug=...
-                </strong>
+                <strong id="slugFullPreview">Preencha o slug para gerar a URL.</strong>
               </div>
             </label>
 
@@ -213,15 +196,11 @@
               <small><span id="seoDescriptionCount">0</span>/170 caracteres</small>
             </label>
 
-            <label class="full">
-              URL canônica
-              <input
-                id="productCanonicalUrl"
-                type="url"
-                placeholder="https://mugart.com.br/produto.html?slug=..."
-              />
-              <small>Deixe em branco para o site gerar automaticamente.</small>
-            </label>
+            <div class="canonical-auto-box full">
+              <span>URL canônica</span>
+              <strong id="productCanonicalPreview">Será gerada automaticamente após preencher o slug.</strong>
+              <small>A URL canônica é definida automaticamente pelo site.</small>
+            </div>
 
             <label>
               Indexar no Google
@@ -430,7 +409,7 @@
   <script src="/admin/js/admin-auth.js?v=1"></script>
   <script src="/admin/js/product-variants.js?v=1"></script>
   <script src="/admin/js/product-images.js?v=2"></script>
-  <script src="/admin/js/admin.js?v=9"></script>
+  <script src="/admin/js/admin.js?v=10"></script>
   <script src="js/catalogo-profissional.js"></script>
   <script src="js/admin-2.js"></script>
 </body>
