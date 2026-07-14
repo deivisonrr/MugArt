@@ -152,15 +152,26 @@
           </div>
 
           <div class="form-grid product-seo-grid">
-            <label>
-              Slug da URL
-              <input
-                id="productSlug"
-                maxlength="180"
-                placeholder="caneca-personalizada-dia-dos-pais"
-              />
-              <small>A URL será: /produto.html?slug=<span id="slugPreview">...</span></small>
-            </label>
+            <label class="full">
+          URL do produto
+        
+          <div class="slug-input-group">
+            <span class="slug-prefix">
+              https://mugart.com.br/produto.html?slug=
+            </span>
+        
+            <input
+              id="productSlug"
+              type="text"
+              maxlength="180"
+              placeholder="caneca-personalizada-dia-dos-pais"
+            />
+          </div>
+
+          <small>
+            Informe apenas a parte final da URL.
+          </small>
+        </label>
 
             <label>
               Texto alternativo da imagem
