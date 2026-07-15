@@ -121,10 +121,8 @@
       .or(`slug.eq.${slug},id.eq.${slug}`)
       .maybeSingle();
 
-     if (
-    productResult.error ||
-    !productResult.data
-)
+     console.log(productResult);
+     console.log(productResult.error);
 
     if (
       productResult.error ||
