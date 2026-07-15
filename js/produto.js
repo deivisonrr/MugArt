@@ -63,6 +63,11 @@
       .get("slug") || "";
   }
 
+  function isUuid(value) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      .test(String(value || "").trim());
+  }
+
   function showToast(message) {
     var toast = $("#productToast");
 
@@ -86,43 +91,55 @@
       return;
     }
 
-    var productResult = await window.mugartSupabase
-      .from("products")
-      .select(`
+    var productSelect = `
+      id,
+      name,
+      sku,
+      description,
+      color,
+      price,
+      old_price,
+      stock,
+      image_url,
+      active,
+      featured,
+      slug,
+      seo_title,
+      seo_description,
+      image_alt,
+      canonical_url,
+      noindex,
+      badge_text,
+      badge_type,
+      offer_ends_at,
+      installments_max,
+      pix_discount_percent,
+      categories (
         id,
         name,
-        sku,
-        description,
-        color,
-        price,
-        old_price,
-        stock,
-        image_url,
-        active,
-        featured,
-        slug,
-        seo_title,
-        seo_description,
-        image_alt,
-        canonical_url,
-        noindex,
-        badge_text,
-        badge_type,
-        offer_ends_at,
-        installments_max,
-        pix_discount_percent,
-        categories (
-          id,
-          name,
-          slug
-        )
-      `)
+        slug
+      )
+    `;
+
+    var productResult = await window.mugartSupabase
+      .from("products")
+      .select(productSelect)
       .eq("active", true)
-      .or(`slug.eq.${slug},id.eq.${slug}`)
+      .eq("slug", slug)
       .maybeSingle();
 
-     console.log(productResult);
-     console.log(productResult.error);
+    if (
+      !productResult.data &&
+      !productResult.error &&
+      isUuid(slug)
+    ) {
+      productResult = await window.mugartSupabase
+        .from("products")
+        .select(productSelect)
+        .eq("active", true)
+        .eq("id", slug)
+        .maybeSingle();
+    }
 
     if (
       productResult.error ||
