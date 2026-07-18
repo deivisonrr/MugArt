@@ -73,22 +73,24 @@ function a3EffectivePrice(normalPrice, promotionalPrice, startsAt, endsAt) {
 }
 
 async function generateNextProductSku() {
+  let highest = 0;
+
+  (Admin3State.products || []).forEach((row) => {
+    const match = String(row.sku || "").match(/^MUG-(\d+)$/i);
+    if (match) highest = Math.max(highest, Number(match[1]));
+  });
+
   const result = await mugartSupabase
     .from("products")
     .select("sku")
     .ilike("sku", "MUG-%");
 
-  if (result.error) {
-    console.error("Erro ao gerar SKU:", result.error);
-    return `MUG-${Date.now().toString().slice(-6)}`;
+  if (!result.error) {
+    (result.data || []).forEach((row) => {
+      const match = String(row.sku || "").match(/^MUG-(\d+)$/i);
+      if (match) highest = Math.max(highest, Number(match[1]));
+    });
   }
-
-  let highest = 0;
-
-  (result.data || []).forEach((row) => {
-    const match = String(row.sku || "").match(/^MUG-(\d+)$/i);
-    if (match) highest = Math.max(highest, Number(match[1]));
-  });
 
   return `MUG-${String(highest + 1).padStart(6, "0")}`;
 }
@@ -125,6 +127,78 @@ function a3Slugify(text) {
     .replace(/(^-|-$)+/g, "");
 }
 
+
+async function normalizeExistingSkus() {
+  const button = a3("#admin3NormalizeSkus");
+
+  if (!Admin3State.products.length) {
+    alert("Nenhum produto cadastrado.");
+    return;
+  }
+
+  if (!confirm("Isso substituirá o SKU de todos os produtos e variações. Deseja continuar?")) {
+    return;
+  }
+
+  const originalText = button?.textContent || "Padronizar SKUs";
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Padronizando...";
+  }
+
+  try {
+    const orderedProducts = [...Admin3State.products].sort((a, b) => {
+      return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+    });
+
+    for (let index = 0; index < orderedProducts.length; index += 1) {
+      const product = orderedProducts[index];
+      const newSku = `MUG-${String(index + 1).padStart(6, "0")}`;
+
+      const productResult = await mugartSupabase
+        .from("products")
+        .update({ sku: newSku })
+        .eq("id", product.id);
+
+      if (productResult.error) throw productResult.error;
+
+      const variantsResult = await mugartSupabase
+        .from("product_variants")
+        .select("id, created_at")
+        .eq("product_id", product.id)
+        .order("created_at", { ascending: true });
+
+      if (variantsResult.error) throw variantsResult.error;
+
+      const variants = variantsResult.data || [];
+
+      for (let variantIndex = 0; variantIndex < variants.length; variantIndex += 1) {
+        const variantSku = `${newSku}-V${String(variantIndex + 1).padStart(2, "0")}`;
+
+        const updateVariant = await mugartSupabase
+          .from("product_variants")
+          .update({ sku: variantSku })
+          .eq("id", variants[variantIndex].id);
+
+        if (updateVariant.error) throw updateVariant.error;
+      }
+    }
+
+    await loadAdmin3Data();
+    renderAdmin3();
+    alert("SKUs atualizados com sucesso.");
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao padronizar SKUs: " + (error.message || error));
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   if (!window.mugartSupabase) {
     alert("Supabase não carregou.");
@@ -138,6 +212,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function bindAdmin3Events() {
   a3("#openProductDrawer")?.addEventListener("click", () => openDrawer());
+  a3("#admin3NormalizeSkus")?.addEventListener("click", normalizeExistingSkus);
   a3("#closeProductDrawer")?.addEventListener("click", closeDrawer);
   a3("#admin3Cancel")?.addEventListener("click", closeDrawer);
   a3("#admin3Overlay")?.addEventListener("click", closeDrawer);
@@ -362,7 +437,7 @@ function productRowTemplate(product) {
   `;
 }
 
-function openDrawer(product) {
+async function openDrawer(product) {
   a3("#admin3Drawer").classList.add("open");
   a3("#admin3Overlay").classList.add("open");
 
@@ -370,11 +445,11 @@ function openDrawer(product) {
     resetForm();
     a3("#admin3DrawerTitle").textContent = "Novo produto";
 
-    generateNextProductSku().then((sku) => {
-      if (!Admin3State.currentProductId && a3("#admin3Sku")) {
-        a3("#admin3Sku").value = sku;
-      }
-    });
+    const sku = await generateNextProductSku();
+
+    if (!Admin3State.currentProductId && a3("#admin3Sku")) {
+      a3("#admin3Sku").value = sku;
+    }
   }
 }
 
