@@ -199,6 +199,217 @@ async function normalizeExistingSkus() {
   }
 }
 
+
+function admin3PromotionStatus(product) {
+  const normal = Number(product.old_price || 0);
+  const promo = Number(product.price || 0);
+
+  if (!normal || !promo || promo >= normal) {
+    return { key: "none", label: "Sem promoção" };
+  }
+
+  const now = Date.now();
+  const starts = product.offer_starts_at ? new Date(product.offer_starts_at).getTime() : null;
+  const ends = product.offer_ends_at ? new Date(product.offer_ends_at).getTime() : null;
+
+  if (starts && now < starts) return { key: "scheduled", label: "Agendada" };
+  if (ends && now > ends) return { key: "ended", label: "Encerrada" };
+  return { key: "active", label: "Ativa" };
+}
+
+function updateAdmin3PromotionStatus() {
+  const status = admin3PromotionStatus({
+    old_price: Number(a3("#admin3OldPrice")?.value || 0),
+    price: Number(a3("#admin3Price")?.value || 0),
+    offer_starts_at: a3ToIso(a3("#admin3OfferStartsAt")?.value),
+    offer_ends_at: a3ToIso(a3("#admin3OfferEndsAt")?.value)
+  });
+
+  if (a3("#admin3PromotionStatus")) {
+    a3("#admin3PromotionStatus").textContent = status.label;
+  }
+}
+
+window.duplicateAdmin3Product = async function(id) {
+  const source = Admin3State.products.find((item) => item.id === id);
+  if (!source) return;
+
+  try {
+    const sku = await generateNextProductSku();
+
+    const payload = {
+      name: `${source.name} - Cópia`,
+      sku,
+      category_id: source.category_id,
+      color: source.color,
+      price: source.price,
+      old_price: source.old_price,
+      offer_starts_at: source.offer_starts_at,
+      offer_ends_at: source.offer_ends_at,
+      stock: 0,
+      active: false,
+      featured: false,
+      description: source.description,
+      image_url: source.image_url,
+      slug: `${a3Slugify(source.slug || source.name)}-copia-${Date.now().toString().slice(-4)}`,
+      seo_title: source.seo_title,
+      seo_description: source.seo_description,
+      image_alt: source.image_alt || null,
+      noindex: true,
+      weight_kg: source.weight_kg || null,
+      width_cm: source.width_cm || null,
+      height_cm: source.height_cm || null,
+      length_cm: source.length_cm || null
+    };
+
+    const result = await mugartSupabase
+      .from("products")
+      .insert(payload)
+      .select()
+      .single();
+
+    if (result.error) throw result.error;
+
+    const variantsResult = await mugartSupabase
+      .from("product_variants")
+      .select("*")
+      .eq("product_id", id)
+      .order("created_at", { ascending: true });
+
+    if (!variantsResult.error && variantsResult.data?.length) {
+      const variants = variantsResult.data.map((variant, index) => ({
+        product_id: result.data.id,
+        color: variant.color,
+        sku: `${sku}-V${String(index + 1).padStart(2, "0")}`,
+        price: variant.price,
+        old_price: variant.old_price,
+        offer_starts_at: variant.offer_starts_at,
+        offer_ends_at: variant.offer_ends_at,
+        stock: 0,
+        image_url: variant.image_url,
+        active: false
+      }));
+
+      const insertVariants = await mugartSupabase
+        .from("product_variants")
+        .insert(variants);
+
+      if (insertVariants.error) throw insertVariants.error;
+    }
+
+    await loadAdmin3Data();
+    renderAdmin3();
+    alert("Produto duplicado como inativo.");
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao duplicar produto: " + (error.message || error));
+  }
+};
+
+function exportAdmin3Csv() {
+  const headers = [
+    "name","sku","category_id","color","price","old_price","offer_starts_at",
+    "offer_ends_at","stock","active","featured","description","image_url","slug",
+    "seo_title","seo_description"
+  ];
+
+  const escapeCsv = (value) => {
+    const text = String(value ?? "");
+    return `"${text.replace(/"/g, '""')}"`;
+  };
+
+  const rows = Admin3State.products.map((product) =>
+    headers.map((key) => escapeCsv(product[key])).join(";")
+  );
+
+  const csv = [headers.join(";"), ...rows].join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = `mugart-produtos-${new Date().toISOString().slice(0,10)}.csv`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+async function importAdmin3Csv(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter(Boolean);
+
+    if (lines.length < 2) {
+      throw new Error("CSV vazio.");
+    }
+
+    const parseLine = (line) => {
+      const result = [];
+      let current = "";
+      let quoted = false;
+
+      for (let i = 0; i < line.length; i += 1) {
+        const char = line[i];
+
+        if (char === '"') {
+          if (quoted && line[i + 1] === '"') {
+            current += '"';
+            i += 1;
+          } else {
+            quoted = !quoted;
+          }
+        } else if (char === ";" && !quoted) {
+          result.push(current);
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current);
+      return result;
+    };
+
+    const headers = parseLine(lines[0]);
+    const payload = lines.slice(1).map((line) => {
+      const values = parseLine(line);
+      const row = {};
+
+      headers.forEach((header, index) => {
+        row[header] = values[index] ?? null;
+      });
+
+      ["price","old_price","stock"].forEach((key) => {
+        row[key] = row[key] === "" || row[key] == null ? null : Number(row[key]);
+      });
+
+      ["active","featured"].forEach((key) => {
+        row[key] = String(row[key]).toLowerCase() === "true";
+      });
+
+      return row;
+    });
+
+    const result = await mugartSupabase.from("products").upsert(payload, {
+      onConflict: "sku"
+    });
+
+    if (result.error) throw result.error;
+
+    await loadAdmin3Data();
+    renderAdmin3();
+    alert("CSV importado com sucesso.");
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao importar CSV: " + (error.message || error));
+  } finally {
+    event.target.value = "";
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   if (!window.mugartSupabase) {
     alert("Supabase não carregou.");
@@ -213,6 +424,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 function bindAdmin3Events() {
   a3("#openProductDrawer")?.addEventListener("click", () => openDrawer());
   a3("#admin3NormalizeSkus")?.addEventListener("click", normalizeExistingSkus);
+  a3("#admin3ExportCsv")?.addEventListener("click", exportAdmin3Csv);
+  a3("#admin3ImportCsv")?.addEventListener("change", importAdmin3Csv);
   a3("#closeProductDrawer")?.addEventListener("click", closeDrawer);
   a3("#admin3Cancel")?.addEventListener("click", closeDrawer);
   a3("#admin3Overlay")?.addEventListener("click", closeDrawer);
@@ -257,6 +470,11 @@ function bindAdmin3Events() {
 
   ["#admin3Name", "#admin3Slug", "#admin3SeoTitle", "#admin3SeoDescription"].forEach((selector) => {
     a3(selector)?.addEventListener("input", updateSeoPreview);
+  });
+
+  ["#admin3OldPrice", "#admin3Price", "#admin3OfferStartsAt", "#admin3OfferEndsAt"].forEach((selector) => {
+    a3(selector)?.addEventListener("input", updateAdmin3PromotionStatus);
+    a3(selector)?.addEventListener("change", updateAdmin3PromotionStatus);
   });
 }
 
@@ -402,6 +620,7 @@ function productCardTemplate(product) {
 
       <div class="admin3-card-actions">
         <button type="button" class="edit" onclick="editAdmin3Product('${product.id}')">Editar</button>
+        <button type="button" onclick="duplicateAdmin3Product('${product.id}')">Duplicar</button>
         <button type="button" class="delete" onclick="deleteAdmin3Product('${product.id}')">Excluir</button>
       </div>
     </article>
@@ -431,6 +650,7 @@ function productRowTemplate(product) {
 
       <div class="admin3-card-actions">
         <button type="button" class="edit" onclick="editAdmin3Product('${product.id}')">Editar</button>
+        <button type="button" onclick="duplicateAdmin3Product('${product.id}')">Duplicar</button>
         <button type="button" class="delete" onclick="deleteAdmin3Product('${product.id}')">Excluir</button>
       </div>
     </article>
@@ -470,6 +690,7 @@ function resetForm() {
   if (a3("#admin3VariantOfferEndsAt")) a3("#admin3VariantOfferEndsAt").value = "";
   updateImagePreview();
   updateSeoPreview();
+  if (typeof updateAdmin3PromotionStatus === "function") updateAdmin3PromotionStatus();
 }
 
 window.editAdmin3Product = async function(id) {
@@ -497,6 +718,10 @@ window.editAdmin3Product = async function(id) {
   a3("#admin3Active").value = String(product.active);
   a3("#admin3FeaturedField").value = String(product.featured);
   a3("#admin3Description").value = product.description || "";
+  if (a3("#admin3Weight")) a3("#admin3Weight").value = product.weight_kg || "";
+  if (a3("#admin3Width")) a3("#admin3Width").value = product.width_cm || "";
+  if (a3("#admin3Height")) a3("#admin3Height").value = product.height_cm || "";
+  if (a3("#admin3Length")) a3("#admin3Length").value = product.length_cm || "";
   a3("#admin3ImageUrl").value = product.image_url || "";
   a3("#admin3Slug").value = product.slug || "";
   a3("#admin3SeoTitle").value = product.seo_title || "";
@@ -504,6 +729,7 @@ window.editAdmin3Product = async function(id) {
 
   updateImagePreview();
   updateSeoPreview();
+  updateAdmin3PromotionStatus();
 
   await renderGallery(id);
   await renderVariants(id);
@@ -596,7 +822,11 @@ async function saveProduct(event) {
     image_url: a3("#admin3ImageUrl").value.trim(),
     slug: a3("#admin3Slug").value.trim() || a3Slugify(a3("#admin3Name").value),
     seo_title: a3("#admin3SeoTitle").value.trim(),
-    seo_description: a3("#admin3SeoDescription").value.trim()
+    seo_description: a3("#admin3SeoDescription").value.trim(),
+    weight_kg: a3("#admin3Weight")?.value ? Number(a3("#admin3Weight").value) : null,
+    width_cm: a3("#admin3Width")?.value ? Number(a3("#admin3Width").value) : null,
+    height_cm: a3("#admin3Height")?.value ? Number(a3("#admin3Height").value) : null,
+    length_cm: a3("#admin3Length")?.value ? Number(a3("#admin3Length").value) : null
   };
 
   let result;

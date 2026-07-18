@@ -40,6 +40,37 @@
     }).format(Number(value || 0));
   }
 
+
+  function promotionActive(startsAt, endsAt) {
+    var now = Date.now();
+    var starts = startsAt ? new Date(startsAt).getTime() : null;
+    var ends = endsAt ? new Date(endsAt).getTime() : null;
+
+    if (starts && now < starts) return false;
+    if (ends && now > ends) return false;
+    return true;
+  }
+
+  function resolvePrices(price, oldPrice, startsAt, endsAt) {
+    var promotional = Number(price || 0);
+    var normal = Number(oldPrice || 0);
+
+    if (
+      normal > promotional &&
+      promotionActive(startsAt, endsAt)
+    ) {
+      return {
+        price: promotional,
+        oldPrice: normal
+      };
+    }
+
+    return {
+      price: normal > 0 ? normal : promotional,
+      oldPrice: 0
+    };
+  }
+
   function loadCart() {
     try {
       state.cart = JSON.parse(
@@ -111,6 +142,7 @@
       noindex,
       badge_text,
       badge_type,
+      offer_starts_at,
       offer_ends_at,
       installments_max,
       pix_discount_percent,
@@ -162,6 +194,8 @@
           sku,
           price,
           old_price,
+          offer_starts_at,
+          offer_ends_at,
           stock,
           image_url,
           active,
@@ -229,6 +263,13 @@
     var variants = (
       variantsResult.data || []
     ).map(function (variant) {
+      var resolvedVariantPrice = resolvePrices(
+        variant.price,
+        variant.old_price,
+        variant.offer_starts_at,
+        variant.offer_ends_at
+      );
+
       return {
         id: variant.id,
         productId: product.id,
@@ -237,9 +278,13 @@
         sku:
           variant.sku || variant.id,
         price:
-          Number(variant.price || 0),
+          resolvedVariantPrice.price,
         oldPrice:
-          Number(variant.old_price || 0),
+          resolvedVariantPrice.oldPrice,
+        offerStartsAt:
+          variant.offer_starts_at || null,
+        offerEndsAt:
+          variant.offer_ends_at || null,
         stock:
           Number(variant.stock || 0),
         image:
@@ -276,6 +321,13 @@
       });
     }
 
+    var resolvedProductPrice = resolvePrices(
+      product.price,
+      product.old_price,
+      product.offer_starts_at,
+      product.offer_ends_at
+    );
+
     state.product = {
       id: product.id,
       name: product.name,
@@ -298,9 +350,9 @@
         product.color ||
         "Modelo principal",
       price:
-        Number(product.price || 0),
+        resolvedProductPrice.price,
       oldPrice:
-        Number(product.old_price || 0),
+        resolvedProductPrice.oldPrice,
       stock:
         Number(product.stock || 0),
       image:
@@ -322,6 +374,8 @@
         product.badge_text || "",
       badgeType:
         product.badge_type || "promo",
+      offerStartsAt:
+        product.offer_starts_at || null,
       offerEndsAt:
         product.offer_ends_at || null,
       installmentsMax:
@@ -340,9 +394,9 @@
         "Modelo principal",
       sku: product.sku,
       price:
-        Number(product.price || 0),
+        resolvedProductPrice.price,
       oldPrice:
-        Number(product.old_price || 0),
+        resolvedProductPrice.oldPrice,
       stock:
         Number(product.stock || 0),
       image:
@@ -528,7 +582,12 @@
     if (
       !container ||
       !value ||
-      !state.product.offerEndsAt
+      !state.product.offerEndsAt ||
+      !promotionActive(
+        state.product.offerStartsAt,
+        state.product.offerEndsAt
+      ) ||
+      !state.product.oldPrice
     ) {
       container?.classList.add(
         "hidden"
