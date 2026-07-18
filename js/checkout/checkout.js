@@ -3,6 +3,87 @@ const CHECKOUT_KEYS = {
     draft: "mugart_checkout_draft"
 };
 
+const PAYMENT_ERRORS = {
+    cc_rejected_high_risk:
+        "O pagamento foi recusado por uma análise de segurança. Tente outro cartão ou utilize o Mercado Pago.",
+
+    cc_rejected_insufficient_amount:
+        "Seu cartão não possui limite suficiente.",
+
+    cc_rejected_bad_filled_card_number:
+        "Número do cartão inválido.",
+
+    cc_rejected_bad_filled_date:
+        "Data de validade inválida.",
+
+    cc_rejected_bad_filled_security_code:
+        "Código de segurança inválido.",
+
+    cc_rejected_card_disabled:
+        "O cartão está bloqueado.",
+
+    cc_rejected_call_for_authorize:
+        "Autorize a compra junto ao banco emissor.",
+
+    cc_rejected_duplicated_payment:
+        "Já existe um pagamento semelhante. Aguarde alguns minutos.",
+
+    cc_rejected_other_reason:
+        "O pagamento foi recusado pelo banco emissor."
+};
+
+
+function normalizePaymentStatusDetail(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase();
+}
+
+function extractPaymentStatusDetail(payload) {
+    const candidates = [
+        payload?.status_detail,
+        payload?.details?.status_detail,
+        payload?.payment?.status_detail,
+        payload?.details?.payment?.status_detail,
+        payload?.cause?.[0]?.code,
+        payload?.details?.cause?.[0]?.code
+    ];
+
+    for (const candidate of candidates) {
+        const normalized = normalizePaymentStatusDetail(candidate);
+
+        if (normalized) {
+            return normalized;
+        }
+    }
+
+    const combinedMessage = [
+        payload?.error,
+        payload?.message,
+        payload?.details?.error,
+        payload?.details?.message
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+    const match = combinedMessage.match(/cc_rejected_[a-z0-9_]+/i);
+
+    return match
+        ? normalizePaymentStatusDetail(match[0])
+        : "";
+}
+
+function getPaymentErrorMessage(statusDetail, fallbackMessage = "") {
+    const detail = normalizePaymentStatusDetail(statusDetail);
+
+    if (detail && PAYMENT_ERRORS[detail]) {
+        return PAYMENT_ERRORS[detail];
+    }
+
+    return fallbackMessage ||
+        "O pagamento não foi aprovado. Tente outro cartão, Pix ou o checkout do Mercado Pago.";
+}
+
 const CheckoutState = {
     products: [],
     cart: [],
@@ -2056,16 +2137,43 @@ async function finishEmbeddedPayment(formData, selectedPaymentMethod) {
             );
 
             if (error) {
-                let message = error.message || "Falha ao processar pagamento.";
+                let responseBody = null;
+
                 try {
-                    const body = await error.context?.json?.();
-                    if (body?.error) message = body.error;
-                } catch {}
-                throw new Error(message);
+                    responseBody = await error.context?.json?.();
+                } catch {
+                    responseBody = null;
+                }
+
+                const statusDetail =
+                    extractPaymentStatusDetail(responseBody);
+
+                const fallbackMessage =
+                    responseBody?.error ||
+                    responseBody?.message ||
+                    error.message ||
+                    "Falha ao processar pagamento.";
+
+                throw new Error(
+                    getPaymentErrorMessage(
+                        statusDetail,
+                        fallbackMessage
+                    )
+                );
             }
 
             if (!data?.success) {
-                throw new Error(data?.error || "Pagamento não concluído.");
+                const statusDetail =
+                    extractPaymentStatusDetail(data);
+
+                throw new Error(
+                    getPaymentErrorMessage(
+                        statusDetail,
+                        data?.error ||
+                        data?.message ||
+                        "Pagamento não concluído."
+                    )
+                );
             }
 
             handleDirectPaymentResult(data);
@@ -2107,12 +2215,21 @@ function handleDirectPaymentResult(data) {
         return;
     }
 
+    const statusDetail =
+        extractPaymentStatusDetail(data);
+
+    const friendlyMessage =
+        getPaymentErrorMessage(
+            statusDetail,
+            "O pagamento não foi aprovado. Tente outro cartão, Pix ou o checkout do Mercado Pago."
+        );
+
     showEmbeddedStatus(
-        data.status_detail
-            ? `Pagamento não aprovado: ${data.status_detail}`
-            : "Pagamento não aprovado. Tente outro cartão ou escolha Mercado Pago.",
+        friendlyMessage,
         "error"
     );
+
+    toast(friendlyMessage);
 }
 
 function showEmbeddedStatus(message, type) {
