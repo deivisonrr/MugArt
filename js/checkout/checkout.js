@@ -32,58 +32,6 @@ const PAYMENT_ERRORS = {
         "O pagamento foi recusado pelo banco emissor."
 };
 
-
-function normalizePaymentStatusDetail(value) {
-    return String(value || "")
-        .trim()
-        .toLowerCase();
-}
-
-function extractPaymentStatusDetail(payload) {
-    const candidates = [
-        payload?.status_detail,
-        payload?.details?.status_detail,
-        payload?.payment?.status_detail,
-        payload?.details?.payment?.status_detail,
-        payload?.cause?.[0]?.code,
-        payload?.details?.cause?.[0]?.code
-    ];
-
-    for (const candidate of candidates) {
-        const normalized = normalizePaymentStatusDetail(candidate);
-
-        if (normalized) {
-            return normalized;
-        }
-    }
-
-    const combinedMessage = [
-        payload?.error,
-        payload?.message,
-        payload?.details?.error,
-        payload?.details?.message
-    ]
-        .filter(Boolean)
-        .join(" ");
-
-    const match = combinedMessage.match(/cc_rejected_[a-z0-9_]+/i);
-
-    return match
-        ? normalizePaymentStatusDetail(match[0])
-        : "";
-}
-
-function getPaymentErrorMessage(statusDetail, fallbackMessage = "") {
-    const detail = normalizePaymentStatusDetail(statusDetail);
-
-    if (detail && PAYMENT_ERRORS[detail]) {
-        return PAYMENT_ERRORS[detail];
-    }
-
-    return fallbackMessage ||
-        "O pagamento não foi aprovado. Tente outro cartão, Pix ou o checkout do Mercado Pago.";
-}
-
 const CheckoutState = {
     products: [],
     cart: [],
@@ -98,6 +46,8 @@ const CheckoutState = {
     bricksBuilder: null,
     paymentBrickController: null,
     paymentBrickRenderTimer: null,
+    paymentBrickRendering: false,
+    paymentBrickNeedsRerender: false,
     currentEmbeddedOrderId: null,
     embeddedProcessing: false,
     selectedShippingCompany: "",
@@ -1932,16 +1882,31 @@ function schedulePaymentBrickRender() {
     if (CheckoutState.selectedPayment !== "embedded") return;
     if (!CheckoutState.bricksBuilder) return;
 
+    /*
+     * O resumo, o CEP e o frete podem solicitar uma nova
+     * renderização quase ao mesmo tempo. Se o Brick ainda
+     * estiver sendo criado, marcamos uma nova tentativa para
+     * depois, evitando o erro "Brick already initialized".
+     */
+    if (CheckoutState.paymentBrickRendering) {
+        CheckoutState.paymentBrickNeedsRerender = true;
+        return;
+    }
+
     clearTimeout(CheckoutState.paymentBrickRenderTimer);
+
     CheckoutState.paymentBrickRenderTimer = setTimeout(() => {
+        CheckoutState.paymentBrickRenderTimer = null;
         renderPaymentBrick();
-    }, 350);
+    }, 500);
 }
 
 async function destroyPaymentBrick() {
     try {
         if (CheckoutState.paymentBrickController?.unmount) {
-            await CheckoutState.paymentBrickController.unmount();
+            const controller = CheckoutState.paymentBrickController;
+            CheckoutState.paymentBrickController = null;
+            await controller.unmount();
         }
     } catch (error) {
         console.warn("[Checkout] Erro ao desmontar Brick:", error);
@@ -1957,15 +1922,27 @@ async function renderPaymentBrick() {
     if (!CheckoutState.bricksBuilder) return;
     if (CheckoutState.embeddedProcessing) return;
 
+    if (CheckoutState.paymentBrickRendering) {
+        CheckoutState.paymentBrickNeedsRerender = true;
+        return;
+    }
+
+    CheckoutState.paymentBrickRendering = true;
+    CheckoutState.paymentBrickNeedsRerender = false;
+
     const { total, items } = getCheckoutTotals();
     const container = qs("#paymentBrick_container");
     const loading = qs("#paymentBrickLoading");
 
-    if (!container || !loading) return;
+    if (!container || !loading) {
+        CheckoutState.paymentBrickRendering = false;
+        return;
+    }
 
     if (!items.length || total <= 0) {
         await destroyPaymentBrick();
         container.innerHTML = '<p class="payment-hint">Adicione itens e selecione o frete para pagar no site.</p>';
+        CheckoutState.paymentBrickRendering = false;
         return;
     }
 
@@ -2009,9 +1986,41 @@ async function renderPaymentBrick() {
             }
         );
     } catch (error) {
-        console.error("[Checkout] Falha ao renderizar Brick:", error);
-        loading.hidden = true;
-        container.innerHTML = '<p class="payment-error">Não foi possível abrir o pagamento no site. Você pode escolher “Pagar no Mercado Pago”.</p>';
+        /*
+         * O SDK pode lançar "already_initialized" quando uma
+         * solicitação antiga termina ao mesmo tempo que outra.
+         * Não exibimos esse erro ao cliente; apenas reagendamos.
+         */
+        const errorText = String(
+            error?.cause ||
+            error?.message ||
+            error ||
+            ""
+        ).toLowerCase();
+
+        if (
+            errorText.includes("already_initialized") ||
+            errorText.includes("already initialized")
+        ) {
+            console.warn(
+                "[Checkout] Brick já estava sendo inicializado. Nova renderização agendada."
+            );
+            CheckoutState.paymentBrickNeedsRerender = true;
+        } else {
+            console.error("[Checkout] Falha ao renderizar Brick:", error);
+            loading.hidden = true;
+            container.innerHTML = '<p class="payment-error">Não foi possível abrir o pagamento no site. Você pode escolher “Pagar no Mercado Pago”.</p>';
+        }
+    } finally {
+        CheckoutState.paymentBrickRendering = false;
+
+        if (
+            CheckoutState.paymentBrickNeedsRerender &&
+            CheckoutState.selectedPayment === "embedded"
+        ) {
+            CheckoutState.paymentBrickNeedsRerender = false;
+            schedulePaymentBrickRender();
+        }
     }
 }
 
@@ -2137,43 +2146,16 @@ async function finishEmbeddedPayment(formData, selectedPaymentMethod) {
             );
 
             if (error) {
-                let responseBody = null;
-
+                let message = error.message || "Falha ao processar pagamento.";
                 try {
-                    responseBody = await error.context?.json?.();
-                } catch {
-                    responseBody = null;
-                }
-
-                const statusDetail =
-                    extractPaymentStatusDetail(responseBody);
-
-                const fallbackMessage =
-                    responseBody?.error ||
-                    responseBody?.message ||
-                    error.message ||
-                    "Falha ao processar pagamento.";
-
-                throw new Error(
-                    getPaymentErrorMessage(
-                        statusDetail,
-                        fallbackMessage
-                    )
-                );
+                    const body = await error.context?.json?.();
+                    if (body?.error) message = body.error;
+                } catch {}
+                throw new Error(message);
             }
 
             if (!data?.success) {
-                const statusDetail =
-                    extractPaymentStatusDetail(data);
-
-                throw new Error(
-                    getPaymentErrorMessage(
-                        statusDetail,
-                        data?.error ||
-                        data?.message ||
-                        "Pagamento não concluído."
-                    )
-                );
+                throw new Error(data?.error || "Pagamento não concluído.");
             }
 
             handleDirectPaymentResult(data);
@@ -2215,21 +2197,12 @@ function handleDirectPaymentResult(data) {
         return;
     }
 
-    const statusDetail =
-        extractPaymentStatusDetail(data);
-
-    const friendlyMessage =
-        getPaymentErrorMessage(
-            statusDetail,
-            "O pagamento não foi aprovado. Tente outro cartão, Pix ou o checkout do Mercado Pago."
-        );
-
     showEmbeddedStatus(
-        friendlyMessage,
+        data.status_detail
+            ? `Pagamento não aprovado: ${data.status_detail}`
+            : "Pagamento não aprovado. Tente outro cartão ou escolha Mercado Pago.",
         "error"
     );
-
-    toast(friendlyMessage);
 }
 
 function showEmbeddedStatus(message, type) {
