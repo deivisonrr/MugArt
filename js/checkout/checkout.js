@@ -10,7 +10,15 @@ const CheckoutState = {
     shipping: 0,
     coupon: "",
     selectedShipping: "pickup",
-    selectedPayment: "pix",
+    selectedPayment: "embedded",
+    paymentEnvironment: "production",
+    mercadoPagoPublicKey: "",
+    mercadoPago: null,
+    bricksBuilder: null,
+    paymentBrickController: null,
+    paymentBrickRenderTimer: null,
+    currentEmbeddedOrderId: null,
+    embeddedProcessing: false,
     selectedShippingCompany: "",
     selectedShippingService: "",
     selectedShippingDeliveryTime: 0
@@ -604,6 +612,7 @@ document.addEventListener(
 
         restoreDraft();
         bindEvents();
+        await loadMercadoPagoConfig();
         renderCheckout();
 
         const clientePreenchido =
@@ -706,13 +715,26 @@ function bindEvents() {
         });
     });
 
-    qsa("input[name='paymentMethod']").forEach(r => {
-        r.addEventListener("change", () => {
+    qsa("input[name='paymentCheckoutMode']").forEach(r => {
+        r.addEventListener("change", async () => {
             CheckoutState.selectedPayment = r.value;
             updateOptionCards();
+            updatePaymentModeUI();
             saveDraft();
+
+            if (r.value === "embedded") {
+                await renderPaymentBrick();
+            }
         });
     });
+
+    qs("#showTestCardsBtn")?.addEventListener("click", openTestCardsModal);
+    qs("#closeTestCardsBtn")?.addEventListener("click", closeTestCardsModal);
+    qs("#testCardsModal")?.addEventListener("click", event => {
+        if (event.target === qs("#testCardsModal")) closeTestCardsModal();
+    });
+
+    qs("#copyPixBtn")?.addEventListener("click", copyPixCode);
 }
 
 function applyMasks(field) {
@@ -803,6 +825,11 @@ function renderCheckout() {
     renderItems();
     renderSummary();
     updateOptionCards();
+    updatePaymentModeUI();
+
+    if (CheckoutState.selectedPayment === "embedded") {
+        schedulePaymentBrickRender();
+    }
 }
 
 function getProduct(id) {
@@ -898,6 +925,7 @@ function renderSummary() {
     qs("#summaryTotal").textContent = money(total);
 
     updateProgress();
+    schedulePaymentBrickRender();
 }
 
 function updateProgress() {
@@ -1576,7 +1604,7 @@ async function criarPedidoPelaEdgeFunction(payload) {
     return data.data;
 }
 
-async function finishOrder(e) {
+async function finishRedirectOrder(e) {
     e.preventDefault();
 
     const finishButton = qs("#finishOrderBtn");
@@ -1756,4 +1784,390 @@ async function finishOrder(e) {
                 originalButtonText;
         }
     }
+}
+
+/* =========================================================
+ * CHECKOUT HÍBRIDO: BRICK NO SITE + CHECKOUT PRO
+ * ======================================================= */
+
+function getCheckoutTotals() {
+    const items = getCartItems();
+    const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+    const total = Math.max(
+        0,
+        subtotal - Number(CheckoutState.discount || 0) + Number(CheckoutState.shipping || 0)
+    );
+
+    return { items, subtotal, total };
+}
+
+async function loadMercadoPagoConfig() {
+    try {
+        const { data, error } = await mugartSupabase.functions.invoke(
+            "mercadopago-public-config",
+            { body: {} }
+        );
+
+        if (error) throw error;
+        if (!data?.public_key) throw new Error("Public Key não retornada.");
+
+        CheckoutState.mercadoPagoPublicKey = data.public_key;
+        CheckoutState.paymentEnvironment = data.environment || "production";
+
+        const badge = qs("#paymentEnvironmentBadge");
+        const testButton = qs("#showTestCardsBtn");
+
+        if (badge) {
+            badge.textContent = CheckoutState.paymentEnvironment === "development"
+                ? "Ambiente de teste"
+                : "Ambiente seguro";
+            badge.classList.toggle(
+                "sandbox",
+                CheckoutState.paymentEnvironment === "development"
+            );
+        }
+
+        if (testButton) {
+            testButton.hidden = CheckoutState.paymentEnvironment !== "development";
+        }
+
+        if (window.MercadoPago) {
+            CheckoutState.mercadoPago = new MercadoPago(
+                CheckoutState.mercadoPagoPublicKey,
+                { locale: "pt-BR" }
+            );
+            CheckoutState.bricksBuilder = CheckoutState.mercadoPago.bricks();
+        }
+    } catch (error) {
+        console.error("[Checkout] Configuração Mercado Pago:", error);
+        toast("Pagamento no site indisponível. Use o checkout do Mercado Pago.");
+
+        const embeddedRadio = qs("input[name='paymentCheckoutMode'][value='embedded']");
+        if (embeddedRadio) embeddedRadio.disabled = true;
+    }
+}
+
+function schedulePaymentBrickRender() {
+    if (CheckoutState.selectedPayment !== "embedded") return;
+    if (!CheckoutState.bricksBuilder) return;
+
+    clearTimeout(CheckoutState.paymentBrickRenderTimer);
+    CheckoutState.paymentBrickRenderTimer = setTimeout(() => {
+        renderPaymentBrick();
+    }, 350);
+}
+
+async function destroyPaymentBrick() {
+    try {
+        if (CheckoutState.paymentBrickController?.unmount) {
+            await CheckoutState.paymentBrickController.unmount();
+        }
+    } catch (error) {
+        console.warn("[Checkout] Erro ao desmontar Brick:", error);
+    } finally {
+        CheckoutState.paymentBrickController = null;
+        const container = qs("#paymentBrick_container");
+        if (container) container.innerHTML = "";
+    }
+}
+
+async function renderPaymentBrick() {
+    if (CheckoutState.selectedPayment !== "embedded") return;
+    if (!CheckoutState.bricksBuilder) return;
+    if (CheckoutState.embeddedProcessing) return;
+
+    const { total, items } = getCheckoutTotals();
+    const container = qs("#paymentBrick_container");
+    const loading = qs("#paymentBrickLoading");
+
+    if (!container || !loading) return;
+
+    if (!items.length || total <= 0) {
+        await destroyPaymentBrick();
+        container.innerHTML = '<p class="payment-hint">Adicione itens e selecione o frete para pagar no site.</p>';
+        return;
+    }
+
+    loading.hidden = false;
+    await destroyPaymentBrick();
+
+    try {
+        CheckoutState.paymentBrickController = await CheckoutState.bricksBuilder.create(
+            "payment",
+            "paymentBrick_container",
+            {
+                initialization: {
+                    amount: Number(total.toFixed(2)),
+                    payer: {
+                        email: qs("#customerEmail")?.value.trim() || ""
+                    }
+                },
+                customization: {
+                    visual: {
+                        style: { theme: "dark" }
+                    },
+                    paymentMethods: {
+                        creditCard: "all",
+                        debitCard: "all",
+                        bankTransfer: "all"
+                    }
+                },
+                callbacks: {
+                    onReady: () => {
+                        loading.hidden = true;
+                    },
+                    onSubmit: ({ selectedPaymentMethod, formData }) => {
+                        return finishEmbeddedPayment(formData, selectedPaymentMethod);
+                    },
+                    onError: error => {
+                        console.error("[Checkout] Payment Brick:", error);
+                        loading.hidden = true;
+                        toast("Confira os dados do pagamento.");
+                    }
+                }
+            }
+        );
+    } catch (error) {
+        console.error("[Checkout] Falha ao renderizar Brick:", error);
+        loading.hidden = true;
+        container.innerHTML = '<p class="payment-error">Não foi possível abrir o pagamento no site. Você pode escolher “Pagar no Mercado Pago”.</p>';
+    }
+}
+
+function updatePaymentModeUI() {
+    const embedded = CheckoutState.selectedPayment === "embedded";
+    const embeddedArea = qs("#embeddedPaymentArea");
+    const redirectArea = qs("#redirectPaymentArea");
+    const finishButton = qs("#finishOrderBtn");
+    const mobileButton = qs(".finish-mobile");
+    const note = qs(".summary-note");
+
+    if (embeddedArea) embeddedArea.hidden = !embedded;
+    if (redirectArea) redirectArea.hidden = embedded;
+
+    if (finishButton) {
+        finishButton.hidden = embedded;
+        finishButton.textContent = "Continuar no Mercado Pago";
+    }
+
+    if (mobileButton) {
+        mobileButton.hidden = embedded;
+        mobileButton.textContent = "Continuar no Mercado Pago";
+    }
+
+    if (note) {
+        note.textContent = embedded
+            ? "O pagamento é processado com segurança pelo Mercado Pago sem sair da MugArt."
+            : "Seu pedido será criado e você será direcionado ao ambiente seguro do Mercado Pago.";
+    }
+}
+
+function buildOrderPayload(paymentMethod) {
+    const items = getCartItems();
+
+    const customer = {
+        name: qs("#customerName").value.trim(),
+        email: qs("#customerEmail").value.trim().toLowerCase(),
+        phone: qs("#customerPhone").value.trim(),
+        cpf_cnpj: qs("#customerDocument").value.trim(),
+        zip: qs("#shippingZip").value.trim(),
+        address: qs("#shippingStreet").value.trim(),
+        city: qs("#shippingCity").value.trim(),
+        state: qs("#shippingState").value.trim().toUpperCase()
+    };
+
+    return {
+        customer,
+        address: {
+            recipient_name: customer.name,
+            phone: customer.phone,
+            zip: qs("#shippingZip").value.trim(),
+            street: qs("#shippingStreet").value.trim(),
+            number: qs("#shippingNumber").value.trim(),
+            complement: qs("#shippingComplement").value.trim(),
+            neighborhood: qs("#shippingNeighborhood").value.trim(),
+            city: qs("#shippingCity").value.trim(),
+            state: qs("#shippingState").value.trim().toUpperCase(),
+            country: "Brasil"
+        },
+        items: items.map(item => ({
+            product_id: item.product.id,
+            quantity: Number(item.quantity || 1)
+        })),
+        payment_method: paymentMethod,
+        payment_checkout_type: paymentMethod === "embedded" ? "embedded" : "redirect",
+        shipping: Number(CheckoutState.shipping || 0),
+        shipping_method: CheckoutState.selectedShipping || null,
+        shipping_company: CheckoutState.selectedShippingCompany || null,
+        shipping_service: CheckoutState.selectedShippingService || null,
+        shipping_delivery_time: Number(CheckoutState.selectedShippingDeliveryTime || 0),
+        coupon: CheckoutState.coupon || "",
+        notes: paymentMethod === "embedded"
+            ? "Pedido criado pelo checkout transparente MugArt."
+            : "Pedido criado para Checkout Pro Mercado Pago."
+    };
+}
+
+async function ensureEmbeddedOrder() {
+    if (CheckoutState.currentEmbeddedOrderId) {
+        return CheckoutState.currentEmbeddedOrderId;
+    }
+
+    const createdOrder = await criarPedidoPelaEdgeFunction(
+        buildOrderPayload("embedded")
+    );
+
+    CheckoutState.currentEmbeddedOrderId = createdOrder.order_id;
+    return createdOrder.order_id;
+}
+
+async function finishEmbeddedPayment(formData, selectedPaymentMethod) {
+    return new Promise(async (resolve, reject) => {
+        if (CheckoutState.embeddedProcessing) {
+            reject(new Error("Pagamento já está sendo processado."));
+            return;
+        }
+
+        try {
+            const { items, total } = getCheckoutTotals();
+
+            if (!items.length) throw new Error("Seu carrinho está vazio.");
+            if (!validarCamposCliente()) throw new Error("Confira os dados do cliente.");
+            if (!validarEndereco()) throw new Error("Confira o endereço de entrega.");
+            if (!CheckoutState.selectedShipping) throw new Error("Selecione uma opção de entrega.");
+
+            CheckoutState.embeddedProcessing = true;
+            showEmbeddedStatus("Processando pagamento...", "loading");
+
+            const orderId = await ensureEmbeddedOrder();
+            const idempotencyKey = crypto.randomUUID();
+
+            const { data, error } = await mugartSupabase.functions.invoke(
+                "create-direct-payment",
+                {
+                    body: {
+                        order_id: orderId,
+                        idempotency_key: idempotencyKey,
+                        selected_payment_method: selectedPaymentMethod,
+                        form_data: formData,
+                        expected_total: Number(total.toFixed(2))
+                    }
+                }
+            );
+
+            if (error) {
+                let message = error.message || "Falha ao processar pagamento.";
+                try {
+                    const body = await error.context?.json?.();
+                    if (body?.error) message = body.error;
+                } catch {}
+                throw new Error(message);
+            }
+
+            if (!data?.success) {
+                throw new Error(data?.error || "Pagamento não concluído.");
+            }
+
+            handleDirectPaymentResult(data);
+            resolve();
+        } catch (error) {
+            console.error("[Checkout] Pagamento direto:", error);
+            showEmbeddedStatus(error.message || "Pagamento não concluído.", "error");
+            toast(error.message || "Pagamento não concluído.");
+            reject(error);
+        } finally {
+            CheckoutState.embeddedProcessing = false;
+        }
+    });
+}
+
+function handleDirectPaymentResult(data) {
+    const status = String(data.status || "").toLowerCase();
+
+    if (status === "approved") {
+        localStorage.removeItem(CHECKOUT_KEYS.cart);
+        localStorage.removeItem(CHECKOUT_KEYS.draft);
+        showEmbeddedStatus("Pagamento aprovado! Preparando seu pedido...", "success");
+
+        setTimeout(() => {
+            window.location.href = `pagamento-sucesso.html?order_id=${encodeURIComponent(data.order_id)}&payment_id=${encodeURIComponent(data.payment_id || "")}`;
+        }, 1200);
+        return;
+    }
+
+    if (data.pix?.qr_code) {
+        localStorage.removeItem(CHECKOUT_KEYS.cart);
+        localStorage.removeItem(CHECKOUT_KEYS.draft);
+        showPixPayment(data);
+        return;
+    }
+
+    if (["pending", "in_process", "authorized"].includes(status)) {
+        showEmbeddedStatus("Pagamento em processamento. Você receberá a confirmação em breve.", "warning");
+        return;
+    }
+
+    showEmbeddedStatus(
+        data.status_detail
+            ? `Pagamento não aprovado: ${data.status_detail}`
+            : "Pagamento não aprovado. Tente outro cartão ou escolha Mercado Pago.",
+        "error"
+    );
+}
+
+function showEmbeddedStatus(message, type) {
+    const box = qs("#embeddedPaymentResult");
+    if (!box) return;
+    box.hidden = false;
+    box.className = `embedded-result ${type || ""}`;
+    box.innerHTML = `<strong>${message}</strong>`;
+}
+
+function showPixPayment(data) {
+    const box = qs("#embeddedPaymentResult");
+    if (!box) return;
+
+    box.hidden = false;
+    box.className = "embedded-result pix-result";
+    box.innerHTML = `
+        <h3>Pix gerado com sucesso</h3>
+        <p>Escaneie o QR Code ou copie o código abaixo.</p>
+        ${data.pix.qr_code_base64
+            ? `<img class="pix-qr" src="data:image/png;base64,${data.pix.qr_code_base64}" alt="QR Code Pix">`
+            : ""}
+        <textarea id="pixCopyPaste" readonly>${data.pix.qr_code}</textarea>
+        <button id="copyPixBtnDynamic" type="button">Copiar código Pix</button>
+        <small>Pedido ${data.order_id}. A confirmação ocorrerá automaticamente pelo webhook.</small>
+    `;
+
+    qs("#copyPixBtnDynamic")?.addEventListener("click", copyPixCode);
+}
+
+async function copyPixCode() {
+    const field = qs("#pixCopyPaste");
+    if (!field?.value) return;
+    await navigator.clipboard.writeText(field.value);
+    toast("Código Pix copiado.");
+}
+
+function openTestCardsModal() {
+    const modal = qs("#testCardsModal");
+    if (modal) modal.hidden = false;
+}
+
+function closeTestCardsModal() {
+    const modal = qs("#testCardsModal");
+    if (modal) modal.hidden = true;
+}
+
+async function finishOrder(e) {
+    if (CheckoutState.selectedPayment === "embedded") {
+        e.preventDefault();
+        toast("Escolha Pix ou cartão no formulário de pagamento desta página.");
+        qs("#paymentBrick_container")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+    }
+
+    CheckoutState.selectedPayment = "redirect";
+    return finishRedirectOrder(e);
 }

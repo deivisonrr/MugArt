@@ -1,39 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<script src="/js/consent-default.js?v=1"></script>
-<link rel="stylesheet" href="/css/cookie-consent.css?v=1">
-  
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <script src="/js/consent-default.js?v=1"></script>
+  <link rel="stylesheet" href="/css/cookie-consent.css?v=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout | MugArt</title>
-
   <link rel="icon" href="assets/favicon.ico" sizes="any">
   <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="css/checkout.css" />
+  <link rel="stylesheet" href="css/checkout.css?v=11">
+  <link rel="stylesheet" href="css/checkout-hybrid.css?v=1">
 </head>
-
 <body>
   <header class="checkout-topbar">
-    <a class="checkout-logo" href="loja.html">
-      <img src="assets/logo.png" alt="MugArt" />
-    </a>
-
-    <div class="checkout-secure">
-      🔒 Checkout seguro com Mercado Pago
-    </div>
+    <a class="checkout-logo" href="loja.html"><img src="assets/logo.png" alt="MugArt"></a>
+    <div class="checkout-secure">🔒 Pagamento processado com segurança pelo Mercado Pago</div>
   </header>
 
   <main class="checkout-shell">
     <section class="checkout-main">
       <div class="checkout-progress">
-        <div class="progress-step active" data-step="cart"><span>1</span>Carrinho</div>
-        <div class="progress-line"></div>
-        <div class="progress-step" data-step="customer"><span>2</span>Cliente</div>
-        <div class="progress-line"></div>
-        <div class="progress-step" data-step="shipping"><span>3</span>Entrega</div>
-        <div class="progress-line"></div>
+        <div class="progress-step active" data-step="cart"><span>1</span>Carrinho</div><div class="progress-line"></div>
+        <div class="progress-step" data-step="customer"><span>2</span>Cliente</div><div class="progress-line"></div>
+        <div class="progress-step" data-step="shipping"><span>3</span>Entrega</div><div class="progress-line"></div>
         <div class="progress-step" data-step="payment"><span>4</span>Pagamento</div>
       </div>
 
@@ -46,138 +35,113 @@
 
         <section class="checkout-card">
           <div class="section-head"><span>👤</span><div><p>Etapa 2</p><h2>Dados do cliente</h2></div></div>
-
           <div class="form-grid">
-            <label class="full">Nome completo<input id="customerName" required placeholder="Seu nome completo" autocomplete="name" /></label>
-            <label>WhatsApp<input id="customerPhone" type="tel" required maxlength="15" placeholder="(11) 99999-9999" autocomplete="tel"/></label>
-            <label>E-mail<input id="customerEmail" type="email" required autocomplete="email" placeholder="nome@empresa.com.br"/></label>
-            <label>CPF/CNPJ<input id="customerDocument" required placeholder="CPF ou CNPJ" /></label>
+            <label class="full">Nome completo<input id="customerName" required placeholder="Seu nome completo" autocomplete="name"></label>
+            <label>WhatsApp<input id="customerPhone" type="tel" required maxlength="15" placeholder="(11) 99999-9999" autocomplete="tel"></label>
+            <label>E-mail<input id="customerEmail" type="email" required autocomplete="email" placeholder="nome@empresa.com.br"></label>
+            <label>CPF/CNPJ<input id="customerDocument" required placeholder="CPF ou CNPJ"></label>
           </div>
         </section>
 
         <section class="checkout-card">
-  <div class="section-head">
-    <span>📍</span>
-    <div>
-      <p>Etapa 3</p>
-      <h2>Endereço de entrega</h2>
-    </div>
-  </div>
-
-  <div class="form-grid">
-    <label>
-      CEP
-      <input id="shippingZip" required placeholder="00000-000" autocomplete="postal-code" />
-    </label>
-
-    <label>
-      Número
-      <input id="shippingNumber" required placeholder="123" />
-    </label>
-
-    <label class="full">
-      Rua
-      <input id="shippingStreet" required placeholder="Rua" readonly />
-    </label>
-
-    <label>
-      Bairro
-      <input id="shippingNeighborhood" required placeholder="Bairro" readonly />
-    </label>
-
-    <label>
-      Complemento
-      <input id="shippingComplement" placeholder="Apto, bloco, referência..." />
-    </label>
-
-    <label>
-      Cidade
-      <input id="shippingCity" required placeholder="Cidade" readonly />
-    </label>
-
-    <label>
-      Estado
-      <input id="shippingState" required placeholder="UF" maxlength="2" readonly />
-    </label>
-  </div>
-</section>
-
-        <section class="checkout-card">
-            <div class="section-head">
-                <span>🚚</span>
-                <div>
-                    <p>Etapa 4</p>
-                    <h2>Entrega</h2>
-                </div>
-            </div>
-        
-            <div id="shippingLoading" style="display:none;margin-bottom:15px;">
-                🔄 Calculando frete...
-            </div>
-        
-            <div
-                id="shippingOptions"
-                class="shipping-options">
-            </div>
+          <div class="section-head"><span>📍</span><div><p>Etapa 3</p><h2>Endereço de entrega</h2></div></div>
+          <div class="form-grid">
+            <label>CEP<input id="shippingZip" required placeholder="00000-000" autocomplete="postal-code"></label>
+            <label>Número<input id="shippingNumber" required placeholder="123"></label>
+            <label class="full">Rua<input id="shippingStreet" required placeholder="Rua" readonly></label>
+            <label>Bairro<input id="shippingNeighborhood" required placeholder="Bairro" readonly></label>
+            <label>Complemento<input id="shippingComplement" placeholder="Apto, bloco, referência..."></label>
+            <label>Cidade<input id="shippingCity" required placeholder="Cidade" readonly></label>
+            <label>Estado<input id="shippingState" required placeholder="UF" maxlength="2" readonly></label>
+          </div>
         </section>
 
         <section class="checkout-card">
-          <div class="section-head"><span>💳</span><div><p>Etapa 5</p><h2>Pagamento</h2></div></div>
+          <div class="section-head"><span>🚚</span><div><p>Etapa 4</p><h2>Entrega</h2></div></div>
+          <div id="shippingLoading" style="display:none;margin-bottom:15px">🔄 Calculando frete...</div>
+          <div id="shippingOptions" class="shipping-options"></div>
+        </section>
 
-          <div class="payment-options">
+        <section class="checkout-card payment-card">
+          <div class="section-head"><span>💳</span><div><p>Etapa 5</p><h2>Como prefere pagar?</h2></div></div>
+
+          <div class="payment-choice-grid">
             <label class="option-card active">
-              <input type="radio" name="paymentMethod" value="pix" checked />
-              <div><strong>Pix via Mercado Pago</strong><span>Você será redirecionado para finalizar o pagamento com segurança.</span></div>
+              <input type="radio" name="paymentCheckoutMode" value="embedded" checked>
+              <div><strong>Pagar aqui no site</strong><span>Pix ou cartão sem sair da MugArt.</span></div>
+              <b>Recomendado</b>
             </label>
-
             <label class="option-card">
-              <input type="radio" name="paymentMethod" value="credit_card" />
-              <div><strong>Cartão via Mercado Pago</strong><span>Pagamento seguro por cartão de crédito.</span></div>
+              <input type="radio" name="paymentCheckoutMode" value="redirect">
+              <div><strong>Pagar no Mercado Pago</strong><span>Você será redirecionado ao Checkout Pro.</span></div>
             </label>
+          </div>
 
-            <label class="option-card">
-              <input type="radio" name="paymentMethod" value="manual" />
-              <div><strong>Pagamento combinado</strong><span>Use apenas para pedidos manuais ou atendimento especial.</span></div>
-            </label>
+          <div class="payment-environment-line">
+            <span id="paymentEnvironmentBadge">Carregando ambiente...</span>
+            <button id="showTestCardsBtn" type="button" hidden>🧪 Ver cartões de teste</button>
+          </div>
+
+          <div id="embeddedPaymentArea">
+            <div id="paymentBrickLoading" class="payment-brick-loading">Carregando pagamento seguro...</div>
+            <div id="paymentBrick_container"></div>
+            <div id="embeddedPaymentResult" class="embedded-result" hidden></div>
+          </div>
+
+          <div id="redirectPaymentArea" hidden>
+            <div class="redirect-payment-box">
+              <strong>Checkout Pro Mercado Pago</strong>
+              <p>Ao finalizar, você será levado ao Mercado Pago para escolher Pix, cartão ou outros meios disponíveis.</p>
+            </div>
           </div>
         </section>
 
-        <button class="finish-mobile" type="submit">Ir para pagamento</button>
+        <button class="finish-mobile" type="submit">Continuar no Mercado Pago</button>
       </form>
     </section>
 
     <aside class="checkout-summary">
       <div class="summary-card">
         <h2>Resumo do pedido</h2>
-
         <div id="summaryItems" class="summary-items"></div>
-
-        <div class="coupon-box">
-          <input id="couponCode" placeholder="Cupom de desconto" />
-          <button id="applyCouponBtn" type="button">Aplicar</button>
-        </div>
-
+        <div class="coupon-box"><input id="couponCode" placeholder="Cupom de desconto"><button id="applyCouponBtn" type="button">Aplicar</button></div>
         <div class="summary-lines">
           <div><span>Subtotal</span><strong id="summarySubtotal">R$ 0,00</strong></div>
           <div><span>Desconto</span><strong id="summaryDiscount">R$ 0,00</strong></div>
           <div><span>Frete</span><strong id="summaryShipping">R$ 0,00</strong></div>
           <div class="total"><span>Total</span><strong id="summaryTotal">R$ 0,00</strong></div>
         </div>
-
-        <button id="finishOrderBtn" class="finish-btn" type="button">Ir para pagamento</button>
-
-        <p class="summary-note">
-          Ao continuar, seu pedido será criado no painel MugArt e você será enviado ao Mercado Pago.
-        </p>
+        <button id="finishOrderBtn" class="finish-btn" type="button">Continuar no Mercado Pago</button>
+        <p class="summary-note">O pagamento é processado com segurança pelo Mercado Pago sem sair da MugArt.</p>
       </div>
     </aside>
   </main>
 
   <div class="checkout-toast" id="checkoutToast"></div>
 
+  <div id="testCardsModal" class="checkout-modal" hidden>
+    <div class="checkout-modal-card">
+      <button id="closeTestCardsBtn" class="modal-close" type="button">×</button>
+      <p class="eyebrow">Ambiente de testes</p>
+      <h2>Cartões oficiais Mercado Pago</h2>
+      <p>Use somente com as credenciais de teste.</p>
+      <div class="test-card-grid">
+        <article><strong>Mastercard</strong><code>5480 8328 0103 3311</code><span>CVV 123 · 11/30</span></article>
+        <article><strong>Visa</strong><code>4235 6477 2802 5682</code><span>CVV 123 · 11/30</span></article>
+        <article><strong>Amex</strong><code>3753 651535 56885</code><span>CVV 1234 · 11/30</span></article>
+      </div>
+      <div class="test-scenarios">
+        <p><strong>Aprovado:</strong> titular <code>APRO</code> · CPF <code>12345678909</code></p>
+        <p><strong>Recusado:</strong> titular <code>OTHE</code> · CPF <code>12345678909</code></p>
+      </div>
+      <small>Dados oficiais da documentação do Mercado Pago. Podem ser alterados pela plataforma.</small>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-config.js"></script>
-  <script src="js/checkout/checkout.js?v=10"></script>
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script src="js/supabase-config.js?v=5"></script>
+  <script src="js/checkout/checkout.js?v=11"></script>
   <script src="/js/analytics-loader.js"></script>
   <script src="/js/cookie-consent.js?v=1"></script>
 </body>
