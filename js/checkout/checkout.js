@@ -386,14 +386,25 @@ async function preencherClienteLogadoNoCheckout() {
         );
 
         const emailInput =
-            qs("#customerEmail");
+    qs("#customerEmail");
 
-        if (emailInput) {
-            emailInput.readOnly = true;
-            emailInput.classList.add(
-                "checkout-readonly"
-            );
-        }
+if (emailInput) {
+    const isDevelopment =
+        CheckoutState.paymentEnvironment === "development";
+
+    emailInput.readOnly = !isDevelopment;
+
+    emailInput.classList.toggle(
+        "checkout-readonly",
+        !isDevelopment
+    );
+
+    if (isDevelopment) {
+        emailInput.value = "";
+        emailInput.placeholder =
+            "Use um e-mail diferente da conta Mercado Pago";
+    }
+}
 
         preencherCampo(
             "shippingZip",
