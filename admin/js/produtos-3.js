@@ -32,6 +32,90 @@ function a3Money(value) {
   }).format(Number(value || 0));
 }
 
+
+function a3ToLocalInput(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 16);
+}
+
+function a3ToIso(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function a3PromotionActive(start, end) {
+  const now = Date.now();
+  const starts = start ? new Date(start).getTime() : null;
+  const ends = end ? new Date(end).getTime() : null;
+
+  if (starts && now < starts) return false;
+  if (ends && now > ends) return false;
+  return true;
+}
+
+function a3EffectivePrice(normalPrice, promotionalPrice, startsAt, endsAt) {
+  const normal = Number(normalPrice || 0);
+  const promotional = Number(promotionalPrice || 0);
+
+  if (
+    promotional > 0 &&
+    promotional < normal &&
+    a3PromotionActive(startsAt, endsAt)
+  ) {
+    return promotional;
+  }
+
+  return normal || promotional;
+}
+
+async function generateNextProductSku() {
+  const result = await mugartSupabase
+    .from("products")
+    .select("sku")
+    .ilike("sku", "MUG-%");
+
+  if (result.error) {
+    console.error("Erro ao gerar SKU:", result.error);
+    return `MUG-${Date.now().toString().slice(-6)}`;
+  }
+
+  let highest = 0;
+
+  (result.data || []).forEach((row) => {
+    const match = String(row.sku || "").match(/^MUG-(\d+)$/i);
+    if (match) highest = Math.max(highest, Number(match[1]));
+  });
+
+  return `MUG-${String(highest + 1).padStart(6, "0")}`;
+}
+
+async function generateNextVariantSku(productSku) {
+  const prefix = `${productSku}-V`;
+  const result = await mugartSupabase
+    .from("product_variants")
+    .select("sku")
+    .ilike("sku", `${prefix}%`);
+
+  if (result.error) {
+    console.error("Erro ao gerar SKU da variação:", result.error);
+    return `${prefix}${Date.now().toString().slice(-3)}`;
+  }
+
+  let highest = 0;
+
+  (result.data || []).forEach((row) => {
+    const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const match = String(row.sku || "").match(new RegExp(`^${escaped}(\\d+)$`, "i"));
+    if (match) highest = Math.max(highest, Number(match[1]));
+  });
+
+  return `${prefix}${String(highest + 1).padStart(2, "0")}`;
+}
+
 function a3Slugify(text) {
   return String(text || "")
     .toLowerCase()
@@ -236,7 +320,10 @@ function productCardTemplate(product) {
         <span class="admin3-badge">${product.active ? "Ativo" : "Inativo"}</span>
       </div>
 
-      <div class="admin3-price">${a3Money(product.price)}</div>
+      <div class="admin3-price">
+        ${a3Money(a3EffectivePrice(product.old_price || product.price, product.price, product.offer_starts_at, product.offer_ends_at))}
+        ${product.old_price ? `<small style="display:block;text-decoration:line-through;opacity:.65">${a3Money(product.old_price)}</small>` : ""}
+      </div>
 
       <div class="admin3-card-actions">
         <button type="button" class="edit" onclick="editAdmin3Product('${product.id}')">Editar</button>
@@ -262,7 +349,10 @@ function productRowTemplate(product) {
         <span class="admin3-badge ${Number(product.stock || 0) <= 5 ? "red" : ""}">Estoque: ${product.stock || 0}</span>
       </div>
 
-      <div class="admin3-price">${a3Money(product.price)}</div>
+      <div class="admin3-price">
+        ${a3Money(a3EffectivePrice(product.old_price || product.price, product.price, product.offer_starts_at, product.offer_ends_at))}
+        ${product.old_price ? `<small style="display:block;text-decoration:line-through;opacity:.65">${a3Money(product.old_price)}</small>` : ""}
+      </div>
 
       <div class="admin3-card-actions">
         <button type="button" class="edit" onclick="editAdmin3Product('${product.id}')">Editar</button>
@@ -279,6 +369,12 @@ function openDrawer(product) {
   if (!product) {
     resetForm();
     a3("#admin3DrawerTitle").textContent = "Novo produto";
+
+    generateNextProductSku().then((sku) => {
+      if (!Admin3State.currentProductId && a3("#admin3Sku")) {
+        a3("#admin3Sku").value = sku;
+      }
+    });
   }
 }
 
@@ -293,6 +389,10 @@ function resetForm() {
   a3("#admin3ProductId").value = "";
   a3("#admin3Gallery").innerHTML = "";
   a3("#admin3Variants").innerHTML = "";
+  if (a3("#admin3OfferStartsAt")) a3("#admin3OfferStartsAt").value = "";
+  if (a3("#admin3OfferEndsAt")) a3("#admin3OfferEndsAt").value = "";
+  if (a3("#admin3VariantOfferStartsAt")) a3("#admin3VariantOfferStartsAt").value = "";
+  if (a3("#admin3VariantOfferEndsAt")) a3("#admin3VariantOfferEndsAt").value = "";
   updateImagePreview();
   updateSeoPreview();
 }
@@ -311,8 +411,13 @@ window.editAdmin3Product = async function(id) {
   a3("#admin3Sku").value = product.sku || "";
   a3("#admin3Category").value = product.category_id || "";
   a3("#admin3Color").value = product.color || "";
-  a3("#admin3Price").value = product.price || "";
-  a3("#admin3OldPrice").value = product.old_price || "";
+  a3("#admin3OldPrice").value = product.old_price || product.price || "";
+  a3("#admin3Price").value =
+    product.old_price && Number(product.price) < Number(product.old_price)
+      ? product.price
+      : "";
+  a3("#admin3OfferStartsAt").value = a3ToLocalInput(product.offer_starts_at);
+  a3("#admin3OfferEndsAt").value = a3ToLocalInput(product.offer_ends_at);
   a3("#admin3Stock").value = product.stock || "";
   a3("#admin3Active").value = String(product.active);
   a3("#admin3FeaturedField").value = String(product.featured);
@@ -327,6 +432,9 @@ window.editAdmin3Product = async function(id) {
 
   await renderGallery(id);
   await renderVariants(id);
+
+  const nextVariantSku = await generateNextVariantSku(product.sku || "");
+  if (a3("#admin3VariantSku")) a3("#admin3VariantSku").value = nextVariantSku;
 };
 
 window.deleteAdmin3Product = async function(id) {
@@ -356,13 +464,56 @@ async function saveProduct(event) {
     return;
   }
 
+  let sku = a3("#admin3Sku").value.trim();
+
+  if (!sku) {
+    sku = await generateNextProductSku();
+    a3("#admin3Sku").value = sku;
+  }
+
+  const normalPrice = Number(a3("#admin3OldPrice").value || 0);
+  const promotionalPrice = a3("#admin3Price").value
+    ? Number(a3("#admin3Price").value)
+    : null;
+
+  const offerStartsAt = a3ToIso(a3("#admin3OfferStartsAt").value);
+  const offerEndsAt = a3ToIso(a3("#admin3OfferEndsAt").value);
+
+  if (normalPrice <= 0) {
+    alert("Informe um preço normal maior que zero.");
+    return;
+  }
+
+  if (promotionalPrice !== null && promotionalPrice >= normalPrice) {
+    alert("O preço promocional deve ser menor que o preço normal.");
+    return;
+  }
+
+  if ((offerStartsAt || offerEndsAt) && promotionalPrice === null) {
+    alert("Informe o preço promocional para usar o prazo da promoção.");
+    return;
+  }
+
+  if (
+    offerStartsAt &&
+    offerEndsAt &&
+    new Date(offerEndsAt).getTime() <= new Date(offerStartsAt).getTime()
+  ) {
+    alert("O fim da promoção deve ser posterior ao início.");
+    return;
+  }
+
+  const storedPrice = promotionalPrice !== null ? promotionalPrice : normalPrice;
+
   const product = {
     name: a3("#admin3Name").value.trim(),
-    sku: a3("#admin3Sku").value.trim(),
+    sku,
     category_id: a3("#admin3Category").value,
     color: a3("#admin3Color").value.trim(),
-    price: Number(a3("#admin3Price").value || 0),
-    old_price: a3("#admin3OldPrice").value ? Number(a3("#admin3OldPrice").value) : null,
+    price: storedPrice,
+    old_price: promotionalPrice !== null ? normalPrice : null,
+    offer_starts_at: promotionalPrice !== null ? offerStartsAt : null,
+    offer_ends_at: promotionalPrice !== null ? offerEndsAt : null,
     stock: Number(a3("#admin3Stock").value || 0),
     active: a3("#admin3Active").value === "true",
     featured: a3("#admin3FeaturedField").value === "true",
@@ -379,7 +530,9 @@ async function saveProduct(event) {
     result = await mugartSupabase
       .from("products")
       .update(product)
-      .eq("id", currentId);
+      .eq("id", currentId)
+      .select()
+      .single();
   } else {
     result = await mugartSupabase
       .from("products")
@@ -596,21 +749,63 @@ async function addVariant() {
     return;
   }
 
+  const productSku = a3("#admin3Sku").value.trim();
+  let variantSku = a3("#admin3VariantSku").value.trim();
+
+  if (!variantSku) {
+    variantSku = await generateNextVariantSku(productSku);
+    a3("#admin3VariantSku").value = variantSku;
+  }
+
+  const normalPrice = Number(a3("#admin3VariantOldPrice").value || 0);
+  const promotionalPrice = a3("#admin3VariantPrice").value
+    ? Number(a3("#admin3VariantPrice").value)
+    : null;
+
+  const offerStartsAt = a3ToIso(a3("#admin3VariantOfferStartsAt").value);
+  const offerEndsAt = a3ToIso(a3("#admin3VariantOfferEndsAt").value);
+
+  if (!a3("#admin3VariantColor").value.trim()) {
+    alert("Preencha a cor ou o nome da variação.");
+    return;
+  }
+
+  if (normalPrice <= 0) {
+    alert("Informe o preço normal da variação.");
+    return;
+  }
+
+  if (promotionalPrice !== null && promotionalPrice >= normalPrice) {
+    alert("O preço promocional da variação deve ser menor que o preço normal.");
+    return;
+  }
+
+  if ((offerStartsAt || offerEndsAt) && promotionalPrice === null) {
+    alert("Informe o preço promocional da variação para usar o prazo.");
+    return;
+  }
+
+  if (
+    offerStartsAt &&
+    offerEndsAt &&
+    new Date(offerEndsAt).getTime() <= new Date(offerStartsAt).getTime()
+  ) {
+    alert("O fim da promoção da variação deve ser posterior ao início.");
+    return;
+  }
+
   const variant = {
     product_id: productId,
     color: a3("#admin3VariantColor").value.trim(),
-    sku: a3("#admin3VariantSku").value.trim(),
-    price: Number(a3("#admin3VariantPrice").value || 0),
-    old_price: a3("#admin3VariantOldPrice").value ? Number(a3("#admin3VariantOldPrice").value) : null,
+    sku: variantSku,
+    price: promotionalPrice !== null ? promotionalPrice : normalPrice,
+    old_price: promotionalPrice !== null ? normalPrice : null,
+    offer_starts_at: promotionalPrice !== null ? offerStartsAt : null,
+    offer_ends_at: promotionalPrice !== null ? offerEndsAt : null,
     stock: Number(a3("#admin3VariantStock").value || 0),
     image_url: a3("#admin3VariantImageUrl").value.trim() || null,
     active: true
   };
-
-  if (!variant.color || !variant.sku || !variant.price) {
-    alert("Preencha cor, SKU e preço.");
-    return;
-  }
 
   const result = await mugartSupabase
     .from("product_variants")
@@ -625,10 +820,15 @@ async function addVariant() {
   a3("#admin3VariantSku").value = "";
   a3("#admin3VariantPrice").value = "";
   a3("#admin3VariantOldPrice").value = "";
+  a3("#admin3VariantOfferStartsAt").value = "";
+  a3("#admin3VariantOfferEndsAt").value = "";
   a3("#admin3VariantStock").value = "";
   a3("#admin3VariantImageUrl").value = "";
 
   await renderVariants(productId);
+
+  const nextSku = await generateNextVariantSku(productSku);
+  a3("#admin3VariantSku").value = nextSku;
 }
 
 async function renderVariants(productId) {
@@ -658,9 +858,10 @@ async function renderVariants(productId) {
           <button type="button" onclick="deleteAdmin3Variant('${productId}', '${variant.id}')">Remover</button>
         </header>
         <div class="admin3-variant-meta">
-          <span>Preço: ${a3Money(variant.price)}</span>
+          <span>Preço atual: ${a3Money(a3EffectivePrice(variant.old_price || variant.price, variant.price, variant.offer_starts_at, variant.offer_ends_at))}</span>
           <span>Estoque: ${variant.stock}</span>
-          ${variant.old_price ? `<span>De: ${a3Money(variant.old_price)}</span>` : ""}
+          ${variant.old_price ? `<span>Preço normal: ${a3Money(variant.old_price)}</span>` : ""}
+          ${variant.offer_ends_at ? `<span>Promoção até: ${new Date(variant.offer_ends_at).toLocaleString("pt-BR")}</span>` : ""}
         </div>
       </article>
     `).join("")
