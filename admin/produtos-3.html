@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>MugArt Admin | Produtos 3.1</title>
+  <title>MugArt Admin | Produtos 3.2</title>
 
   <link rel="icon" href="../assets/favicon.ico" sizes="any">
   <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
@@ -19,7 +19,7 @@
 
     <nav>
       <a href="dashboard.html">Dashboard</a>
-      <a class="active" href="produtos-3.html">Produtos 3.1</a>
+      <a class="active" href="produtos-3.html">Produtos 3.2</a>
       <a href="produtos.html">Produtos antigo</a>
       <a href="pedidos.html">Pedidos</a>
       <a href="/admin/utm.html">Gerador de UTM</a>
@@ -87,6 +87,15 @@
       </label>
     </section>
 
+    <section id="admin3BulkBar" class="admin3-toolbar" style="display:none;margin-top:16px">
+      <strong><span id="admin3SelectedCount">0</span> selecionado(s)</strong>
+      <button type="button" id="admin3BulkActivate">Ativar</button>
+      <button type="button" id="admin3BulkDeactivate">Desativar</button>
+      <button type="button" id="admin3BulkFeatured">Destacar</button>
+      <button type="button" id="admin3BulkUnfeatured">Remover destaque</button>
+      <button type="button" id="admin3BulkDelete">Excluir</button>
+    </section>
+
     <section class="admin3-products" id="admin3Products"></section>
   </main>
 
@@ -133,6 +142,26 @@
           </label>
 
           <label>
+            Código de barras (EAN/GTIN)
+            <input id="admin3Ean" maxlength="14" inputmode="numeric" placeholder="7890000000000" />
+          </label>
+
+          <label>
+            Marca
+            <input id="admin3Brand" placeholder="MugArt" value="MugArt" />
+          </label>
+
+          <label>
+            Fornecedor
+            <input id="admin3Supplier" placeholder="Fornecedor" />
+          </label>
+
+          <label>
+            Tipo de produto
+            <select id="admin3ProductType"><option value="physical">Físico</option><option value="digital">Digital</option></select>
+          </label>
+
+          <label>
             Preço normal
             <input id="admin3OldPrice" type="number" min="0" step="0.01" required placeholder="54.90" />
           </label>
@@ -160,6 +189,11 @@
           <label>
             Estoque
             <input id="admin3Stock" type="number" min="0" step="1" required placeholder="10" />
+          </label>
+
+          <label>
+            Estoque mínimo
+            <input id="admin3MinStock" type="number" min="0" step="1" value="5" />
           </label>
 
           <label>
@@ -287,7 +321,22 @@
 
           <label>
             Título SEO
-            <input id="admin3SeoTitle" placeholder="Caneca Coração Vermelha | MugArt" />
+            <input id="admin3SeoTitle" maxlength="70" placeholder="Caneca Coração Vermelha | MugArt" />
+          </label>
+
+          <label>
+            Palavra-chave principal
+            <input id="admin3FocusKeyword" maxlength="120" placeholder="caneca personalizada" />
+          </label>
+
+          <label>
+            Texto alternativo da imagem
+            <input id="admin3ImageAlt" maxlength="180" placeholder="Descrição da imagem" />
+          </label>
+
+          <label>
+            Indexar no Google
+            <select id="admin3Noindex"><option value="false">Sim</option><option value="true">Não</option></select>
           </label>
 
           <label class="full">
@@ -318,6 +367,6 @@
   <script src="/js/supabase-config.js?v=5"></script>
   <script src="/admin/js/admin-auth.js?v=1"></script>
   <script src="/admin/js/admin.js?v=5"></script>
-  <script src="js/produtos-3.js?v=31"></script>
+  <script src="js/produtos-3.js?v=32"></script>
 </body>
 </html>

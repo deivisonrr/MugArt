@@ -310,7 +310,7 @@ function exportAdmin3Csv() {
   const headers = [
     "name","sku","category_id","color","price","old_price","offer_starts_at",
     "offer_ends_at","stock","active","featured","description","image_url","slug",
-    "seo_title","seo_description"
+    "seo_title","seo_description","ean","brand","supplier","product_type","min_stock","weight_kg","width_cm","height_cm","length_cm","focus_keyword","image_alt","noindex"
   ];
 
   const escapeCsv = (value) => {
@@ -410,6 +410,17 @@ async function importAdmin3Csv(event) {
   }
 }
 
+
+function bindProductSelectionEvents() {
+  a3all(".admin3-product-select").forEach((checkbox) => checkbox.addEventListener("change", updateBulkBar));
+  updateBulkBar();
+}
+function selectedProductIds(){ return a3all(".admin3-product-select:checked").map((item)=>item.value); }
+function updateBulkBar(){ const ids=selectedProductIds(); const bar=a3("#admin3BulkBar"); if(bar) bar.style.display=ids.length?"flex":"none"; if(a3("#admin3SelectedCount")) a3("#admin3SelectedCount").textContent=ids.length; }
+async function bulkUpdateProducts(changes,message){ const ids=selectedProductIds(); if(!ids.length)return; const r=await mugartSupabase.from("products").update(changes).in("id",ids); if(r.error){alert("Erro na ação em massa: "+r.error.message);return;} await loadAdmin3Data(); renderAdmin3(); alert(message); }
+async function bulkDeleteProducts(){ const ids=selectedProductIds(); if(!ids.length||!confirm(`Excluir ${ids.length} produto(s)?`))return; const r=await mugartSupabase.from("products").delete().in("id",ids); if(r.error){alert("Erro ao excluir produtos: "+r.error.message);return;} await loadAdmin3Data(); renderAdmin3(); alert("Produtos excluídos."); }
+function validateEan(value){ const d=String(value||"").replace(/\D/g,""); return !d || [8,12,13,14].includes(d.length); }
+
 document.addEventListener("DOMContentLoaded", async () => {
   if (!window.mugartSupabase) {
     alert("Supabase não carregou.");
@@ -426,6 +437,11 @@ function bindAdmin3Events() {
   a3("#admin3NormalizeSkus")?.addEventListener("click", normalizeExistingSkus);
   a3("#admin3ExportCsv")?.addEventListener("click", exportAdmin3Csv);
   a3("#admin3ImportCsv")?.addEventListener("change", importAdmin3Csv);
+  a3("#admin3BulkActivate")?.addEventListener("click", () => bulkUpdateProducts({ active: true }, "Produtos ativados."));
+  a3("#admin3BulkDeactivate")?.addEventListener("click", () => bulkUpdateProducts({ active: false }, "Produtos desativados."));
+  a3("#admin3BulkFeatured")?.addEventListener("click", () => bulkUpdateProducts({ featured: true }, "Produtos destacados."));
+  a3("#admin3BulkUnfeatured")?.addEventListener("click", () => bulkUpdateProducts({ featured: false }, "Destaque removido."));
+  a3("#admin3BulkDelete")?.addEventListener("click", bulkDeleteProducts);
   a3("#closeProductDrawer")?.addEventListener("click", closeDrawer);
   a3("#admin3Cancel")?.addEventListener("click", closeDrawer);
   a3("#admin3Overlay")?.addEventListener("click", closeDrawer);
@@ -539,7 +555,7 @@ function renderMetrics() {
 
   const active = products.filter((p) => p.active).length;
   const stock = products.reduce((sum, p) => sum + Number(p.stock || 0), 0);
-  const low = products.filter((p) => Number(p.stock || 0) <= 5).length;
+  const low = products.filter((p) => Number(p.stock || 0) <= Number(p.min_stock ?? 5)).length;
   const featured = products.filter((p) => p.featured).length;
 
   a3("#admin3ActiveProducts").textContent = active;
@@ -567,7 +583,7 @@ function getFilteredProducts() {
 
     if (status === "ativo") matchesStatus = product.active;
     if (status === "inativo") matchesStatus = !product.active;
-    if (status === "baixo") matchesStatus = Number(product.stock || 0) <= 5;
+    if (status === "baixo") matchesStatus = Number(product.stock || 0) <= Number(product.min_stock ?? 5);
     if (status === "destaque") matchesStatus = product.featured;
 
     return matchesSearch && matchesCategory && matchesStatus;
@@ -587,15 +603,15 @@ function renderProducts() {
   }
 
   container.innerHTML = products.map((product) => {
-    return Admin3State.filters.view === "cards"
-      ? productCardTemplate(product)
-      : productRowTemplate(product);
+    return Admin3State.filters.view === "cards" ? productCardTemplate(product) : productRowTemplate(product);
   }).join("");
+  bindProductSelectionEvents();
 }
 
 function productCardTemplate(product) {
   return `
     <article class="admin3-product-card">
+      <label style="position:absolute;z-index:2;margin:10px"><input type="checkbox" class="admin3-product-select" value="${product.id}"></label>
       <div class="photo">
         <img src="${product.image_url || "../assets/hero-caneca.png"}" alt="${product.name}">
       </div>
@@ -608,8 +624,10 @@ function productCardTemplate(product) {
       <div class="admin3-badges">
         <span class="admin3-badge">${product.categories ? product.categories.name : "Sem categoria"}</span>
         <span class="admin3-badge">${product.color || "Sem cor"}</span>
-        <span class="admin3-badge ${Number(product.stock || 0) <= 5 ? "red" : ""}">Estoque: ${product.stock || 0}</span>
+        <span class="admin3-badge ${Number(product.stock || 0) <= Number(product.min_stock ?? 5) ? "red" : ""}">Estoque: ${product.stock || 0}</span>
         ${product.featured ? `<span class="admin3-badge yellow">Destaque</span>` : ""}
+        ${admin3PromotionStatus(product).key !== "none" ? `<span class="admin3-badge">${admin3PromotionStatus(product).label}</span>` : ""}
+        ${product.product_type === "digital" ? `<span class="admin3-badge">Digital</span>` : ""}
         <span class="admin3-badge">${product.active ? "Ativo" : "Inativo"}</span>
       </div>
 
@@ -630,6 +648,7 @@ function productCardTemplate(product) {
 function productRowTemplate(product) {
   return `
     <article class="admin3-product-row">
+      <label><input type="checkbox" class="admin3-product-select" value="${product.id}"></label>
       <img src="${product.image_url || "../assets/hero-caneca.png"}" alt="${product.name}">
 
       <div>
@@ -640,7 +659,7 @@ function productRowTemplate(product) {
       <div class="admin3-badges">
         <span class="admin3-badge">${product.categories ? product.categories.name : "Sem categoria"}</span>
         <span class="admin3-badge">${product.color || "Sem cor"}</span>
-        <span class="admin3-badge ${Number(product.stock || 0) <= 5 ? "red" : ""}">Estoque: ${product.stock || 0}</span>
+        <span class="admin3-badge ${Number(product.stock || 0) <= Number(product.min_stock ?? 5) ? "red" : ""}">Estoque: ${product.stock || 0}</span>
       </div>
 
       <div class="admin3-price">
@@ -707,6 +726,10 @@ window.editAdmin3Product = async function(id) {
   a3("#admin3Sku").value = product.sku || "";
   a3("#admin3Category").value = product.category_id || "";
   a3("#admin3Color").value = product.color || "";
+  if (a3("#admin3Ean")) a3("#admin3Ean").value = product.ean || "";
+  if (a3("#admin3Brand")) a3("#admin3Brand").value = product.brand || "MugArt";
+  if (a3("#admin3Supplier")) a3("#admin3Supplier").value = product.supplier || "";
+  if (a3("#admin3ProductType")) a3("#admin3ProductType").value = product.product_type || "physical";
   a3("#admin3OldPrice").value = product.old_price || product.price || "";
   a3("#admin3Price").value =
     product.old_price && Number(product.price) < Number(product.old_price)
@@ -715,6 +738,7 @@ window.editAdmin3Product = async function(id) {
   a3("#admin3OfferStartsAt").value = a3ToLocalInput(product.offer_starts_at);
   a3("#admin3OfferEndsAt").value = a3ToLocalInput(product.offer_ends_at);
   a3("#admin3Stock").value = product.stock || "";
+  if (a3("#admin3MinStock")) a3("#admin3MinStock").value = product.min_stock ?? 5;
   a3("#admin3Active").value = String(product.active);
   a3("#admin3FeaturedField").value = String(product.featured);
   a3("#admin3Description").value = product.description || "";
@@ -726,6 +750,9 @@ window.editAdmin3Product = async function(id) {
   a3("#admin3Slug").value = product.slug || "";
   a3("#admin3SeoTitle").value = product.seo_title || "";
   a3("#admin3SeoDescription").value = product.seo_description || "";
+  if (a3("#admin3FocusKeyword")) a3("#admin3FocusKeyword").value = product.focus_keyword || "";
+  if (a3("#admin3ImageAlt")) a3("#admin3ImageAlt").value = product.image_alt || "";
+  if (a3("#admin3Noindex")) a3("#admin3Noindex").value = String(product.noindex === true);
 
   updateImagePreview();
   updateSeoPreview();
@@ -772,6 +799,7 @@ async function saveProduct(event) {
     a3("#admin3Sku").value = sku;
   }
 
+  if (!validateEan(a3("#admin3Ean")?.value)) { alert("O EAN/GTIN deve ter 8, 12, 13 ou 14 números."); return; }
   const normalPrice = Number(a3("#admin3OldPrice").value || 0);
   const promotionalPrice = a3("#admin3Price").value
     ? Number(a3("#admin3Price").value)
@@ -811,11 +839,16 @@ async function saveProduct(event) {
     sku,
     category_id: a3("#admin3Category").value,
     color: a3("#admin3Color").value.trim(),
+    ean: a3("#admin3Ean")?.value.replace(/\D/g, "") || null,
+    brand: a3("#admin3Brand")?.value.trim() || "MugArt",
+    supplier: a3("#admin3Supplier")?.value.trim() || null,
+    product_type: a3("#admin3ProductType")?.value || "physical",
     price: storedPrice,
     old_price: promotionalPrice !== null ? normalPrice : null,
     offer_starts_at: promotionalPrice !== null ? offerStartsAt : null,
     offer_ends_at: promotionalPrice !== null ? offerEndsAt : null,
     stock: Number(a3("#admin3Stock").value || 0),
+    min_stock: Number(a3("#admin3MinStock")?.value || 5),
     active: a3("#admin3Active").value === "true",
     featured: a3("#admin3FeaturedField").value === "true",
     description: a3("#admin3Description").value.trim(),
@@ -823,6 +856,9 @@ async function saveProduct(event) {
     slug: a3("#admin3Slug").value.trim() || a3Slugify(a3("#admin3Name").value),
     seo_title: a3("#admin3SeoTitle").value.trim(),
     seo_description: a3("#admin3SeoDescription").value.trim(),
+    focus_keyword: a3("#admin3FocusKeyword")?.value.trim() || null,
+    image_alt: a3("#admin3ImageAlt")?.value.trim() || null,
+    noindex: a3("#admin3Noindex")?.value === "true",
     weight_kg: a3("#admin3Weight")?.value ? Number(a3("#admin3Weight").value) : null,
     width_cm: a3("#admin3Width")?.value ? Number(a3("#admin3Width").value) : null,
     height_cm: a3("#admin3Height")?.value ? Number(a3("#admin3Height").value) : null,
