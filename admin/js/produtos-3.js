@@ -421,6 +421,115 @@ async function bulkUpdateProducts(changes,message){ const ids=selectedProductIds
 async function bulkDeleteProducts(){ const ids=selectedProductIds(); if(!ids.length||!confirm(`Excluir ${ids.length} produto(s)?`))return; const r=await mugartSupabase.from("products").delete().in("id",ids); if(r.error){alert("Erro ao excluir produtos: "+r.error.message);return;} await loadAdmin3Data(); renderAdmin3(); alert("Produtos excluídos."); }
 function validateEan(value){ const d=String(value||"").replace(/\D/g,""); return !d || [8,12,13,14].includes(d.length); }
 
+
+function a3PublicationLabel(status, publishAt) {
+  if (status === "scheduled") {
+    if (publishAt && new Date(publishAt).getTime() <= Date.now()) {
+      return "Pronto para publicar";
+    }
+    return "Agendado";
+  }
+  if (status === "published") return "Publicado";
+  return "Rascunho";
+}
+
+function updatePublicationPreview() {
+  const status = a3("#admin3PublicationStatus")?.value || "draft";
+  const publishAt = a3("#admin3PublishAt")?.value || null;
+  const label = a3PublicationLabel(status, publishAt);
+  if (a3("#admin3PublicationPreview")) {
+    a3("#admin3PublicationPreview").textContent = label;
+  }
+}
+
+async function saveProductHistory(productId, action, beforeData, afterData) {
+  if (!productId) return;
+
+  const session = await mugartSupabase.auth.getSession();
+  const user = session.data.session?.user;
+
+  const result = await mugartSupabase
+    .from("product_history")
+    .insert({
+      product_id: productId,
+      action,
+      changed_by: user?.email || "admin",
+      before_data: beforeData || null,
+      after_data: afterData || null
+    });
+
+  if (result.error) {
+    console.warn("Histórico não salvo:", result.error.message);
+  }
+}
+
+async function renderProductHistory(productId) {
+  const container = a3("#admin3HistoryList");
+  if (!container) return;
+
+  if (!productId) {
+    container.innerHTML = '<p style="color:rgba(255,255,255,.65)">Salve ou edite um produto para visualizar o histórico.</p>';
+    return;
+  }
+
+  const result = await mugartSupabase
+    .from("product_history")
+    .select("*")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (result.error) {
+    container.innerHTML = `<p>Não foi possível carregar o histórico: ${result.error.message}</p>`;
+    return;
+  }
+
+  const rows = result.data || [];
+  container.innerHTML = rows.length
+    ? rows.map((row) => `
+      <article class="admin3-variant-card">
+        <header>
+          <div>
+            <h4>${row.action || "Alteração"}</h4>
+            <small>${new Date(row.created_at).toLocaleString("pt-BR")} · ${row.changed_by || "admin"}</small>
+          </div>
+        </header>
+        <div class="admin3-variant-meta">
+          <span>${row.after_data?.name || row.before_data?.name || "Produto"}</span>
+          ${row.after_data?.sku ? `<span>SKU: ${row.after_data.sku}</span>` : ""}
+        </div>
+      </article>
+    `).join("")
+    : '<p style="color:rgba(255,255,255,.65)">Nenhuma alteração registrada.</p>';
+}
+
+function exportProductsJson() {
+  const payload = {
+    exported_at: new Date().toISOString(),
+    products: Admin3State.products
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `mugart-produtos-backup-${new Date().toISOString().slice(0,10)}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+async function publishScheduledProducts() {
+  const now = new Date().toISOString();
+  const result = await mugartSupabase
+    .from("products")
+    .update({ publication_status: "published", active: true })
+    .eq("publication_status", "scheduled")
+    .lte("publish_at", now);
+
+  if (result.error) {
+    console.warn("Publicação agendada:", result.error.message);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   if (!window.mugartSupabase) {
     alert("Supabase não carregou.");
@@ -428,6 +537,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   bindAdmin3Events();
+  await publishScheduledProducts();
   await loadAdmin3Data();
   renderAdmin3();
 });
@@ -437,6 +547,10 @@ function bindAdmin3Events() {
   a3("#admin3NormalizeSkus")?.addEventListener("click", normalizeExistingSkus);
   a3("#admin3ExportCsv")?.addEventListener("click", exportAdmin3Csv);
   a3("#admin3ImportCsv")?.addEventListener("change", importAdmin3Csv);
+  a3("#admin3RefreshHistory")?.addEventListener("click", () => renderProductHistory(a3("#admin3ProductId")?.value));
+  a3("#admin3ExportJson")?.addEventListener("click", exportProductsJson);
+  a3("#admin3PublicationStatus")?.addEventListener("change", updatePublicationPreview);
+  a3("#admin3PublishAt")?.addEventListener("change", updatePublicationPreview);
   a3("#admin3BulkActivate")?.addEventListener("click", () => bulkUpdateProducts({ active: true }, "Produtos ativados."));
   a3("#admin3BulkDeactivate")?.addEventListener("click", () => bulkUpdateProducts({ active: false }, "Produtos desativados."));
   a3("#admin3BulkFeatured")?.addEventListener("click", () => bulkUpdateProducts({ featured: true }, "Produtos destacados."));
@@ -628,6 +742,8 @@ function productCardTemplate(product) {
         ${product.featured ? `<span class="admin3-badge yellow">Destaque</span>` : ""}
         ${admin3PromotionStatus(product).key !== "none" ? `<span class="admin3-badge">${admin3PromotionStatus(product).label}</span>` : ""}
         ${product.product_type === "digital" ? `<span class="admin3-badge">Digital</span>` : ""}
+        <span class="admin3-badge">${a3PublicationLabel(product.publication_status || (product.active ? "published" : "draft"), product.publish_at)}</span>
+        ${product.badge_text ? `<span class="admin3-badge yellow">${product.badge_text}</span>` : ""}
         <span class="admin3-badge">${product.active ? "Ativo" : "Inativo"}</span>
       </div>
 
@@ -707,6 +823,11 @@ function resetForm() {
   if (a3("#admin3OfferEndsAt")) a3("#admin3OfferEndsAt").value = "";
   if (a3("#admin3VariantOfferStartsAt")) a3("#admin3VariantOfferStartsAt").value = "";
   if (a3("#admin3VariantOfferEndsAt")) a3("#admin3VariantOfferEndsAt").value = "";
+  if (a3("#admin3PublicationStatus")) a3("#admin3PublicationStatus").value = "draft";
+  if (a3("#admin3PublishAt")) a3("#admin3PublishAt").value = "";
+  if (a3("#admin3BadgeText")) a3("#admin3BadgeText").value = "";
+  if (a3("#admin3BadgeType")) a3("#admin3BadgeType").value = "promo";
+  if (a3("#admin3InternalNotes")) a3("#admin3InternalNotes").value = "";
   updateImagePreview();
   updateSeoPreview();
   if (typeof updateAdmin3PromotionStatus === "function") updateAdmin3PromotionStatus();
@@ -750,6 +871,11 @@ window.editAdmin3Product = async function(id) {
   a3("#admin3Slug").value = product.slug || "";
   a3("#admin3SeoTitle").value = product.seo_title || "";
   a3("#admin3SeoDescription").value = product.seo_description || "";
+  if (a3("#admin3PublicationStatus")) a3("#admin3PublicationStatus").value = product.publication_status || (product.active ? "published" : "draft");
+  if (a3("#admin3PublishAt")) a3("#admin3PublishAt").value = a3ToLocalInput(product.publish_at);
+  if (a3("#admin3BadgeText")) a3("#admin3BadgeText").value = product.badge_text || "";
+  if (a3("#admin3BadgeType")) a3("#admin3BadgeType").value = product.badge_type || "promo";
+  if (a3("#admin3InternalNotes")) a3("#admin3InternalNotes").value = product.internal_notes || "";
   if (a3("#admin3FocusKeyword")) a3("#admin3FocusKeyword").value = product.focus_keyword || "";
   if (a3("#admin3ImageAlt")) a3("#admin3ImageAlt").value = product.image_alt || "";
   if (a3("#admin3Noindex")) a3("#admin3Noindex").value = String(product.noindex === true);
@@ -757,9 +883,11 @@ window.editAdmin3Product = async function(id) {
   updateImagePreview();
   updateSeoPreview();
   updateAdmin3PromotionStatus();
+  updatePublicationPreview();
 
   await renderGallery(id);
   await renderVariants(id);
+  await renderProductHistory(id);
 
   const nextVariantSku = await generateNextVariantSku(product.sku || "");
   if (a3("#admin3VariantSku")) a3("#admin3VariantSku").value = nextVariantSku;
@@ -767,6 +895,9 @@ window.editAdmin3Product = async function(id) {
 
 window.deleteAdmin3Product = async function(id) {
   if (!confirm("Deseja excluir este produto?")) return;
+
+  const beforeData = Admin3State.products.find((item) => item.id === id) || null;
+  await saveProductHistory(id, "Produto excluído", beforeData, null);
 
   const result = await mugartSupabase
     .from("products")
@@ -786,6 +917,11 @@ async function saveProduct(event) {
   event.preventDefault();
 
   const currentId = a3("#admin3ProductId").value;
+
+  let beforeData = null;
+  if (currentId) {
+    beforeData = Admin3State.products.find((item) => item.id === currentId) || null;
+  }
 
   if (!a3("#admin3Category").value) {
     alert("Cadastre uma categoria primeiro.");
@@ -849,7 +985,10 @@ async function saveProduct(event) {
     offer_ends_at: promotionalPrice !== null ? offerEndsAt : null,
     stock: Number(a3("#admin3Stock").value || 0),
     min_stock: Number(a3("#admin3MinStock")?.value || 5),
-    active: a3("#admin3Active").value === "true",
+    active:
+      (a3("#admin3PublicationStatus")?.value || "published") === "published"
+        ? a3("#admin3Active").value === "true"
+        : false,
     featured: a3("#admin3FeaturedField").value === "true",
     description: a3("#admin3Description").value.trim(),
     image_url: a3("#admin3ImageUrl").value.trim(),
@@ -892,8 +1031,17 @@ async function saveProduct(event) {
     a3("#admin3ProductId").value = result.data.id;
   }
 
+  const savedId = result.data?.id || currentId || Admin3State.currentProductId;
+  await saveProductHistory(
+    savedId,
+    currentId ? "Produto atualizado" : "Produto criado",
+    beforeData,
+    result.data || product
+  );
+
   await loadAdmin3Data();
   renderAdmin3();
+  await renderProductHistory(savedId);
 
   alert("Produto salvo com sucesso.");
 }

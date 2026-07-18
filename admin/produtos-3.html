@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>MugArt Admin | Produtos 3.2</title>
+  <title>MugArt Admin | Produtos 4.0</title>
 
   <link rel="icon" href="../assets/favicon.ico" sizes="any">
   <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
@@ -19,7 +19,7 @@
 
     <nav>
       <a href="dashboard.html">Dashboard</a>
-      <a class="active" href="produtos-3.html">Produtos 3.2</a>
+      <a class="active" href="produtos-3.html">Produtos 4.0</a>
       <a href="produtos.html">Produtos antigo</a>
       <a href="pedidos.html">Pedidos</a>
       <a href="/admin/utm.html">Gerador de UTM</a>
@@ -116,6 +116,8 @@
         <button type="button" class="admin3-tab" data-tab="media">Imagens</button>
         <button type="button" class="admin3-tab" data-tab="variants">Variações</button>
         <button type="button" class="admin3-tab" data-tab="seo">SEO</button>
+        <button type="button" class="admin3-tab" data-tab="publication">Publicação</button>
+        <button type="button" class="admin3-tab" data-tab="history">Histórico</button>
       </div>
 
       <section class="admin3-tab-panel active" id="admin3-tab-info">
@@ -354,6 +356,67 @@
         </div>
       </section>
 
+
+      <section class="admin3-tab-panel" id="admin3-tab-publication">
+        <div class="admin3-grid">
+          <label>
+            Status editorial
+            <select id="admin3PublicationStatus">
+              <option value="draft">Rascunho</option>
+              <option value="published">Publicado</option>
+              <option value="scheduled">Agendado</option>
+            </select>
+          </label>
+
+          <label>
+            Publicar em
+            <input id="admin3PublishAt" type="datetime-local" />
+          </label>
+
+          <label>
+            Etiqueta
+            <select id="admin3BadgeText">
+              <option value="">Sem etiqueta</option>
+              <option value="Novo">Novo</option>
+              <option value="Mais vendido">Mais vendido</option>
+              <option value="Exclusivo">Exclusivo</option>
+              <option value="Oferta">Oferta</option>
+              <option value="Personalizado">Personalizado</option>
+            </select>
+          </label>
+
+          <label>
+            Estilo da etiqueta
+            <select id="admin3BadgeType">
+              <option value="promo">Promoção</option>
+              <option value="new">Novo</option>
+              <option value="featured">Destaque</option>
+              <option value="exclusive">Exclusivo</option>
+            </select>
+          </label>
+
+          <label class="full">
+            Observação interna
+            <textarea id="admin3InternalNotes" rows="4" placeholder="Informações visíveis somente no painel"></textarea>
+          </label>
+        </div>
+
+        <div class="admin3-seo-preview">
+          <strong id="admin3PublicationPreview">Rascunho</strong>
+          <p>Produtos agendados serão publicados automaticamente quando a página for carregada após a data definida.</p>
+        </div>
+      </section>
+
+      <section class="admin3-tab-panel" id="admin3-tab-history">
+        <div class="admin3-form-footer" style="justify-content:flex-start">
+          <button type="button" id="admin3RefreshHistory">Atualizar histórico</button>
+          <button type="button" class="admin3-secondary-btn" id="admin3ExportJson">Exportar backup JSON</button>
+        </div>
+        <div id="admin3HistoryList" class="admin3-variants-list">
+          <p style="color:rgba(255,255,255,.65)">Salve ou edite um produto para visualizar o histórico.</p>
+        </div>
+      </section>
+
       <div class="admin3-form-footer">
         <button type="button" class="admin3-secondary-btn" id="admin3Cancel">Cancelar</button>
         <button type="submit" class="admin-action">Salvar produto</button>
@@ -367,6 +430,6 @@
   <script src="/js/supabase-config.js?v=5"></script>
   <script src="/admin/js/admin-auth.js?v=1"></script>
   <script src="/admin/js/admin.js?v=5"></script>
-  <script src="js/produtos-3.js?v=32"></script>
+  <script src="js/produtos-3.js?v=40"></script>
 </body>
 </html>
