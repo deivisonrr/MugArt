@@ -386,25 +386,14 @@ async function preencherClienteLogadoNoCheckout() {
         );
 
         const emailInput =
-    qs("#customerEmail");
+            qs("#customerEmail");
 
-if (emailInput) {
-    const isDevelopment =
-        CheckoutState.paymentEnvironment === "development";
-
-    emailInput.readOnly = !isDevelopment;
-
-    emailInput.classList.toggle(
-        "checkout-readonly",
-        !isDevelopment
-    );
-
-    if (isDevelopment) {
-        emailInput.value = "";
-        emailInput.placeholder =
-            "Use um e-mail diferente da conta Mercado Pago";
-    }
-}
+        if (emailInput) {
+            emailInput.readOnly = true;
+            emailInput.classList.add(
+                "checkout-readonly"
+            );
+        }
 
         preencherCampo(
             "shippingZip",
@@ -2160,7 +2149,26 @@ async function finishEmbeddedPayment(formData, selectedPaymentMethod) {
                 let message = error.message || "Falha ao processar pagamento.";
                 try {
                     const body = await error.context?.json?.();
-                    if (body?.error) message = body.error;
+
+                    if (body?.error) {
+                        message = body.error;
+                    }
+
+                    if (
+                        body?.error === "Card Token not found" ||
+                        body?.details?.message === "Card Token not found"
+                    ) {
+                        message =
+                            "O token do cartão expirou ou já foi usado. Preencha os dados do cartão novamente.";
+                    }
+
+                    if (
+                        body?.error === "Unauthorized use of live credentials" ||
+                        body?.details?.message === "Unauthorized use of live credentials"
+                    ) {
+                        message =
+                            "As credenciais do pagamento não correspondem ao ambiente atual. Atualize a página e tente novamente.";
+                    }
                 } catch {}
                 throw new Error(message);
             }
@@ -2172,9 +2180,37 @@ async function finishEmbeddedPayment(formData, selectedPaymentMethod) {
             handleDirectPaymentResult(data);
             resolve();
         } catch (error) {
-            console.error("[Checkout] Pagamento direto:", error);
-            showEmbeddedStatus(error.message || "Pagamento não concluído.", "error");
-            toast(error.message || "Pagamento não concluído.");
+            console.error(
+                "[Checkout] Pagamento direto:",
+                error
+            );
+
+            const message =
+                error?.message ||
+                "Pagamento não concluído.";
+
+            showEmbeddedStatus(
+                message,
+                "error"
+            );
+
+            toast(message);
+
+            /*
+             * O token do cartão é temporário e de uso único.
+             * Depois de qualquer tentativa com erro, desmontamos
+             * e recriamos o Payment Brick para obrigar a geração
+             * de um novo token antes da próxima tentativa.
+             * Mantemos o mesmo pedido para não criar duplicidade.
+             */
+            await destroyPaymentBrick();
+
+            CheckoutState.paymentBrickNeedsRerender = false;
+
+            setTimeout(() => {
+                schedulePaymentBrickRender();
+            }, 700);
+
             reject(error);
         } finally {
             CheckoutState.embeddedProcessing = false;
@@ -2208,10 +2244,19 @@ function handleDirectPaymentResult(data) {
         return;
     }
 
+    const statusDetail =
+        String(data.status_detail || "");
+
+    const friendlyMessage =
+        PAYMENT_ERRORS[statusDetail] ||
+        (
+            statusDetail
+                ? "O pagamento não foi aprovado. Tente outro cartão ou escolha pagar pelo Mercado Pago."
+                : "Pagamento não aprovado. Tente outro cartão ou escolha Mercado Pago."
+        );
+
     showEmbeddedStatus(
-        data.status_detail
-            ? `Pagamento não aprovado: ${data.status_detail}`
-            : "Pagamento não aprovado. Tente outro cartão ou escolha Mercado Pago.",
+        friendlyMessage,
         "error"
     );
 }
