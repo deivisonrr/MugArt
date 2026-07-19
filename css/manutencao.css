@@ -1,0 +1,56 @@
+* { box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  font-family: Inter, Arial, sans-serif;
+  color: #fff;
+  background:
+    radial-gradient(circle at 80% 10%, rgba(0,216,255,.15), transparent 35%),
+    radial-gradient(circle at 10% 20%, rgba(255,59,123,.12), transparent 30%),
+    #030406;
+}
+
+.maintenance-card {
+  width: min(620px, 100%);
+  padding: 40px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 28px;
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 28px 80px rgba(0,0,0,.35);
+}
+
+.logo {
+  width: 170px;
+  max-width: 60%;
+  margin-bottom: 24px;
+}
+
+.icon {
+  font-size: 52px;
+}
+
+h1 {
+  margin: 16px 0 12px;
+  font-size: clamp(34px, 7vw, 54px);
+}
+
+p {
+  color: rgba(255,255,255,.72);
+  line-height: 1.7;
+}
+
+.contact {
+  display: inline-flex;
+  margin-top: 24px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  color: #111;
+  text-decoration: none;
+  font-weight: 900;
+  background: #ffd400;
+}

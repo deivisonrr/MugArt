@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modo do site | MugArt Admin</title>
+  <link rel="stylesheet" href="/admin/css/modo-site.css?v=1">
+</head>
+<body>
+  <main class="mode-shell">
+    <section class="mode-card">
+      <p class="eyebrow">Configurações</p>
+      <h1>Modo do site</h1>
+      <p class="description">
+        Alterne entre produção e teste. No modo teste, os visitantes
+        verão a página de manutenção.
+      </p>
+
+      <div id="currentStatus" class="status loading">
+        Carregando configuração...
+      </div>
+
+      <div class="mode-options">
+        <label class="mode-option">
+          <input
+            type="radio"
+            name="environment"
+            value="production"
+          >
+          <span>
+            <strong>Produção</strong>
+            <small>Loja aberta e pagamentos reais.</small>
+          </span>
+        </label>
+
+        <label class="mode-option">
+          <input
+            type="radio"
+            name="environment"
+            value="development"
+          >
+          <span>
+            <strong>Teste / manutenção</strong>
+            <small>
+              Visitantes veem a manutenção e pagamentos usam teste.
+            </small>
+          </span>
+        </label>
+      </div>
+
+      <label class="switch-row">
+        <input id="maintenanceMode" type="checkbox">
+        <span>
+          <strong>Mostrar página de manutenção</strong>
+          <small>
+            Pode ser controlado separadamente do ambiente de pagamento.
+          </small>
+        </span>
+      </label>
+
+      <label class="field">
+        <span>Título da manutenção</span>
+        <input
+          id="maintenanceTitle"
+          value="MugArt está em manutenção"
+        >
+      </label>
+
+      <label class="field">
+        <span>Mensagem</span>
+        <textarea id="maintenanceMessage" rows="4">Estamos fazendo melhorias para oferecer uma experiência ainda melhor. Voltaremos em breve.</textarea>
+      </label>
+
+      <div class="actions">
+        <button id="saveModeBtn" type="button">
+          Salvar configuração
+        </button>
+
+        <button
+          id="openTestSiteBtn"
+          class="secondary"
+          type="button"
+        >
+          Abrir site para teste
+        </button>
+
+        <button
+          id="removeBypassBtn"
+          class="danger"
+          type="button"
+        >
+          Remover acesso de teste
+        </button>
+      </div>
+
+      <p id="modeMessage" class="message"></p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-config.js"></script>
+  <script src="/admin/js/modo-site.js?v=1"></script>
+</body>
+</html>

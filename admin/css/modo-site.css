@@ -1,0 +1,151 @@
+:root {
+  --bg: #030406;
+  --card: rgba(255,255,255,.06);
+  --stroke: rgba(255,255,255,.14);
+  --yellow: #ffd400;
+  --green: #6dff9b;
+  --red: #ff5b68;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 30px;
+  font-family: Inter, Arial, sans-serif;
+  color: #fff;
+  background:
+    radial-gradient(circle at 85% 10%, rgba(0,216,255,.14), transparent 36%),
+    #030406;
+}
+
+.mode-shell {
+  width: min(820px, 100%);
+  margin: 0 auto;
+}
+
+.mode-card {
+  padding: 30px;
+  border: 1px solid var(--stroke);
+  border-radius: 26px;
+  background: var(--card);
+}
+
+.eyebrow {
+  color: var(--yellow);
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+h1 {
+  margin: 4px 0 8px;
+  font-size: 44px;
+}
+
+.description,
+small {
+  color: rgba(255,255,255,.66);
+}
+
+.status {
+  margin: 22px 0;
+  padding: 15px;
+  border-radius: 14px;
+  font-weight: 900;
+}
+
+.status.production {
+  color: var(--green);
+  background: rgba(109,255,155,.10);
+}
+
+.status.development {
+  color: var(--yellow);
+  background: rgba(255,212,0,.10);
+}
+
+.mode-options {
+  display: grid;
+  gap: 12px;
+}
+
+.mode-option,
+.switch-row {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+}
+
+.mode-option input,
+.switch-row input {
+  width: 20px;
+  height: 20px;
+}
+
+.mode-option span,
+.switch-row span {
+  display: grid;
+  gap: 4px;
+}
+
+.switch-row {
+  margin-top: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  font-weight: 800;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  color: #fff;
+  background: rgba(255,255,255,.06);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+button {
+  padding: 13px 18px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 900;
+  cursor: pointer;
+  color: #111;
+  background: var(--yellow);
+}
+
+button.secondary {
+  color: #fff;
+  background: rgba(255,255,255,.10);
+}
+
+button.danger {
+  color: #fff;
+  background: rgba(255,91,104,.18);
+}
+
+.message {
+  min-height: 22px;
+  margin-top: 18px;
+  font-weight: 800;
+}
+
+.message.success { color: var(--green); }
+.message.error { color: var(--red); }

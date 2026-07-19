@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manutenção | MugArt</title>
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/manutencao.css?v=1">
+</head>
+<body>
+  <main class="maintenance-card">
+    <img src="/assets/logo.png" alt="MugArt" class="logo">
+
+    <div class="icon">🛠️</div>
+
+    <h1 id="maintenanceTitle">
+      MugArt está em manutenção
+    </h1>
+
+    <p id="maintenanceMessage">
+      Estamos fazendo melhorias para oferecer uma experiência ainda melhor.
+      Voltaremos em breve.
+    </p>
+
+    <a
+      href="https://wa.me/"
+      class="contact"
+      rel="noopener"
+    >
+      Falar com a MugArt
+    </a>
+  </main>
+
+  <script>
+    try {
+      const saved = JSON.parse(
+        sessionStorage.getItem(
+          "mugart_maintenance_content"
+        ) || "{}"
+      );
+
+      if (saved.title) {
+        document.querySelector(
+          "#maintenanceTitle"
+        ).textContent = saved.title;
+      }
+
+      if (saved.message) {
+        document.querySelector(
+          "#maintenanceMessage"
+        ).textContent = saved.message;
+      }
+    } catch {}
+  </script>
+</body>
+</html>
