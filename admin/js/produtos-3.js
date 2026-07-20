@@ -9,6 +9,7 @@ const Admin3State = {
   products: [],
   categories: [],
   currentProductId: null,
+  currentVariantId: null,
   filters: {
     search: "",
     category: "todos",
@@ -815,6 +816,7 @@ function closeDrawer() {
 
 function resetForm() {
   Admin3State.currentProductId = null;
+  Admin3State.currentVariantId = null;
   a3("#admin3ProductForm").reset();
   a3("#admin3ProductId").value = "";
   a3("#admin3Gallery").innerHTML = "";
@@ -1251,6 +1253,34 @@ window.deleteAdmin3Image = async function(productId, imageId) {
   await renderGallery(productId);
 };
 
+function clearVariantForm(generateNextSku = true) {
+  Admin3State.currentVariantId = null;
+
+  if (a3("#admin3VariantColor")) a3("#admin3VariantColor").value = "";
+  if (a3("#admin3VariantPrice")) a3("#admin3VariantPrice").value = "";
+  if (a3("#admin3VariantOldPrice")) a3("#admin3VariantOldPrice").value = "";
+  if (a3("#admin3VariantOfferStartsAt")) a3("#admin3VariantOfferStartsAt").value = "";
+  if (a3("#admin3VariantOfferEndsAt")) a3("#admin3VariantOfferEndsAt").value = "";
+  if (a3("#admin3VariantStock")) a3("#admin3VariantStock").value = "";
+  if (a3("#admin3VariantImageUrl")) a3("#admin3VariantImageUrl").value = "";
+
+  const button = a3("#admin3AddVariantBtn");
+  if (button) button.textContent = "Adicionar variação";
+
+  if (generateNextSku && a3("#admin3VariantSku")) {
+    const productSku = a3("#admin3Sku")?.value.trim();
+    a3("#admin3VariantSku").value = "";
+
+    if (productSku) {
+      generateNextVariantSku(productSku).then((sku) => {
+        if (!Admin3State.currentVariantId && a3("#admin3VariantSku")) {
+          a3("#admin3VariantSku").value = sku;
+        }
+      });
+    }
+  }
+}
+
 async function addVariant() {
   const productId = a3("#admin3ProductId").value;
 
@@ -1295,11 +1325,7 @@ async function addVariant() {
     return;
   }
 
-  if (
-    offerStartsAt &&
-    offerEndsAt &&
-    new Date(offerEndsAt).getTime() <= new Date(offerStartsAt).getTime()
-  ) {
+  if (offerStartsAt && offerEndsAt && new Date(offerEndsAt).getTime() <= new Date(offerStartsAt).getTime()) {
     alert("O fim da promoção da variação deve ser posterior ao início.");
     return;
   }
@@ -1317,28 +1343,33 @@ async function addVariant() {
     active: true
   };
 
-  const result = await mugartSupabase
-    .from("product_variants")
-    .insert(variant);
+  const editingId = Admin3State.currentVariantId;
+  let result;
+
+  if (editingId) {
+    result = await mugartSupabase
+      .from("product_variants")
+      .update(variant)
+      .eq("id", editingId)
+      .eq("product_id", productId);
+  } else {
+    result = await mugartSupabase
+      .from("product_variants")
+      .insert(variant);
+  }
 
   if (result.error) {
-    alert("Erro ao adicionar variação: " + result.error.message);
+    alert(`Erro ao ${editingId ? "editar" : "adicionar"} variação: ` + result.error.message);
     return;
   }
 
-  a3("#admin3VariantColor").value = "";
-  a3("#admin3VariantSku").value = "";
-  a3("#admin3VariantPrice").value = "";
-  a3("#admin3VariantOldPrice").value = "";
-  a3("#admin3VariantOfferStartsAt").value = "";
-  a3("#admin3VariantOfferEndsAt").value = "";
-  a3("#admin3VariantStock").value = "";
-  a3("#admin3VariantImageUrl").value = "";
-
+  clearVariantForm(false);
   await renderVariants(productId);
 
   const nextSku = await generateNextVariantSku(productSku);
-  a3("#admin3VariantSku").value = nextSku;
+  if (a3("#admin3VariantSku")) a3("#admin3VariantSku").value = nextSku;
+
+  alert(editingId ? "Variação atualizada com sucesso." : "Variação adicionada com sucesso.");
 }
 
 async function renderVariants(productId) {
@@ -1365,7 +1396,10 @@ async function renderVariants(productId) {
             <h4>${variant.color}</h4>
             <small>${variant.sku}</small>
           </div>
-          <button type="button" onclick="deleteAdmin3Variant('${productId}', '${variant.id}')">Remover</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="edit" onclick="editAdmin3Variant('${productId}', '${variant.id}')">Editar</button>
+            <button type="button" onclick="deleteAdmin3Variant('${productId}', '${variant.id}')">Remover</button>
+          </div>
         </header>
         <div class="admin3-variant-meta">
           <span>Preço atual: ${a3Money(a3EffectivePrice(variant.old_price || variant.price, variant.price, variant.offer_starts_at, variant.offer_ends_at))}</span>
@@ -1378,13 +1412,56 @@ async function renderVariants(productId) {
     : `<p style="color:rgba(255,255,255,.65)">Nenhuma variação cadastrada.</p>`;
 }
 
+window.editAdmin3Variant = async function(productId, variantId) {
+  const result = await mugartSupabase
+    .from("product_variants")
+    .select("*")
+    .eq("id", variantId)
+    .eq("product_id", productId)
+    .single();
+
+  if (result.error || !result.data) {
+    alert("Erro ao carregar variação: " + (result.error?.message || "Variação não encontrada."));
+    return;
+  }
+
+  const variant = result.data;
+  Admin3State.currentVariantId = variant.id;
+
+  a3("#admin3VariantColor").value = variant.color || "";
+  a3("#admin3VariantSku").value = variant.sku || "";
+  a3("#admin3VariantOldPrice").value = variant.old_price || variant.price || "";
+  a3("#admin3VariantPrice").value = variant.old_price && Number(variant.price) < Number(variant.old_price)
+    ? variant.price
+    : "";
+  a3("#admin3VariantOfferStartsAt").value = a3ToLocalInput(variant.offer_starts_at);
+  a3("#admin3VariantOfferEndsAt").value = a3ToLocalInput(variant.offer_ends_at);
+  a3("#admin3VariantStock").value = variant.stock ?? 0;
+  a3("#admin3VariantImageUrl").value = variant.image_url || "";
+
+  const button = a3("#admin3AddVariantBtn");
+  if (button) button.textContent = "Salvar alteração";
+
+  a3("#admin3VariantColor")?.focus();
+};
+
 window.deleteAdmin3Variant = async function(productId, variantId) {
   if (!confirm("Remover variação?")) return;
 
-  await mugartSupabase
+  const result = await mugartSupabase
     .from("product_variants")
     .delete()
-    .eq("id", variantId);
+    .eq("id", variantId)
+    .eq("product_id", productId);
+
+  if (result.error) {
+    alert("Erro ao remover variação: " + result.error.message);
+    return;
+  }
+
+  if (Admin3State.currentVariantId === variantId) {
+    clearVariantForm();
+  }
 
   await renderVariants(productId);
 };
