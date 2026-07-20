@@ -823,7 +823,10 @@ function resetForm() {
   if (a3("#admin3OfferEndsAt")) a3("#admin3OfferEndsAt").value = "";
   if (a3("#admin3VariantOfferStartsAt")) a3("#admin3VariantOfferStartsAt").value = "";
   if (a3("#admin3VariantOfferEndsAt")) a3("#admin3VariantOfferEndsAt").value = "";
-  if (a3("#admin3PublicationStatus")) a3("#admin3PublicationStatus").value = "draft";
+  if (a3("#admin3PublicationStatus")) a3("#admin3PublicationStatus").value = "published";
+  if (a3("#admin3Active")) a3("#admin3Active").value = "true";
+  if (a3("#admin3FeaturedField")) a3("#admin3FeaturedField").value = "false";
+  if (a3("#admin3Noindex")) a3("#admin3Noindex").value = "false";
   if (a3("#admin3PublishAt")) a3("#admin3PublishAt").value = "";
   if (a3("#admin3BadgeText")) a3("#admin3BadgeText").value = "";
   if (a3("#admin3BadgeType")) a3("#admin3BadgeType").value = "promo";
@@ -968,6 +971,14 @@ async function saveProduct(event) {
     return;
   }
 
+  const publicationStatus = a3("#admin3PublicationStatus")?.value || "published";
+  const publishAt = a3ToIso(a3("#admin3PublishAt")?.value);
+
+  if (publicationStatus === "scheduled" && !publishAt) {
+    alert("Informe a data e a hora da publicação agendada.");
+    return;
+  }
+
   const storedPrice = promotionalPrice !== null ? promotionalPrice : normalPrice;
 
   const product = {
@@ -986,7 +997,7 @@ async function saveProduct(event) {
     stock: Number(a3("#admin3Stock").value || 0),
     min_stock: Number(a3("#admin3MinStock")?.value || 5),
     active:
-      (a3("#admin3PublicationStatus")?.value || "published") === "published"
+      publicationStatus === "published"
         ? a3("#admin3Active").value === "true"
         : false,
     featured: a3("#admin3FeaturedField").value === "true",
@@ -998,6 +1009,14 @@ async function saveProduct(event) {
     focus_keyword: a3("#admin3FocusKeyword")?.value.trim() || null,
     image_alt: a3("#admin3ImageAlt")?.value.trim() || null,
     noindex: a3("#admin3Noindex")?.value === "true",
+    publication_status: a3("#admin3PublicationStatus")?.value || "published",
+    publish_at:
+      a3("#admin3PublicationStatus")?.value === "scheduled"
+        ? a3ToIso(a3("#admin3PublishAt")?.value)
+        : null,
+    badge_text: a3("#admin3BadgeText")?.value || null,
+    badge_type: a3("#admin3BadgeType")?.value || "promo",
+    internal_notes: a3("#admin3InternalNotes")?.value.trim() || null,
     weight_kg: a3("#admin3Weight")?.value ? Number(a3("#admin3Weight").value) : null,
     width_cm: a3("#admin3Width")?.value ? Number(a3("#admin3Width").value) : null,
     height_cm: a3("#admin3Height")?.value ? Number(a3("#admin3Height").value) : null,
