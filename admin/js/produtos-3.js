@@ -981,6 +981,11 @@ async function saveProduct(event) {
 
   const storedPrice = promotionalPrice !== null ? promotionalPrice : normalPrice;
 
+  // Se o produto foi marcado como ativo, ele deve ficar publicado.
+  // Isso evita que o status editorial "Rascunho" force active=false.
+  const activeValue = a3("#admin3Active").value === "true";
+  const finalPublicationStatus = activeValue ? "published" : publicationStatus;
+
   const product = {
     name: a3("#admin3Name").value.trim(),
     sku,
@@ -996,10 +1001,7 @@ async function saveProduct(event) {
     offer_ends_at: promotionalPrice !== null ? offerEndsAt : null,
     stock: Number(a3("#admin3Stock").value || 0),
     min_stock: Number(a3("#admin3MinStock")?.value || 5),
-    active:
-      publicationStatus === "published"
-        ? a3("#admin3Active").value === "true"
-        : false,
+    active: activeValue,
     featured: a3("#admin3FeaturedField").value === "true",
     description: a3("#admin3Description").value.trim(),
     image_url: a3("#admin3ImageUrl").value.trim(),
@@ -1009,9 +1011,9 @@ async function saveProduct(event) {
     focus_keyword: a3("#admin3FocusKeyword")?.value.trim() || null,
     image_alt: a3("#admin3ImageAlt")?.value.trim() || null,
     noindex: a3("#admin3Noindex")?.value === "true",
-    publication_status: a3("#admin3PublicationStatus")?.value || "published",
+    publication_status: finalPublicationStatus,
     publish_at:
-      a3("#admin3PublicationStatus")?.value === "scheduled"
+      finalPublicationStatus === "scheduled"
         ? a3ToIso(a3("#admin3PublishAt")?.value)
         : null,
     badge_text: a3("#admin3BadgeText")?.value || null,
