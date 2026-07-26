@@ -226,235 +226,157 @@
     </div>
 
 </section>
-    <section class="hero">
+   
+    <section class="home-personalizer" id="personalizador-home">
 
-      <div class="hero-copy">
+    <div class="section-heading">
 
-          <span class="eyebrow">
-              ☕ MUGART PERSONALIZADOS
-          </span>
-  
-          <h1>
-  
-              Quer fazer do
-              <span class="yellow">
-                  seu jeito?
-              </span>
-  
-              <br>
-  
-              Personalize sua
-              <span class="pink">
-                  caneca
-              </span>
-  
-              em poucos cliques.
-  
-          </h1>
-  
-          <p class="subtitle">
-  
-              Escolha o modelo da caneca, envie sua arte e nós cuidamos do resto.
-              Produzimos canecas personalizadas para presentes, empresas,
-              aniversários, casamentos, chá de bebê, brindes e muito mais.
-  
-          </p>
-  
-          <div class="hero-buttons">
-  
-              <a
-                  href="#personalizador-home"
-                  class="btn btn-yellow">
-  
-                  🎨 Personalizar Agora
-  
-              </a>
-  
-              <a
-                  href="loja.html"
-                  class="btn btn-outline">
-  
-                  🛍 Ver Nossa Loja
-  
-              </a>
-  
-          </div>
-  
-          <div class="hero-info">
-  
-              <div>
-  
-                  <strong>✔ Produção Própria</strong>
-  
-                  <span>
-                      Qualidade Premium
-                  </span>
-  
-              </div>
-  
-              <div>
-  
-                  <strong>🚚 Enviamos</strong>
-  
-                  <span>
-                      Para todo o Brasil
-                  </span>
-  
-              </div>
-  
-              <div>
-  
-                  <strong>⭐ Atendimento</strong>
-  
-                  <span>
-                      Rápido pelo WhatsApp
-                  </span>
-  
-              </div>
-  
-              <div>
-  
-                  <strong>🔒 Compra Segura</strong>
-  
-                  <span>
-                      Mercado Pago
-                  </span>
-  
-              </div>
-  
-          </div>
-  
-      </div>
-  
-      <div class="hero-visual">
-  
-          <div class="hero-image-box">
-  
-              <img
-                  src="assets/hero-caneca.png"
-                  alt="Canecas Personalizadas MugArt"
-              >
-  
-          </div>
-  
-      </div>
-  
-  </section>
-
-    <section class="models-section" id="canecas">
-      <div class="section-heading">
         <span class="dot pink-bg"></span>
         <span class="dot pink-bg"></span>
-        <h2>Nossos modelos de canecas</h2>
+
+        <h2>Personalize você mesmo</h2>
+
         <span class="dot cyan-bg"></span>
         <span class="dot cyan-bg"></span>
-      </div>
 
-      <div class="models-shell">
-        <button class="arrow left" type="button" aria-label="Anterior">‹</button>
+    </div>
 
-        <div class="models-track" id="modelsTrack">
-          <article class="model-card active" data-modelo="Caneca branca" data-imagem="assets/caneca-branca.png" data-cor="branca">
-            <img src="assets/caneca-branca.png" alt="Caneca branca" />
-            <h3>Caneca Branca</h3>
-            <p>Clássica e perfeita para qualquer ocasião.</p>
-            <button type="button">Selecionar</button>
-          </article>
+    <p class="personalizer-description">
 
-          <article class="model-card" data-modelo="Interna e alça preta" data-imagem="assets/caneca-preta.png" data-cor="preta">
-            <img src="assets/caneca-preta.png" alt="Caneca interna e alça preta" />
-            <h3>Interna e Alça Preta</h3>
-            <p>Um toque de elegância para sua caneca.</p>
-            <button type="button">Selecionar</button>
-          </article>
+        Escolha o modelo da caneca, envie sua arte e veja o valor automaticamente.
 
-          <article class="model-card" data-modelo="Interna e alça rosa" data-imagem="assets/caneca-rosa.png" data-cor="rosa">
-            <img src="assets/caneca-rosa.png" alt="Caneca interna e alça rosa" />
-            <h3>Interna e Alça Rosa</h3>
-            <p>Doce, moderna e cheia de personalidade.</p>
-            <button type="button">Selecionar</button>
-          </article>
+    </p>
 
-          <article class="model-card" data-modelo="Interna e alça azul" data-imagem="assets/caneca-azul.png" data-cor="azul">
-            <img src="assets/caneca-azul.png" alt="Caneca interna e alça azul" />
-            <h3>Interna e Alça Azul</h3>
-            <p>Estilo e cor para destacar sua criatividade.</p>
-            <button type="button">Selecionar</button>
-          </article>
+    <div class="home-personalizer-grid">
 
-          <article class="model-card" data-modelo="Caneca mágica" data-imagem="assets/caneca-magica.png" data-cor="magica">
-            <img src="assets/caneca-magica.png" alt="Caneca mágica" />
-            <h3>Caneca Mágica</h3>
-            <p>Fica preta e revela a arte com líquido quente.</p>
-            <button type="button">Selecionar</button>
-          </article>
+        <div class="home-left">
+
+            <h3>
+
+                1 • Escolha sua caneca
+
+            </h3>
+
+            <div id="personalizerProducts">
+
+                <!-- carregado pelo javascript -->
+
+            </div>
+
         </div>
 
-        <button class="arrow right" type="button" aria-label="Próximo">›</button>
-      </div>
-    </section>
+        <div class="home-center">
 
-    <section class="customizer" id="personalize">
-      <div class="customizer-copy">
-        <h2>Personalize<br><span>do seu jeito!</span></h2>
-        <p>Envie sua arte, escolha o modelo e solicite seu orçamento pelo WhatsApp.</p>
+            <h3>
 
-        <label class="upload-btn">
-          <input type="file" id="artInput" accept="image/png,image/jpeg,image/webp" />
-          <span>⇧</span> Enviar minha arte
-        </label>
+                2 • Envie sua arte
 
-        <p class="file-note">Formatos aceitos: PNG, JPG, WEBP<br>Tamanho máximo recomendado: 10MB</p>
+            </h3>
 
-        <div class="field">
-          <label for="customerName">Seu nome</label>
-          <input id="customerName" type="text" placeholder="Digite seu nome" />
+            <label class="upload-box">
+
+                <input
+                    id="artInput"
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.webp">
+
+                <div>
+
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                    <strong>
+
+                        Clique para enviar sua arte
+
+                    </strong>
+
+                    <span>
+
+                        PNG • JPG • WEBP
+
+                    </span>
+
+                </div>
+
+            </label>
+
+            <textarea
+                id="customerNote"
+                placeholder="Observações sobre sua personalização"></textarea>
+
         </div>
 
-        <div class="field">
-          <label for="customerNote">Observações</label>
-          <textarea id="customerNote" rows="4" placeholder="Ex: colocar nome, frase, imagem centralizada..."></textarea>
+        <div class="home-right">
+
+            <h3>
+
+                3 • Resumo
+
+            </h3>
+
+            <div class="summary-card">
+
+                <small>
+
+                    Modelo
+
+                </small>
+
+                <strong id="summaryModel">
+
+                    Nenhum
+
+                </strong>
+
+                <small>
+
+                    Arquivo
+
+                </small>
+
+                <strong id="summaryFile">
+
+                    Nenhum
+
+                </strong>
+
+                <small>
+
+                    Valor
+
+                </small>
+
+                <h2 id="summaryPrice">
+
+                    R$ 0,00
+
+                </h2>
+
+                <button
+                    class="btn-yellow"
+                    id="btnPersonalized">
+
+                    🛒 Adicionar ao Carrinho
+
+                </button>
+
+                <a
+                    class="btn-outline"
+                    href="loja.html">
+
+                    🛍 Ver Nossa Loja
+
+                </a>
+
+            </div>
+
         </div>
-      </div>
 
-      <div class="preview-stage">
-        <div class="grid-bg"></div>
-        <img class="preview-mug-base" id="previewMugBase" src="assets/caneca-studio.png" alt="Prévia da caneca" />
+    </div>
 
+</section>
 
-        
-        <div class="tip">ⓘ Dica: escolha o modelo, envie a arte e finalize pelo WhatsApp</div>
-      </div>
-
-      <aside class="controls-panel">
-        <h3>Pedido</h3>
-        <div class="selected-box">
-          <small>Modelo selecionado</small>
-          <strong id="selectedModelText">Caneca Branca</strong>
-        </div>
-
-        <div class="selected-box">
-          <small>Arte enviada</small>
-          <strong id="selectedArtText">Nenhuma</strong>
-        </div>
-
-        <h3>Cores da caneca</h3>
-        <div class="color-dots">
-          <button class="color white selected" data-target="Caneca branca" data-card="0" aria-label="Caneca branca"></button>
-          <button class="color black" data-target="Interna e alça preta" data-card="1" aria-label="Caneca preta"></button>
-          <button class="color yellow" aria-label="Amarela sob consulta"></button>
-          <button class="color pink" data-target="Interna e alça rosa" data-card="2" aria-label="Caneca rosa"></button>
-          <button class="color cyan" data-target="Interna e alça azul" data-card="3" aria-label="Caneca azul"></button>
-        </div>
-
-        <button class="clear-btn" id="clearArt" type="button">🗑 Limpar arte</button>
-
-        
-        
-        <button class="whatsapp-order" id="sendWhatsapp" type="button">☘ Solicitar orçamento</button>
-      </aside>
-    </section>
-
+    
     <section class="steps" id="como-funciona">
       <div class="section-heading">
         <span class="dot pink-bg"></span>
