@@ -1,4 +1,5 @@
 import * as Modelos from "./modelos.js";
+import * as Variacoes from "./variacoes.js";
 
 const Personalizador = {
 
