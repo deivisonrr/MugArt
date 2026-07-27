@@ -36,7 +36,7 @@ const Personalizador = {
 
     async init() {
 
-        if (!window.mugartSupabase) {
+        if (!window.mugart) {
 
             console.error("Supabase não carregado.");
 
@@ -285,6 +285,9 @@ const Personalizador = {
        async carregarModelos() {
 
         try {
+
+            console.log("DB:", this.db);
+            console.log("FROM:", this.db?.from);
 
             const { data, error } = await this.db
                 .from("customization_models")
