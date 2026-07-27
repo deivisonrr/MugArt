@@ -1,387 +1,1997 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>MugArt Admin | Produtos 4.0</title>
+    <meta charset="UTF-8">
 
-  <link rel="icon" href="../assets/favicon.ico" sizes="any">
-  <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="css/admin.css" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>MugArt ERP | Designer de Produtos</title>
+
+    <link rel="icon"
+          href="../assets/favicon.ico">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
+    <link rel="stylesheet"
+          href="css/admin.css">
+
+    <link rel="stylesheet"
+          href="css/personalizador.css">
+
 </head>
 
 <body class="admin-body">
-  <aside class="admin-sidebar">
-    <a class="admin-brand" href="dashboard.html">
-      <img src="../assets/logo.png" alt="MugArt" />
+
+<!-- ==========================================================
+     SIDEBAR
+========================================================== -->
+
+<aside class="admin-sidebar">
+
+    <a
+        href="dashboard.html"
+        class="admin-brand">
+
+        <img
+            src="../assets/logo.png"
+            alt="MugArt">
+
     </a>
 
     <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a class="active" href="produtos-3.html">Produtos PRO</a>
-      <a href="categorias.html">Categorias</a>
-      <a href="produtos.html">Produtos antigo</a>
-      <a href="pedidos.html">Pedidos</a>
-      <a href="cupons.html">Cupons</a>
-      <a href="/admin/utm.html">Gerador de UTM</a>
-      <a href="/admin/modo-site.html">Modo do site</a>
-      <a href="configuracoes.html">Configurações</a>
-      <a href="../loja.html">Ver Loja</a>
+
+        <a href="dashboard.html">
+
+            Dashboard
+
+        </a>
+
+        <a
+            href="pedidos.html">
+
+            Pedidos
+
+        </a>
+
+        <a
+            href="produtos.html">
+
+            Produtos
+
+        </a>
+
+        <a
+            href="categorias.html">
+
+            Categorias
+
+        </a>
+
+        <a
+            class="active"
+            href="personalizador.html">
+
+            🎨 Personalizador
+
+        </a>
+
+        <a
+            href="configuracoes.html">
+
+            Configurações
+
+        </a>
+
     </nav>
 
-    <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
-  </aside>
+    <button
+        id="logoutBtn"
+        class="logout-btn">
 
-  <main class="admin-main admin3-main">
-    <header class="admin3-header">
-      <div>
-        <p class="eyebrow">Catálogo</p>
-        <h1>🎨 Personalizador</h1>
-        <p>Cadastre os modelos disponíveis para personalização, como canecas, copos, squeezes, camisetas e outros modelos</p>
-      </div>
+        Sair
 
-      <div class="admin3-header-actions">
-        <a class="admin3-secondary-btn" href="../loja.html" target="_blank">Ver loja</a>
-        <button class="admin-action" id="openProductDrawer" type="button">Novo modelo</button>
-      </div>
-    </header>
+    </button>
 
-    <section class="admin3-metrics">
-      <article><span>Modelos ativos</span><strong id="admin3ActiveProducts">0</strong></article>
-      <article><span>Total de variações</span><strong id="admin3TotalStock">0</strong></article>
-      <article><span>Modelos com Variações</span><strong id="admin3LowStock">0</strong></article>
-      <article><span>Categorias</span><strong id="admin3Featured">0</strong></article>
-    </section>
+</aside>
 
-    <section class="admin3-toolbar">
-      <label class="admin3-search">
-        <span>Buscar modelo</span>
-        <input id="admin3Search" type="search" placeholder="Nome do modelo..." />
-      </label>
+<!-- ==========================================================
+     CONTEÚDO
+========================================================== -->
 
-      <label>
-        Tipo
-        <select id="admin3CategoryFilter"><option value="todos">Todas</option></select>
-      </label>
+<main class="designer">
 
-      <label>
-        Status
-        <select id="admin3StatusFilter">
-          <option value="todos">Todos</option>
-          <option value="ativo">Ativos</option>
-          <option value="inativo">Inativos</option>
-          <option value="baixo">Estoque baixo</option>
-          <option value="destaque">Destaques</option>
-        </select>
-      </label>
+<!-- ==========================================================
+     HEADER
+========================================================== -->
 
-      <label>
-        Visualização
-        <select id="admin3ViewMode">
-          <option value="cards">Cards</option>
-          <option value="list">Lista</option>
-        </select>
-      </label>
-    </section>
+<header class="designer-header">
 
-     <section class="admin3-products" id="admin3Products"></section>
-  </main>
+    <div>
 
-  <aside class="admin3-drawer" id="admin3Drawer">
-    <div class="admin3-drawer-head">
-      <div>
-        <p class="eyebrow">Modelo</p>
-        <h2 id="admin3DrawerTitle">Novo modelo</h2>
-      </div>
-      <button type="button" id="closeProductDrawer">×</button>
+        <small>
+
+            MUGART ERP
+
+        </small>
+
+        <h1>
+
+            Designer de Produtos
+
+        </h1>
+
+        <p>
+
+            Crie modelos totalmente personalizáveis para qualquer produto.
+
+        </p>
+
     </div>
 
-    <form id="admin3ProductForm" class="admin3-form">
-      <input type="hidden" id="admin3ProductId" />
+    <div class="designer-actions">
 
-    <div class="admin3-tabs">
+        <button
+            id="btnAtualizar"
+            class="secondary">
 
-      <button type="button" class="admin3-tab active" data-tab="info">
-          Geral
-      </button>
-  
-      <button type="button" class="admin3-tab" data-tab="media">
-          Imagens
-      </button>
-  
-      <button type="button" class="admin3-tab" data-tab="variants">
-          Variações
-      </button>
-  
-      <button type="button" class="admin3-tab" data-tab="print">
-          Área de Impressão
-      </button>
-  
-      <button type="button" class="admin3-tab" data-tab="files">
-          Arquivos
-      </button>
-  
-      <button type="button" class="admin3-tab" data-tab="history">
-          Histórico
-      </button>
-  
-  </div>
+            Atualizar
 
-      <section class="admin3-tab-panel active" id="admin3-tab-info">
-        <div class="admin3-grid">
-          <label class="full">
+        </button>
+
+        <button
+            id="openProductDrawer"
+            class="primary">
+
+            Novo Modelo
+
+        </button>
+
+    </div>
+
+</header>
+
+<!-- ==========================================================
+     DASHBOARD
+========================================================== -->
+
+<section class="designer-dashboard">
+
+    <article class="metric">
+
+        <span>
+
+            Modelos
+
+        </span>
+
+        <strong id="summaryModels">
+
+            0
+
+        </strong>
+
+    </article>
+
+    <article class="metric">
+
+        <span>
+
+            Galeria
+
+        </span>
+
+        <strong id="summaryGallery">
+
+            0
+
+        </strong>
+
+    </article>
+
+    <article class="metric">
+
+        <span>
+
+            Variações
+
+        </span>
+
+        <strong id="summaryVariants">
+
+            0
+
+        </strong>
+
+    </article>
+
+    <article class="metric">
+
+        <span>
+
+            Áreas
+
+        </span>
+
+        <strong id="summaryAreas">
+
+            0
+
+        </strong>
+
+    </article>
+
+    <article class="metric">
+
+        <span>
+
+            Arquivos
+
+        </span>
+
+        <strong id="summaryFiles">
+
+            0
+
+        </strong>
+
+    </article>
+
+</section>
+
+<!-- ==========================================================
+     FERRAMENTAS
+========================================================== -->
+
+<section class="designer-toolbar">
+
+    <div class="designer-search">
+
+        <input
+
+            id="admin3Search"
+
+            type="search"
+
+            placeholder="Pesquisar modelo..."
+
+        >
+
+    </div>
+
+    <select id="designerStatus">
+
+        <option value="">
+
+            Todos
+
+        </option>
+
+        <option value="true">
+
+            Apenas ativos
+
+        </option>
+
+        <option value="false">
+
+            Apenas inativos
+
+        </option>
+
+    </select>
+
+    <select id="designerOrder">
+
+        <option value="name">
+
             Nome
-            <input id="admin3Name" required placeholder="Caneca Coração Vermelha" />
-          </label>
 
-          <label>
-            Tipo
-            <select id="admin3Category" required></select>
-          </label>
+        </option>
 
-          <label>
-            Preço Base
-            <input id="admin3OldPrice" type="number" min="0" step="0.01" required placeholder="54.90" />
-          </label>
+        <option value="created">
 
-          <label>
-            Modelo ativo
-            <select id="admin3Active">
-              <option value="true">Sim</option>
-              <option value="false">Não</option>
-            </select>
-          </label>
+            Data
 
-         <label>
-             Permite variações
-             <select id="admin3AllowVariations">
-                 <option value="true">Sim</option>
-                 <option value="false">Não</option>
-             </select>
-         </label>
-         
-         <label>
-             Exibir na loja
-             <select id="admin3ShowInStore">
-                 <option value="true">Sim</option>
-                 <option value="false">Não</option>
-             </select>
-         </label>
-         
-         <label>
-             Aceita upload da arte
-             <select id="admin3AllowUpload">
-                 <option value="true">Sim</option>
-                 <option value="false">Não</option>
-             </select>
-         </label>
-         
-         <label>
-             Aceita observações
-             <select id="admin3AllowNotes">
-                 <option value="true">Sim</option>
-                 <option value="false">Não</option>
-             </select>
-         </label>
-           
-          <label class="full">
-            Descrição
-            <textarea id="admin3Description" rows="5" required placeholder="Descrição do produto"></textarea>
-          </label>
-        </div>
-      </section>
+        </option>
 
-      <section class="admin3-tab-panel" id="admin3-tab-media">
-        <label>
-          URL da imagem principal
-          <input id="admin3ImageUrl" placeholder="URL preenchida automaticamente após upload" />
-        </label>
+        <option value="price">
 
-        <div class="admin3-upload">
-          <div class="admin3-upload-preview">
-            <img id="admin3ImagePreview" alt="Preview" />
-            <span id="admin3ImagePlaceholder">Nenhuma imagem selecionada</span>
-          </div>
+            Preço
 
-          <div class="admin3-upload-actions">
-            <label class="admin3-secondary-btn">
-              Escolher imagem
-              <input id="admin3ImageFile" type="file" accept="image/png,image/jpeg,image/webp" />
+        </option>
+
+    </select>
+
+</section>
+
+<!-- ==========================================================
+     LISTA
+========================================================== -->
+
+<section
+
+    id="admin3Products"
+
+    class="designer-products">
+
+</section>
+
+<button
+
+    id="floatingNewModel"
+
+    class="floating-button"
+
+    title="Novo Modelo">
+
+    +
+
+</button>
+
+<!-- ==========================================================
+     DRAWER
+========================================================== -->
+
+  <!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>MugArt ERP | Designer de Produtos</title>
+
+    <link rel="icon"
+          href="../assets/favicon.ico">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
+    <link rel="stylesheet"
+          href="css/admin.css">
+
+    <link rel="stylesheet"
+          href="css/personalizador.css">
+
+</head>
+
+<body class="admin-body">
+
+<!-- ==========================================================
+     SIDEBAR
+========================================================== -->
+
+<aside class="admin-sidebar">
+
+    <a
+        href="dashboard.html"
+        class="admin-brand">
+
+        <img
+            src="../assets/logo.png"
+            alt="MugArt">
+
+    </a>
+
+    <nav>
+
+        <a href="dashboard.html">
+
+            Dashboard
+
+        </a>
+
+        <a
+            href="pedidos.html">
+
+            Pedidos
+
+        </a>
+
+        <a
+            href="produtos.html">
+
+            Produtos
+
+        </a>
+
+        <a
+            href="categorias.html">
+
+            Categorias
+
+        </a>
+
+        <a
+            class="active"
+            href="personalizador.html">
+
+            🎨 Personalizador
+
+        </a>
+
+        <a
+            href="configuracoes.html">
+
+            Configurações
+
+        </a>
+
+    </nav>
+
+    <button
+        id="logoutBtn"
+        class="logout-btn">
+
+        Sair
+
+    </button>
+
+</aside>
+
+<!-- ==========================================================
+     CONTEÚDO
+========================================================== -->
+
+<main class="designer">
+
+<!-- ==========================================================
+     HEADER
+========================================================== -->
+
+<header class="designer-header">
+
+    <div>
+
+        <small>
+
+            MUGART ERP
+
+        </small>
+
+        <h1>
+
+            Designer de Produtos
+
+        </h1>
+
+        <p>
+
+            Crie modelos totalmente personalizáveis para qualquer produto.
+
+        </p>
+
+    </div>
+
+    <div class="designer-actions">
+
+        <button
+            id="btnAtualizar"
+            class="secondary">
+
+            Atualizar
+
+        </button>
+
+        <button
+            id="openProductDrawer"
+            class="primary">
+
+            Novo Modelo
+
+        </button>
+
+    </div>
+
+</header>
+
+<!-- ==========================================================
+     DASHBOARD
+========================================================== -->
+
+<section class="designer-dashboard">
+
+    <article class="metric">
+
+        <span>
+
+            Modelos
+
+        </span>
+
+        <strong id="summaryModels">
+
+            0
+
+        </strong>
+
+    </article>
+
+    <article class="metric">
+
+        <span>
+
+            Galeria
+
+        </span>
+
+        <strong id="summaryGallery">
+
+            0
+
+        </strong>
+
+    </article>
+
+    <article class="metric">
+
+        <span>
+
+            Variações
+
+        </span>
+
+        <strong id="summaryVariants">
+
+            0
+
+        </strong>
+
+    </article>
+
+    <article class="metric">
+
+        <span>
+
+            Áreas
+
+        </span>
+
+        <strong id="summaryAreas">
+
+            0
+
+        </strong>
+
+    </article>
+
+    <article class="metric">
+
+        <span>
+
+            Arquivos
+
+        </span>
+
+        <strong id="summaryFiles">
+
+            0
+
+        </strong>
+
+    </article>
+
+</section>
+
+<!-- ==========================================================
+     FERRAMENTAS
+========================================================== -->
+
+<section class="designer-toolbar">
+
+    <div class="designer-search">
+
+        <input
+
+            id="admin3Search"
+
+            type="search"
+
+            placeholder="Pesquisar modelo..."
+
+        >
+
+    </div>
+
+    <select id="designerStatus">
+
+        <option value="">
+
+            Todos
+
+        </option>
+
+        <option value="true">
+
+            Apenas ativos
+
+        </option>
+
+        <option value="false">
+
+            Apenas inativos
+
+        </option>
+
+    </select>
+
+    <select id="designerOrder">
+
+        <option value="name">
+
+            Nome
+
+        </option>
+
+        <option value="created">
+
+            Data
+
+        </option>
+
+        <option value="price">
+
+            Preço
+
+        </option>
+
+    </select>
+
+</section>
+
+<!-- ==========================================================
+     LISTA
+========================================================== -->
+
+<section
+
+    id="admin3Products"
+
+    class="designer-products">
+
+</section>
+
+<button
+
+    id="floatingNewModel"
+
+    class="floating-button"
+
+    title="Novo Modelo">
+
+    +
+
+</button>
+
+<!-- ==========================================================
+     DRAWER
+========================================================== -->
+
+  <!-- ==========================================================
+     ABA GERAL
+========================================================== -->
+
+<section
+    id="tab-geral"
+    class="designer-panel active">
+
+    <div class="form-grid">
+
+        <div class="form-group">
+
+            <label>
+
+                Nome do Modelo
+
             </label>
 
-            <button type="button" id="admin3UploadImageBtn">Enviar imagem</button>
-            <button type="button" id="admin3AddGalleryBtn">Adicionar à galeria</button>
+            <input
+
+                id="admin3Name"
+
+                type="text"
+
+                placeholder="Ex.: Caneca Cerâmica 325ml"
+
+                required>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+
+                Categoria
+
+            </label>
+
+            <select
+                id="admin3Category">
+
+                <option value="">
+
+                    Selecione
+
+                </option>
+
+                <option>
+
+                    Canecas
+
+                </option>
+
+                <option>
+
+                    Copos
+
+                </option>
+
+                <option>
+
+                    Garrafas
+
+                </option>
+
+                <option>
+
+                    Camisetas
+
+                </option>
+
+                <option>
+
+                    Mousepads
+
+                </option>
+
+                <option>
+
+                    Azulejos
+
+                </option>
+
+                <option>
+
+                    Quadros
+
+                </option>
+
+                <option>
+
+                    Chinelos
+
+                </option>
+
+                <option>
+
+                    Outros
+
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+
+                Preço Base
+
+            </label>
+
+            <input
+
+                id="admin3OldPrice"
+
+                type="number"
+
+                min="0"
+
+                step="0.01">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+
+                Ordem de Exibição
+
+            </label>
+
+            <input
+
+                id="admin3DisplayOrder"
+
+                type="number"
+
+                value="0">
+
+        </div>
+
+    </div>
+
+    <div class="form-group">
+
+        <label>
+
+            URL da Imagem Principal
+
+        </label>
+
+        <input
+
+            id="admin3ImageUrl"
+
+            type="text"
+
+            placeholder="https://...">
+
+    </div>
+
+    <div class="form-group">
+
+        <label>
+
+            Descrição
+
+        </label>
+
+        <textarea
+
+            id="admin3Description"
+
+            rows="5"
+
+            placeholder="Descrição do modelo...">
+
+        </textarea>
+
+    </div>
+
+    <div class="options-grid">
+
+        <label class="switch-card">
+
+            <input
+
+                id="admin3Active"
+
+                type="checkbox"
+
+                checked>
+
+            <div>
+
+                <strong>
+
+                    Modelo Ativo
+
+                </strong>
+
+                <small>
+
+                    Disponível para venda.
+
+                </small>
+
+            </div>
+
+        </label>
+
+        <label class="switch-card">
+
+            <input
+
+                id="admin3AllowVariations"
+
+                type="checkbox">
+
+            <div>
+
+                <strong>
+
+                    Permitir Variações
+
+                </strong>
+
+                <small>
+
+                    Cor, tamanho e outros.
+
+                </small>
+
+            </div>
+
+        </label>
+
+        <label class="switch-card">
+
+            <input
+
+                id="admin3AllowText"
+
+                type="checkbox"
+
+                checked>
+
+            <div>
+
+                <strong>
+
+                    Permitir Texto
+
+                </strong>
+
+                <small>
+
+                    Cliente poderá adicionar textos.
+
+                </small>
+
+            </div>
+
+        </label>
+
+        <label class="switch-card">
+
+            <input
+
+                id="admin3AllowImages"
+
+                type="checkbox"
+
+                checked>
+
+            <div>
+
+                <strong>
+
+                    Permitir Imagens
+
+                </strong>
+
+                <small>
+
+                    Cliente poderá enviar fotos.
+
+                </small>
+
+            </div>
+
+        </label>
+
+    </div>
+
+</section>
+
+  <!-- ==========================================================
+     ABA GALERIA
+========================================================== -->
+
+<section
+    id="tab-galeria"
+    class="designer-panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <h3>
+
+                Galeria de Imagens
+
+            </h3>
+
+            <p>
+
+                Faça upload das imagens utilizadas no produto.
+
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            id="btnUploadGallery"
+            class="primary">
+
+            Adicionar Imagem
+
+        </button>
+
+    </div>
+
+    <input
+
+        id="galleryUpload"
+
+        type="file"
+
+        accept="image/*"
+
+        hidden>
+
+    <div class="gallery-dropzone">
+
+        <div class="dropzone-icon">
+
+            🖼️
+
+        </div>
+
+        <h4>
+
+            Arraste imagens aqui
+
+        </h4>
+
+        <p>
+
+            ou clique em "Adicionar Imagem"
+
+        </p>
+
+    </div>
+
+    <div
+
+        id="admin3Gallery"
+
+        class="gallery-grid">
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+
+                🖼️
+
+            </div>
+
+            <h4>
+
+                Nenhuma imagem cadastrada
+
+            </h4>
+
+            <p>
+
+                As imagens aparecerão aqui após o upload.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+  <!-- ==========================================================
+     ABA VARIAÇÕES
+========================================================== -->
+
+<section
+    id="tab-variacoes"
+    class="designer-panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <h3>
+
+                Variações
+
+            </h3>
+
+            <p>
+
+                Cadastre cores, tamanhos e outras opções do produto.
+
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            id="btnNewVariant"
+            class="primary">
+
+            Nova Variação
+
+        </button>
+
+    </div>
+
+    <div
+        id="admin3Variants"
+        class="variants-list">
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+
+                🎨
+
+            </div>
+
+            <h4>
+
+                Nenhuma variação cadastrada
+
+            </h4>
+
+            <p>
+
+                Clique em "Nova Variação" para começar.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================================================
+     DRAWER DA VARIAÇÃO
+========================================================== -->
+
+<aside
+    id="admin3VariantDrawer"
+    class="designer-subdrawer">
+
+    <header class="drawer-header">
+
+        <h3>
+
+            Variação
+
+        </h3>
+
+        <button
+            type="button"
+            id="closeVariantDrawer"
+            class="drawer-close">
+
+            ✕
+
+        </button>
+
+    </header>
+
+    <input
+        type="hidden"
+        id="variantId">
+
+    <div class="form-group">
+
+        <label>
+
+            Nome
+
+        </label>
+
+        <input
+            id="variantName"
+            type="text">
+
+    </div>
+
+    <div class="form-grid">
+
+        <div class="form-group">
+
+            <label>
+
+                SKU
+
+            </label>
+
+            <input
+                id="variantSku"
+                type="text">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+
+                Cor
+
+            </label>
+
+            <input
+                id="variantColor"
+                type="color"
+                value="#ffffff">
+
+        </div>
+
+    </div>
+
+    <div class="form-grid">
+
+        <div class="form-group">
+
+            <label>
+
+                Acréscimo no Preço
+
+            </label>
+
+            <input
+                id="variantPrice"
+                type="number"
+                step="0.01"
+                value="0">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+
+                Estoque
+
+            </label>
+
+            <input
+                id="variantStock"
+                type="number"
+                value="0">
+
+        </div>
+
+    </div>
+
+    <div class="form-group">
+
+        <label>
+
+            URL da Imagem
+
+        </label>
+
+        <input
+            id="variantImage"
+            type="text">
+
+    </div>
+
+    <input
+        id="variantUpload"
+        type="file"
+        accept="image/*"
+        hidden>
+
+    <button
+        type="button"
+        id="btnUploadVariantImage"
+        class="secondary">
+
+        Enviar Imagem
+
+    </button>
+
+    <label class="switch-card">
+
+        <input
+            id="variantActive"
+            type="checkbox"
+            checked>
+
+        <div>
+
+            <strong>
+
+                Variação Ativa
+
+            </strong>
+
+        </div>
+
+    </label>
+
+    <footer class="drawer-footer">
+
+        <button
+            type="button"
+            id="cancelVariant"
+            class="secondary">
+
+            Cancelar
+
+        </button>
+
+        <button
+            type="button"
+            id="saveVariant"
+            class="primary">
+
+            Salvar Variação
+
+        </button>
+
+    </footer>
+
+</aside>
+
+  <!-- ==========================================================
+     ABA ÁREA DE IMPRESSÃO
+========================================================== -->
+
+<section
+    id="tab-areas"
+    class="designer-panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <h3>
+
+                Área de Impressão
+
+            </h3>
+
+            <p>
+
+                Defina onde o cliente poderá personalizar o produto.
+
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            id="btnNovaArea"
+            class="primary">
+
+            Nova Área
+
+        </button>
+
+    </div>
+
+    <div class="print-layout">
+
+        <!-- =========================
+             LISTA
+        ========================== -->
+
+        <aside class="print-sidebar">
+
+            <div
+                id="admin3PrintAreas"
+                class="print-area-list">
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+
+                        📐
+
+                    </div>
+
+                    <h4>
+
+                        Nenhuma área cadastrada
+
+                    </h4>
+
+                    <p>
+
+                        Clique em "Nova Área".
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+        <!-- =========================
+             EDITOR
+        ========================== -->
+
+        <section class="print-editor">
+
+            <div class="editor-toolbar">
+
+                <button
+                    type="button"
+                    id="zoomOut">
+
+                    −
+
+                </button>
+
+                <button
+                    type="button"
+                    id="zoomReset">
+
+                    100%
+
+                </button>
+
+                <button
+                    type="button"
+                    id="zoomIn">
+
+                    +
+
+                </button>
+
+                <button
+                    type="button"
+                    id="btnCenterArea">
+
+                    Centralizar
+
+                </button>
+
+            </div>
+
+            <div
+                id="printEditor"
+                class="editor-canvas">
+
+                <img
+
+                    id="printPreview"
+
+                    class="editor-preview"
+
+                    src="../assets/hero-caneca.png"
+
+                    alt="Preview">
+
+                <div
+
+                    id="printSelection"
+
+                    class="print-selection">
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</section>
+
+<!-- ==========================================================
+     DRAWER ÁREA
+========================================================== -->
+
+<aside
+    id="admin3PrintDrawer"
+    class="designer-subdrawer">
+
+    <header class="drawer-header">
+
+        <h3>
+
+            Área de Impressão
+
+        </h3>
+
+        <button
+            type="button"
+            id="closePrintDrawer"
+            class="drawer-close">
+
+            ✕
+
+        </button>
+
+    </header>
+
+    <input
+        type="hidden"
+        id="printAreaId">
+
+    <div class="form-group">
+
+        <label>
+
+            Nome
+
+        </label>
+
+        <input
+            id="printAreaName"
+            type="text"
+            placeholder="Frente">
+
+    </div>
+
+    <div class="form-grid">
+
+        <div class="form-group">
+
+            <label>X</label>
+
+            <input
+                id="printAreaX"
+                type="number">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Y</label>
+
+            <input
+                id="printAreaY"
+                type="number">
+
+        </div>
+
+    </div>
+
+    <div class="form-grid">
+
+        <div class="form-group">
+
+            <label>Largura</label>
+
+            <input
+                id="printAreaWidth"
+                type="number">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Altura</label>
+
+            <input
+                id="printAreaHeight"
+                type="number">
+
+        </div>
+
+    </div>
+
+    <div class="form-group">
+
+        <label>
+
+            Rotação
+
+        </label>
+
+        <input
+            id="printAreaRotation"
+            type="number"
+            value="0">
+
+    </div>
+
+    <label class="switch-card">
+
+        <input
+            id="printAreaActive"
+            type="checkbox"
+            checked>
+
+        <div>
+
+            <strong>
+
+                Área Ativa
+
+            </strong>
+
+        </div>
+
+    </label>
+
+    <footer class="drawer-footer">
+
+        <button
+            type="button"
+            id="cancelPrintArea"
+            class="secondary">
+
+            Cancelar
+
+        </button>
+
+        <button
+            type="button"
+            id="savePrintArea"
+            class="primary">
+
+            Salvar Área
+
+        </button>
+
+    </footer>
+
+</aside>
+
+  <!-- ==========================================================
+     ABA ARQUIVOS
+========================================================== -->
+
+<section
+    id="tab-arquivos"
+    class="designer-panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <h3>
+
+                Arquivos de Produção
+
+            </h3>
+
+            <p>
+
+                Envie PSD, SVG, PDF, AI, CDR, PNG, mockups e outros arquivos utilizados na produção.
+
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            id="btnUploadFile"
+            class="primary">
+
+            Enviar Arquivo
+
+        </button>
+
+    </div>
+
+    <input
+
+        id="fileUpload"
+
+        type="file"
+
+        multiple
+
+        hidden>
+
+    <div class="file-dropzone">
+
+        <div class="dropzone-icon">
+
+            📁
+
+        </div>
+
+        <h4>
+
+            Arraste os arquivos aqui
+
+        </h4>
+
+        <p>
+
+            ou clique em "Enviar Arquivo"
+
+        </p>
+
+        <small>
+
+            PSD • AI • CDR • SVG • PDF • PNG • JPG • ZIP
+
+        </small>
+
+    </div>
+
+    <div
+        id="admin3Files"
+        class="files-grid">
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+
+                📂
+
+            </div>
+
+            <h4>
+
+                Nenhum arquivo enviado
+
+            </h4>
+
+            <p>
+
+                Os arquivos de produção aparecerão aqui.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================================================
+     PREVIEW DO ARQUIVO
+========================================================== -->
+
+<div
+    id="filePreviewModal"
+    class="designer-modal">
+
+    <div class="designer-modal-content">
+
+        <header class="designer-modal-header">
+
+            <h3>
+
+                Visualizar Arquivo
+
+            </h3>
+
+            <button
+                type="button"
+                id="closeFilePreview">
+
+                ✕
+
+            </button>
+
+        </header>
+
+        <div
+            id="filePreviewBody"
+            class="designer-modal-body">
+
+        </div>
+
+    </div>
+
+</div>
+
+  <!-- ==========================================================
+     ABA HISTÓRICO
+========================================================== -->
+
+<section
+    id="tab-historico"
+    class="designer-panel">
+
+    <div class="panel-header">
+
+        <div>
+
+            <h3>
+
+                Histórico
+
+            </h3>
+
+            <p>
+
+                Todas as alterações realizadas neste modelo.
+
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            id="btnDuplicateModel"
+            class="secondary">
+
+            Duplicar Modelo
+
+        </button>
+
+    </div>
+
+    <div class="history-resume">
+
+        <article class="history-card">
+
+            <span>
+
+                Galeria
+
+            </span>
+
+            <strong id="historyGalleryCount">
+
+                0
+
+            </strong>
+
+        </article>
+
+        <article class="history-card">
+
+            <span>
+
+                Variações
+
+            </span>
+
+            <strong id="historyVariantCount">
+
+                0
+
+            </strong>
+
+        </article>
+
+        <article class="history-card">
+
+            <span>
+
+                Áreas
+
+            </span>
+
+            <strong id="historyAreaCount">
+
+                0
+
+            </strong>
+
+        </article>
+
+        <article class="history-card">
+
+            <span>
+
+                Arquivos
+
+            </span>
+
+            <strong id="historyFileCount">
+
+                0
+
+            </strong>
+
+        </article>
+
+    </div>
+
+    <div
+        id="admin3History"
+        class="history-timeline">
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+
+                📝
+
+            </div>
+
+            <h4>
+
+                Nenhum histórico encontrado
+
+            </h4>
+
+            <p>
+
+                As alterações realizadas neste modelo aparecerão aqui.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
           </div>
-        </div>
 
-        <div class="admin3-gallery" id="admin3Gallery"></div>
-      </section>
+        <!-- ==========================================================
+             RODAPÉ
+        ========================================================== -->
 
-      <section class="admin3-tab-panel" id="admin3-tab-variants">
-        <div class="admin3-grid">
-          <label>
-            Cor
-            <input id="admin3VariantColor" placeholder="Azul" />
-          </label>
+        <footer class="drawer-footer">
 
-          <label>
-            SKU
-            <input id="admin3VariantSku" readonly placeholder="Gerado automaticamente" />
-          </label>
+            <button
+                type="button"
+                id="admin3Cancel"
+                class="secondary">
 
-          <label>
-            Preço Base
-            <input id="admin3VariantOldPrice" type="number" min="0" step="0.01" />
-          </label>
+                Cancelar
 
-          <label>
-            Preço promocional
-            <input id="admin3VariantPrice" type="number" min="0" step="0.01" />
-          </label>
+            </button>
 
-          <label>
-            Início da promoção
-            <input id="admin3VariantOfferStartsAt" type="datetime-local" />
-          </label>
+            <button
+                type="submit"
+                id="admin3Save"
+                class="primary">
 
-          <label>
-            Fim da promoção
-            <input id="admin3VariantOfferEndsAt" type="datetime-local" />
-          </label>
+                Salvar Modelo
 
-          <label>
-            Estoque
-            <input id="admin3VariantStock" type="number" min="0" step="1" />
-          </label>
+            </button>
 
-          <label>
-            URL da imagem
-            <input id="admin3VariantImageUrl" placeholder="Opcional" />
-          </label>
-        </div>
+        </footer>
 
-        <button type="button" id="admin3AddVariantBtn">Adicionar variação</button>
-        <div class="admin3-variants-list" id="admin3Variants"></div>
-      </section>
-
-      <section class="admin3-tab-panel" id="admin3-tab-print">
-        <div class="admin3-grid">
-          <label>
-            Slug
-            <input id="admin3Slug" placeholder="caneca-coracao-vermelha" />
-          </label>
-
-          <label>
-            Título SEO
-            <input id="admin3SeoTitle" maxlength="70" placeholder="Caneca Coração Vermelha | MugArt" />
-          </label>
-
-          <label>
-            Palavra-chave principal
-            <input id="admin3FocusKeyword" maxlength="120" placeholder="caneca personalizada" />
-          </label>
-
-          <label>
-            Texto alternativo da imagem
-            <input id="admin3ImageAlt" maxlength="180" placeholder="Descrição da imagem" />
-          </label>
-
-          <label>
-            Indexar no Google
-            <select id="admin3Noindex"><option value="false">Sim</option><option value="true">Não</option></select>
-          </label>
-
-          <label class="full">
-            Descrição SEO
-            <textarea id="admin3SeoDescription" rows="4" placeholder="Descrição para buscadores"></textarea>
-          </label>
-        </div>
-
-        <button type="button" id="admin3GenerateSeoBtn">Gerar SEO automático</button>
-
-        <div class="admin3-seo-preview">
-          <span id="admin3SeoUrlPreview">mugart.com.br/produto/...</span>
-          <strong id="admin3SeoTitlePreview">Título SEO</strong>
-          <p id="admin3SeoDescPreview">Descrição SEO</p>
-        </div>
-      </section>
-
-
-      <section class="admin3-tab-panel" id="admin3-tab-files">
-        <div class="admin3-grid">
-          <label>
-            Status editorial
-            <select id="admin3PublicationStatus">
-              <option value="published" selected>Publicado</option>
-              <option value="draft">Rascunho</option>
-              <option value="scheduled">Agendado</option>
-            </select>
-          </label>
-
-          <label>
-            Publicar em
-            <input id="admin3PublishAt" type="datetime-local" />
-          </label>
-
-          <label>
-            Etiqueta
-            <select id="admin3BadgeText">
-              <option value="">Sem etiqueta</option>
-              <option value="Novo">Novo</option>
-              <option value="Mais vendido">Mais vendido</option>
-              <option value="Exclusivo">Exclusivo</option>
-              <option value="Oferta">Oferta</option>
-              <option value="Personalizador">Personalizado</option>
-            </select>
-          </label>
-
-          <label>
-            Estilo da etiqueta
-            <select id="admin3BadgeType">
-              <option value="promo">Promoção</option>
-              <option value="new">Novo</option>
-              <option value="featured">Destaque</option>
-              <option value="exclusive">Exclusivo</option>
-            </select>
-          </label>
-
-          <label class="full">
-            Observação interna
-            <textarea id="admin3InternalNotes" rows="4" placeholder="Informações visíveis somente no painel"></textarea>
-          </label>
-        </div>
-
-        <div class="admin3-seo-preview">
-          <strong id="admin3PublicationPreview">Rascunho</strong>
-          <p>Produtos agendados serão publicados automaticamente quando a página for carregada após a data definida.</p>
-        </div>
-      </section>
-
-      <section class="admin3-tab-panel" id="admin3-tab-history">
-        <div class="admin3-form-footer" style="justify-content:flex-start">
-          <button type="button" id="admin3RefreshHistory">Atualizar histórico</button>
-          <button type="button" class="admin3-secondary-btn" id="admin3ExportJson">Exportar backup JSON</button>
-        </div>
-        <div id="admin3HistoryList" class="admin3-variants-list">
-          <p style="color:rgba(255,255,255,.65)">Salve ou edite um produto para visualizar o histórico.</p>
-        </div>
-      </section>
-
-      <div class="admin3-form-footer">
-        <button type="button" class="admin3-secondary-btn" id="admin3Cancel">Cancelar</button>
-        <button type="submit" class="admin-action">Salvar Modelo</button>
-      </div>
     </form>
-  </aside>
 
-  <div class="admin3-overlay" id="admin3Overlay"></div>
+</aside>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/js/supabase-config.js?v=5"></script>
-  <script src="/admin/js/admin-auth.js?v=1"></script>
-  <script src="/admin/js/admin.js?v=5"></script>
-  <script type="module" src="../js/personalizador/index.js"></script>
+<!-- ==========================================================
+     OVERLAY
+========================================================== -->
+
+<div
+    id="admin3Overlay"
+    class="designer-overlay">
+
+</div>
+
+<!-- ==========================================================
+     TOAST
+========================================================== -->
+
+<div
+    id="designerToast"
+    class="designer-toast">
+
+</div>
+
+<!-- ==========================================================
+     LOADING
+========================================================== -->
+
+<div
+    id="designerLoading"
+    class="designer-loading hidden">
+
+    <div class="loading-spinner"></div>
+
+    <span>
+
+        Carregando...
+
+    </span>
+
+</div>
+
+</main>
+
+<!-- ==========================================================
+     SCRIPTS
+========================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+<script src="/js/supabase-config.js"></script>
+
+<script src="/admin/js/admin-auth.js"></script>
+
+<script src="/admin/js/admin.js"></script>
+
+<script type="module"
+        src="../js/personalizador/index.js"></script>
+
 </body>
+
 </html>
