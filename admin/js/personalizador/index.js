@@ -54,6 +54,12 @@ document.addEventListener(
 
     "DOMContentLoaded",
 
-    () => Personalizador.init()
+    async () => {
+
+        await Personalizador.init();
+
+        Personalizador.iniciarEditor();
+
+    }
 
 );
