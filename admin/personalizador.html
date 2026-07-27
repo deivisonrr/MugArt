@@ -43,11 +43,6 @@
 
       <div class="admin3-header-actions">
         <a class="admin3-secondary-btn" href="../loja.html" target="_blank">Ver loja</a>
-        <button class="admin3-secondary-btn" id="admin3NormalizeSkus" type="button">Padronizar SKUs</button>
-        <button class="admin3-secondary-btn" id="admin3ExportCsv" type="button">Exportar CSV</button>
-        <label class="admin3-secondary-btn" style="cursor:pointer">Importar CSV
-          <input id="admin3ImportCsv" type="file" accept=".csv,text/csv" style="display:none">
-        </label>
         <button class="admin-action" id="openProductDrawer" type="button">Novo modelo</button>
       </div>
     </header>
@@ -90,16 +85,7 @@
       </label>
     </section>
 
-    <section id="admin3BulkBar" class="admin3-toolbar" style="display:none;margin-top:16px">
-      <strong><span id="admin3SelectedCount">0</span> selecionado(s)</strong>
-      <button type="button" id="admin3BulkActivate">Ativar</button>
-      <button type="button" id="admin3BulkDeactivate">Desativar</button>
-      <button type="button" id="admin3BulkFeatured">Destacar</button>
-      <button type="button" id="admin3BulkUnfeatured">Remover destaque</button>
-      <button type="button" id="admin3BulkDelete">Excluir</button>
-    </section>
-
-    <section class="admin3-products" id="admin3Products"></section>
+     <section class="admin3-products" id="admin3Products"></section>
   </main>
 
   <aside class="admin3-drawer" id="admin3Drawer">
@@ -114,14 +100,33 @@
     <form id="admin3ProductForm" class="admin3-form">
       <input type="hidden" id="admin3ProductId" />
 
-      <div class="admin3-tabs">
-        <button type="button" class="admin3-tab active" data-tab="info">Geral</button>
-        <button type="button" class="admin3-tab" data-tab="media">Imagens</button>
-        <button type="button" class="admin3-tab" data-tab="variants">Variações</button>
-        <button type="button" class="admin3-tab" data-tab="seo">Área de Impressão</button>
-        <button type="button" class="admin3-tab" data-tab="publication">Arquivos</button>
-        <button type="button" class="admin3-tab" data-tab="history">Histórico</button>
-      </div>
+    <div class="admin3-tabs">
+
+      <button type="button" class="admin3-tab active" data-tab="info">
+          Geral
+      </button>
+  
+      <button type="button" class="admin3-tab" data-tab="media">
+          Imagens
+      </button>
+  
+      <button type="button" class="admin3-tab" data-tab="variants">
+          Variações
+      </button>
+  
+      <button type="button" class="admin3-tab" data-tab="print">
+          Área de Impressão
+      </button>
+  
+      <button type="button" class="admin3-tab" data-tab="files">
+          Arquivos
+      </button>
+  
+      <button type="button" class="admin3-tab" data-tab="history">
+          Histórico
+      </button>
+  
+  </div>
 
       <section class="admin3-tab-panel active" id="admin3-tab-info">
         <div class="admin3-grid">
@@ -260,7 +265,7 @@
         <div class="admin3-variants-list" id="admin3Variants"></div>
       </section>
 
-      <section class="admin3-tab-panel" id="admin3-tab-seo">
+      <section class="admin3-tab-panel" id="admin3-tab-print">
         <div class="admin3-grid">
           <label>
             Slug
@@ -303,7 +308,7 @@
       </section>
 
 
-      <section class="admin3-tab-panel" id="admin3-tab-publication">
+      <section class="admin3-tab-panel" id="admin3-tab-files">
         <div class="admin3-grid">
           <label>
             Status editorial
@@ -376,6 +381,6 @@
   <script src="/js/supabase-config.js?v=5"></script>
   <script src="/admin/js/admin-auth.js?v=1"></script>
   <script src="/admin/js/admin.js?v=5"></script>
-  <script src="js/produtos-3.js?v=43"></script>
+  <script src="js/personalizador.js?v=1"></script>
 </body>
 </html>
