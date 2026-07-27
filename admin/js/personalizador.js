@@ -1,4 +1,222 @@
 /* ==========================================================
+   MUGART ERP
+   PERSONALIZADOR
+   ========================================================== */
+
+const Personalizador = {
+
+    modelos: [],
+    modeloAtual: null,
+
+    elementos: {},
+
+    async init() {
+
+        this.mapearElementos();
+
+        this.registrarEventos();
+
+        await this.carregarModelos();
+
+    },
+
+    mapearElementos() {
+
+        this.elementos = {
+
+            lista: document.getElementById("admin3Products"),
+
+            drawer: document.getElementById("admin3Drawer"),
+
+            overlay: document.getElementById("admin3Overlay"),
+
+            form: document.getElementById("admin3ProductForm"),
+
+            btnNovo: document.getElementById("openProductDrawer"),
+
+            btnCancelar: document.getElementById("admin3Cancel"),
+
+            btnFechar: document.getElementById("closeProductDrawer"),
+
+            tituloDrawer: document.getElementById("admin3DrawerTitle"),
+
+            id: document.getElementById("admin3ProductId"),
+
+            nome: document.getElementById("admin3Name"),
+
+            categoria: document.getElementById("admin3Category"),
+
+            preco: document.getElementById("admin3OldPrice"),
+
+            descricao: document.getElementById("admin3Description"),
+
+            ativo: document.getElementById("admin3Active"),
+
+            imagem: document.getElementById("admin3ImageUrl")
+
+        };
+
+    },
+
+    registrarEventos() {
+
+        this.elementos.btnNovo.addEventListener("click", () => {
+
+            this.novoModelo();
+
+        });
+
+        this.elementos.btnCancelar.addEventListener("click", () => {
+
+            this.fecharDrawer();
+
+        });
+
+        this.elementos.btnFechar.addEventListener("click", () => {
+
+            this.fecharDrawer();
+
+        });
+
+        this.elementos.overlay.addEventListener("click", () => {
+
+            this.fecharDrawer();
+
+        });
+
+        this.elementos.form.addEventListener("submit", async (e) => {
+
+            e.preventDefault();
+
+            await this.salvarModelo();
+
+        });
+
+    },
+
+
+    async carregarModelos() {
+
+        const { data, error } = await supabase
+            .from("customization_models")
+            .select("*")
+            .order("sort_order", { ascending: true });
+
+        if (error) {
+
+            console.error(error);
+
+            this.elementos.lista.innerHTML = `
+                <div class="admin3-empty">
+                    Erro ao carregar os modelos.
+                </div>
+            `;
+
+            return;
+        }
+
+        this.modelos = data || [];
+
+        this.renderizarModelos();
+
+    },
+
+    renderizarModelos() {
+
+        if (!this.modelos.length) {
+
+            this.elementos.lista.innerHTML = `
+                <div class="admin3-empty">
+                    <h3>Nenhum modelo cadastrado</h3>
+                    <p>Clique em <strong>Novo Modelo</strong> para começar.</p>
+                </div>
+            `;
+
+            return;
+
+        }
+
+        this.elementos.lista.innerHTML = this.modelos.map(modelo => `
+
+            <article class="admin3-card">
+
+                <div class="admin3-card-image">
+
+                    ${modelo.image_url
+                        ? `<img src="${modelo.image_url}" alt="${modelo.name}">`
+                        : `<div class="admin3-card-placeholder">Sem imagem</div>`}
+
+                </div>
+
+                <div class="admin3-card-content">
+
+                    <h3>${modelo.name}</h3>
+
+                    <p>${modelo.description || ""}</p>
+
+                    <div class="admin3-card-info">
+
+                        <span>
+
+                            Categoria:
+                            <strong>${modelo.category || "-"}</strong>
+
+                        </span>
+
+                        <span>
+
+                            Preço Base:
+                            <strong>
+
+                                ${Number(modelo.base_price || 0)
+                                    .toLocaleString("pt-BR",{
+                                        style:"currency",
+                                        currency:"BRL"
+                                    })}
+
+                            </strong>
+
+                        </span>
+
+                    </div>
+
+                    <div class="admin3-card-status">
+
+                        ${modelo.active
+                            ? `<span class="status-active">Ativo</span>`
+                            : `<span class="status-inactive">Inativo</span>`}
+
+                    </div>
+
+                    <div class="admin3-card-actions">
+
+                        <button
+                            class="admin3-secondary-btn"
+                            onclick="Personalizador.editarModelo('${modelo.id}')">
+
+                            Editar
+
+                        </button>
+
+                        <button
+                            class="admin3-danger-btn"
+                            onclick="Personalizador.excluirModelo('${modelo.id}')">
+
+                            Excluir
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        `).join("");
+
+    },
+   
+/* ==========================================================
    MugArt Produtos 3.0
    Arquivo: admin/js/produtos-3.js
 ========================================================== */
