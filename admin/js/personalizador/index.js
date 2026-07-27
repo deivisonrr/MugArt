@@ -14,6 +14,8 @@ const Personalizador = {
 
 Object.assign(
 
+    import * as Galeria from "./galeria.js";
+
     Personalizador,
 
     Modelos
