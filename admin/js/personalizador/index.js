@@ -2,6 +2,7 @@ import * as Modelos from "./modelos.js";
 import * as Variacoes from "./variacoes.js";
 import * as Galeria from "./galeria.js";
 import * as Areas from "./areas.js";
+import * as Editor from "./editor.js";
 
 const Personalizador = {
 
@@ -20,6 +21,14 @@ Object.assign(
     Personalizador,
 
     Modelos
+
+);
+
+Object.assign(
+
+    Personalizador,
+
+    Editor
 
 );
 
