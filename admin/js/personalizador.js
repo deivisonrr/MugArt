@@ -2,7 +2,7 @@
    MUGART ERP
    PERSONALIZADOR
    ========================================================== */
-
+console.log("PERSONALIZADOR CARREGADO");
 const Personalizador = {
 
     modelos: [],
