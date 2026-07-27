@@ -1,5 +1,6 @@
 import * as Modelos from "./modelos.js";
 import * as Variacoes from "./variacoes.js";
+import * as Galeria from "./galeria.js";
 
 const Personalizador = {
 
@@ -15,11 +16,17 @@ const Personalizador = {
 
 Object.assign(
 
-    import * as Galeria from "./galeria.js";
-
     Personalizador,
 
     Modelos
+
+);
+
+Object.assign(
+
+    Personalizador,
+
+    Variacoes
 
 );
 
