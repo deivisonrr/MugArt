@@ -1,54 +1,62 @@
+/* ==========================================================
+   MUGART ERP
+   PERSONALIZADOR
+   INDEX
+========================================================== */
+
 import * as Modelos from "./modelos.js";
-import * as Variacoes from "./variacoes.js";
 import * as Galeria from "./galeria.js";
+import * as Variacoes from "./variacoes.js";
 import * as Areas from "./areas.js";
 import * as Editor from "./editor.js";
+import * as Arquivos from "./arquivos.js";
+import * as Historico from "./historico.js";
 
 const Personalizador = {
 
+    /* Banco */
+
     db: window.mugartSupabase,
+
+    /* Estados */
 
     modelos: [],
 
     modeloAtual: null,
 
-    elementos: {}
+    galeria: [],
+
+    variacoes: [],
+
+    areas: [],
+
+    arquivos: [],
+
+    historico: [],
+
+    elementos: {},
+
+    editor: {},
+
+    zoom: 1
 
 };
 
-Object.assign(
+/* Junta todos os módulos */
 
-    Personalizador,
+Object.assign(Personalizador, Modelos);
+Object.assign(Personalizador, Galeria);
+Object.assign(Personalizador, Variacoes);
+Object.assign(Personalizador, Areas);
+Object.assign(Personalizador, Editor);
+Object.assign(Personalizador, Arquivos);
+Object.assign(Personalizador, Historico);
 
-    Modelos
-
-);
-
-Object.assign(
-
-    Personalizador,
-
-    Editor
-
-);
-
-Object.assign(
-
-    Personalizador,
-
-    Areas
-
-);
-
-Object.assign(
-
-    Personalizador,
-
-    Variacoes
-
-);
+/* Global */
 
 window.Personalizador = Personalizador;
+
+/* Inicialização */
 
 document.addEventListener(
 
@@ -58,8 +66,13 @@ document.addEventListener(
 
         await Personalizador.init();
 
-        Personalizador.iniciarEditor();
+        if (Personalizador.iniciarEditor) {
+
+            Personalizador.iniciarEditor();
+
+        }
 
     }
 
 );
+
