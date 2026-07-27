@@ -94,41 +94,46 @@ const Personalizador = {
 
     },
 
+       async carregarModelos() {
 
-    async carregarModelos() {
+        try {
 
-        const { data, error } = await supabase
-            .from("customization_models")
-            .select("*")
-            .order("sort_order", { ascending: true });
+            const { data, error } = await supabase
+                .from("customization_models")
+                .select("*")
+                .order("name");
 
-        if (error) {
+            if (error) throw error;
 
-            console.error(error);
+            this.modelos = data || [];
+
+            this.renderizarModelos();
+
+        } catch (erro) {
+
+            console.error("Erro ao carregar modelos:", erro);
 
             this.elementos.lista.innerHTML = `
                 <div class="admin3-empty">
-                    Erro ao carregar os modelos.
+                    <h3>Erro ao carregar os modelos</h3>
+                    <p>${erro.message}</p>
                 </div>
             `;
 
-            return;
         }
-
-        this.modelos = data || [];
-
-        this.renderizarModelos();
 
     },
 
     renderizarModelos() {
+
+        if (!this.elementos.lista) return;
 
         if (!this.modelos.length) {
 
             this.elementos.lista.innerHTML = `
                 <div class="admin3-empty">
                     <h3>Nenhum modelo cadastrado</h3>
-                    <p>Clique em <strong>Novo Modelo</strong> para começar.</p>
+                    <p>Clique em <strong>Novo Modelo</strong> para criar o primeiro.</p>
                 </div>
             `;
 
@@ -138,75 +143,65 @@ const Personalizador = {
 
         this.elementos.lista.innerHTML = this.modelos.map(modelo => `
 
-            <article class="admin3-card">
+            <article class="admin3-product-card">
 
-                <div class="admin3-card-image">
+                <div class="photo">
 
-                    ${modelo.image_url
-                        ? `<img src="${modelo.image_url}" alt="${modelo.name}">`
-                        : `<div class="admin3-card-placeholder">Sem imagem</div>`}
+                    <img
+                        src="${modelo.image_url || '../assets/sem-imagem.png'}"
+                        alt="${modelo.name}"
+                        onerror="this.src='../assets/sem-imagem.png'"
+                    >
 
                 </div>
 
-                <div class="admin3-card-content">
+                <h3>${modelo.name}</h3>
 
-                    <h3>${modelo.name}</h3>
+                <div class="admin3-badges">
 
-                    <p>${modelo.description || ""}</p>
+                    <span class="admin3-badge">
+                        ${modelo.category || "Sem categoria"}
+                    </span>
 
-                    <div class="admin3-card-info">
+                    ${modelo.allow_variations
+                        ? `<span class="admin3-badge yellow">Variações</span>`
+                        : ``}
 
-                        <span>
+                    ${modelo.active
+                        ? `<span class="admin3-badge">Ativo</span>`
+                        : `<span class="admin3-badge red">Inativo</span>`}
 
-                            Categoria:
-                            <strong>${modelo.category || "-"}</strong>
+                </div>
 
-                        </span>
+                <div class="admin3-price">
 
-                        <span>
+                    ${(modelo.base_price || 0).toLocaleString(
+                        "pt-BR",
+                        {
+                            style: "currency",
+                            currency: "BRL"
+                        }
+                    )}
 
-                            Preço Base:
-                            <strong>
+                </div>
 
-                                ${Number(modelo.base_price || 0)
-                                    .toLocaleString("pt-BR",{
-                                        style:"currency",
-                                        currency:"BRL"
-                                    })}
+                <div class="admin3-card-actions">
 
-                            </strong>
+                    <button
+                        class="edit"
+                        onclick="Personalizador.editarModelo('${modelo.id}')">
 
-                        </span>
+                        Editar
 
-                    </div>
+                    </button>
 
-                    <div class="admin3-card-status">
+                    <button
+                        class="delete"
+                        onclick="Personalizador.excluirModelo('${modelo.id}')">
 
-                        ${modelo.active
-                            ? `<span class="status-active">Ativo</span>`
-                            : `<span class="status-inactive">Inativo</span>`}
+                        Excluir
 
-                    </div>
-
-                    <div class="admin3-card-actions">
-
-                        <button
-                            class="admin3-secondary-btn"
-                            onclick="Personalizador.editarModelo('${modelo.id}')">
-
-                            Editar
-
-                        </button>
-
-                        <button
-                            class="admin3-danger-btn"
-                            onclick="Personalizador.excluirModelo('${modelo.id}')">
-
-                            Excluir
-
-                        </button>
-
-                    </div>
+                    </button>
 
                 </div>
 
