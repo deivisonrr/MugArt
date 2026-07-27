@@ -1,9 +1,3 @@
-
-/* ==========================================================
-   MUGART
-   PERSONALIZADOR
-========================================================== */
-
 import * as Modelos from "./modelos.js";
 
 const Personalizador = {
@@ -14,11 +8,17 @@ const Personalizador = {
 
     modeloAtual: null,
 
-    elementos: {},
-
-    ...Modelos
+    elementos: {}
 
 };
+
+Object.assign(
+
+    Personalizador,
+
+    Modelos
+
+);
 
 window.Personalizador = Personalizador;
 
@@ -26,10 +26,6 @@ document.addEventListener(
 
     "DOMContentLoaded",
 
-    () => {
-
-        Personalizador.init();
-
-    }
+    () => Personalizador.init()
 
 );
