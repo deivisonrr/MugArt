@@ -1,8 +1,4 @@
-import * as Modelo from "./modelo.js";
-import * as Mockups from "./mockups.js";
-import * as Areas from "./areas.js";
-import * as Editor from "./editor.js";
-import * as Arquivos from "./arquivos.js";
+import Mockups from "./mockups.js";
 
 let produtoAtual = null;
 
@@ -10,45 +6,25 @@ async function init(produtoId) {
 
     produtoAtual = produtoId;
 
-    await Modelo.carregar(produtoId);
+    Mockups.init(produtoId);
 
-    await Mockups.carregar(produtoId);
-
-    await Areas.carregar(produtoId);
+    await Mockups.carregar();
 
 }
 
 async function salvar() {
 
-    await Modelo.salvar(produtoAtual);
+}
 
-    await Mockups.salvar(produtoAtual);
+function listarMockups() {
 
-    await Areas.salvar(produtoAtual);
+    return Mockups.listar();
 
 }
 
-function abrirMockups() {
+async function atualizar() {
 
-    Mockups.abrir();
-
-}
-
-function abrirAreas() {
-
-    Areas.abrir();
-
-}
-
-function abrirEditor() {
-
-    Editor.abrir();
-
-}
-
-function abrirArquivos() {
-
-    Arquivos.abrir();
+    await Mockups.carregar();
 
 }
 
@@ -58,12 +34,8 @@ export default {
 
     salvar,
 
-    abrirMockups,
+    atualizar,
 
-    abrirAreas,
-
-    abrirEditor,
-
-    abrirArquivos
+    listarMockups
 
 };
