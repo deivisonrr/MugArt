@@ -271,202 +271,95 @@
 
         <h2>🎨 Personalização da Caneca</h2>
 
-        <p>
-            Configure os mockups utilizados pelo editor da loja.
-        </p>
+        <p>Selecione um lado da caneca para configurar.</p>
 
     </div>
 
-    <div class="mockups-grid">
+    <div class="mug-editor">
 
-          <div id="editorAreaModal" class="editor-modal" style="display:none;">
-          
-              <div class="editor-content">
-          
-                  <div class="editor-header">
-          
-                      <h2>Área de Impressão</h2>
-          
-                      <button
-                          type="button"
-                          onclick="fecharEditorArea()">
-          
-                          ✕
-          
-                      </button>
-          
-                  </div>
-          
-                  <div class="editor-body">
-          
-                      <div id="editorCanvas">
-          
-                          <!-- Aqui ficará o mockup -->
-          
-                      </div>
-          
-                  </div>
-          
-                  <div class="editor-footer">
-          
-                      <button
-                          type="button"
-                          onclick="salvarAreaImpressao()">
-          
-                          Salvar Área
-          
-                      </button>
-          
-                  </div>
-          
-              </div>
-          
-          </div>
+        <div class="mug-tabs">
 
-        <div class="mockup-card" data-tipo="frente">
-
-            <div class="mockup-title">
-
+            <button class="mug-tab active" data-tipo="frente">
                 ☕ Frente
+            </button>
 
-            </div>
-
-            <div class="mockup-preview">
-
-                <span>Sem imagem</span>
-
-            </div>
-
-          <div class="mockup-actions">
-          
-              <button
-                  type="button"
-                  class="admin3-btn upload-mockup"
-                  onclick="uploadMockup(this.closest('.mockup-card').dataset.tipo)">
-          
-                  📂 Upload
-          
-              </button>
-          
-              <button
-                  type="button"
-                  class="admin3-btn secondary"
-                  onclick="editarArea(this.closest('.mockup-card').dataset.tipo)">
-          
-                  🖊 Área de Impressão
-          
-              </button>
-          
-              <button
-                  type="button"
-                  class="admin3-btn danger"
-                  onclick="removerMockup(this.closest('.mockup-card').dataset.tipo)">
-          
-                  🗑 Remover
-          
-              </button>
-          
-          </div>
-
-        </div>
-
-        <div class="mockup-card" data-tipo="verso">
-
-            <div class="mockup-title">
-
+            <button class="mug-tab" data-tipo="verso">
                 ☕ Verso
+            </button>
 
-            </div>
-
-            <div class="mockup-preview">
-
-                <span>Sem imagem</span>
-
-            </div>
-
-          <button
-              type="button"
-              class="admin3-btn upload-mockup"
-              onclick="uploadMockup(this.closest('.mockup-card').dataset.tipo)">
-          
-              Upload
-          
-          </button>
-
-        </div>
-
-        <div class="mockup-card" data-tipo="alca_esquerda">
-
-            <div class="mockup-title">
-
+            <button class="mug-tab" data-tipo="alca_esquerda">
                 ☕ Alça Esquerda
+            </button>
 
-            </div>
-
-            <div class="mockup-preview">
-
-                <span>Sem imagem</span>
-
-            </div>
-
-            <button
-               type="button"
-               class="admin3-btn upload-mockup"
-               onclick="uploadMockup(this.closest('.mockup-card').dataset.tipo)">
-          
-               Upload
-          
-           </button>
-
-        </div>
-
-        <div class="mockup-card" data-tipo="alca_direita">
-
-            <div class="mockup-title">
-
+            <button class="mug-tab" data-tipo="alca_direita">
                 ☕ Alça Direita
+            </button>
 
-            </div>
-
-            <div class="mockup-preview">
-
-                <span>Sem imagem</span>
-
-            </div>
-
-            <button
-               type="button"
-               class="admin3-btn upload-mockup"
-               onclick="uploadMockup(this.closest('.mockup-card').dataset.tipo)">
-          
-               Upload
-          
-           </button>
+            <button class="mug-tab" data-tipo="interior">
+                ☕ Interior
+            </button>
 
         </div>
 
-        <div class="mockup-card" data-tipo="interior">
+        <div class="mug-workspace">
 
-            <div class="mockup-title">
+            <div class="mug-preview">
 
-                ☕ Interior
+                <div id="mockupPreview">
 
-            </div>
+                    Nenhum mockup carregado
 
-            <div class="mockup-preview">
-
-                <span>Sem imagem</span>
+                </div>
 
             </div>
 
-            <button
-               type="button"
-               class="admin3-btn upload-mockup"
-               onclick="uploadMockup(this.closest('.mockup-card').dataset.tipo)">
-          
-               Upload
-          
-           </button>
+            <div class="mug-tools">
+
+                <h3 id="mockupTitulo">
+
+                    Frente
+
+                </h3>
+
+                <button
+                    class="admin3-btn"
+                    id="btnUploadMockup">
+
+                    📂 Upload do Mockup
+
+                </button>
+
+                <button
+                    class="admin3-btn secondary"
+                    id="btnEditarArea">
+
+                    🖊 Configurar Área
+
+                </button>
+
+                <button
+                    class="admin3-btn danger"
+                    id="btnRemoverMockup">
+
+                    🗑 Remover Mockup
+
+                </button>
+
+                <hr>
+
+                <strong>
+
+                    Área de impressão
+
+                </strong>
+
+                <div id="areaResumo">
+
+                    Nenhuma área configurada.
+
+                </div>
+
+            </div>
 
         </div>
 
