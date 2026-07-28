@@ -401,79 +401,151 @@
 
             Produto personalizável
 
-            <select id="admin3CustomizationEnabled">
+           <section class="admin3-tab-panel" id="admin3-tab-customization">
 
-                <option value="false">
+    <div class="admin3-customization">
 
-                    Não
+        <div class="admin3-customization-header">
 
-                </option>
+            <div>
 
-                <option value="true">
+                <h2>🎨 Personalização</h2>
 
-                    Sim
+                <p>
+                    Configure toda a experiência de personalização deste produto.
+                </p>
 
-                </option>
+            </div>
 
-            </select>
+            <div>
 
-        </label>
+                <label>
 
-    </div>
+                    Produto personalizável
 
-    <div
-        id="admin3CustomizationContainer"
-        style="display:none;margin-top:30px;">
+                </label>
 
-        <div class="admin3-grid">
+                <select id="admin3CustomizationEnabled">
 
-            <button
-                type="button"
-                id="btnCustomizationMockups">
+                    <option value="false">Não</option>
 
-                🖼 Mockups
+                    <option value="true">Sim</option>
 
-            </button>
+                </select>
 
-            <button
-                type="button"
-                id="btnCustomizationAreas">
+            </div>
 
-                📐 Áreas de Impressão
+        </div>
 
-            </button>
+        <div id="admin3CustomizationCards" class="admin3-customization-grid">
 
-            <button
-                type="button"
-                id="btnCustomizationFonts">
+            <article class="admin3-custom-card">
 
-                🔤 Fontes
+                <div class="icon">🖼</div>
 
-            </button>
+                <h3>Mockups</h3>
 
-            <button
-                type="button"
-                id="btnCustomizationCliparts">
+                <p>Cadastre frente, verso, alça, interior e outras faces.</p>
 
-                🎨 Cliparts
+                <button
+                    type="button"
+                    id="btnCustomizationMockups">
 
-            </button>
+                    Configurar
 
-            <button
-                type="button"
-                id="btnCustomizationFiles">
+                </button>
 
-                📂 Arquivos
+            </article>
 
-            </button>
+            <article class="admin3-custom-card">
 
-            <button
-                type="button"
-                id="btnCustomizationPreview">
+                <div class="icon">📐</div>
 
-                👁 Preview
+                <h3>Áreas de Impressão</h3>
 
-            </button>
+                <p>Defina exatamente onde o cliente poderá personalizar.</p>
+
+                <button
+                    type="button"
+                    id="btnCustomizationAreas">
+
+                    Configurar
+
+                </button>
+
+            </article>
+
+            <article class="admin3-custom-card">
+
+                <div class="icon">🔤</div>
+
+                <h3>Fontes</h3>
+
+                <p>Escolha as fontes permitidas para este produto.</p>
+
+                <button
+                    type="button"
+                    id="btnCustomizationFonts">
+
+                    Configurar
+
+                </button>
+
+            </article>
+
+            <article class="admin3-custom-card">
+
+                <div class="icon">🎨</div>
+
+                <h3>Cliparts</h3>
+
+                <p>Organize categorias e imagens disponíveis para o cliente.</p>
+
+                <button
+                    type="button"
+                    id="btnCustomizationCliparts">
+
+                    Configurar
+
+                </button>
+
+            </article>
+
+            <article class="admin3-custom-card">
+
+                <div class="icon">📂</div>
+
+                <h3>Arquivos</h3>
+
+                <p>PSD, Corel, SVG, AI e arquivos de produção.</p>
+
+                <button
+                    type="button"
+                    id="btnCustomizationFiles">
+
+                    Gerenciar
+
+                </button>
+
+            </article>
+
+            <article class="admin3-custom-card">
+
+                <div class="icon">👁</div>
+
+                <h3>Preview</h3>
+
+                <p>Visualize exatamente como o cliente verá o editor.</p>
+
+                <button
+                    type="button"
+                    id="btnCustomizationPreview">
+
+                    Abrir
+
+                </button>
+
+            </article>
 
         </div>
 
