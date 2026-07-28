@@ -1661,7 +1661,7 @@ async function renderMockups(productId){
 
         }
 
-        await renderMockups(productId);
+        await carregarMockupsProduto(id);
 
     };
 
