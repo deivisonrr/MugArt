@@ -2075,5 +2075,59 @@ window.editarArea = async function(tipo){
 
 `;
 
+/* ==========================================================
+   DRAG DA ÁREA
+========================================================== */
+
+let dragging = false;
+
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+document.addEventListener("mousedown", e=>{
+
+    if(e.target.id!="printArea")
+        return;
+
+    dragging = true;
+
+    const rect = e.target.getBoundingClientRect();
+
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+
+});
+
+document.addEventListener("mouseup",()=>{
+
+    dragging = false;
+
+});
+
+document.addEventListener("mousemove",e=>{
+
+    if(!dragging)
+        return;
+
+    const wrapper=document.querySelector("#editorWrapper");
+
+    const area=document.querySelector("#printArea");
+
+    if(!wrapper || !area)
+        return;
+
+    const rect=wrapper.getBoundingClientRect();
+
+    let x=e.clientX-rect.left-dragOffsetX;
+    let y=e.clientY-rect.top-dragOffsetY;
+
+    x=Math.max(0,Math.min(x,rect.width-area.offsetWidth));
+    y=Math.max(0,Math.min(y,rect.height-area.offsetHeight));
+
+    area.style.left=x+"px";
+    area.style.top=y+"px";
+
+});
+
 };
 
