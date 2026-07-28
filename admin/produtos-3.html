@@ -279,6 +279,50 @@
 
     <div class="mockups-grid">
 
+          <div id="editorAreaModal" class="editor-modal" style="display:none;">
+          
+              <div class="editor-content">
+          
+                  <div class="editor-header">
+          
+                      <h2>Área de Impressão</h2>
+          
+                      <button
+                          type="button"
+                          onclick="fecharEditorArea()">
+          
+                          ✕
+          
+                      </button>
+          
+                  </div>
+          
+                  <div class="editor-body">
+          
+                      <div id="editorCanvas">
+          
+                          <!-- Aqui ficará o mockup -->
+          
+                      </div>
+          
+                  </div>
+          
+                  <div class="editor-footer">
+          
+                      <button
+                          type="button"
+                          onclick="salvarAreaImpressao()">
+          
+                          Salvar Área
+          
+                      </button>
+          
+                  </div>
+          
+              </div>
+          
+          </div>
+
         <div class="mockup-card" data-tipo="frente">
 
             <div class="mockup-title">
@@ -293,14 +337,36 @@
 
             </div>
 
-            <button
-               type="button"
-               class="admin3-btn upload-mockup"
-               onclick="uploadMockup(this.closest('.mockup-card').dataset.tipo)">
+          <div class="mockup-actions">
           
-               Upload
+              <button
+                  type="button"
+                  class="admin3-btn upload-mockup"
+                  onclick="uploadMockup(this.closest('.mockup-card').dataset.tipo)">
           
-           </button>
+                  📂 Upload
+          
+              </button>
+          
+              <button
+                  type="button"
+                  class="admin3-btn secondary"
+                  onclick="editarArea(this.closest('.mockup-card').dataset.tipo)">
+          
+                  🖊 Área de Impressão
+          
+              </button>
+          
+              <button
+                  type="button"
+                  class="admin3-btn danger"
+                  onclick="removerMockup(this.closest('.mockup-card').dataset.tipo)">
+          
+                  🗑 Remover
+          
+              </button>
+          
+          </div>
 
         </div>
 
