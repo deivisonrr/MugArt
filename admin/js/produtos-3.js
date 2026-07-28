@@ -1535,6 +1535,128 @@ async function renderMockups(productId){
 
     }
 
+   window.uploadMockup = async function(tipo){
+
+    const productId = a3("#admin3ProductId").value;
+
+    if(!productId){
+
+        alert("Salve o produto primeiro.");
+
+        return;
+
+    }
+
+    const input = document.createElement("input");
+
+    input.type = "file";
+
+    input.accept = "image/png,image/jpeg,image/webp";
+
+    input.onchange = async (e)=>{
+
+        const file = e.target.files?.[0];
+
+        if(!file)
+            return;
+
+        const extension = file.name.split(".").pop().toLowerCase();
+
+        const filePath =
+            `mockups/${productId}/${tipo}.${extension}`;
+
+        const upload = await mugartSupabase.storage
+
+            .from(ADMIN3_MOCKUP_BUCKET)
+
+            .upload(filePath,file,{
+
+                cacheControl:"3600",
+
+                upsert:true
+
+            });
+
+        if(upload.error){
+
+            alert(upload.error.message);
+
+            return;
+
+        }
+
+        const publicUrl = mugartSupabase.storage
+
+            .from(ADMIN3_MOCKUP_BUCKET)
+
+            .getPublicUrl(filePath);
+
+        const imageUrl = publicUrl.data.publicUrl;
+
+        const existente = await mugartSupabase
+
+            .from("product_mockups")
+
+            .select("id")
+
+            .eq("product_id",productId)
+
+            .eq("tipo",tipo)
+
+            .maybeSingle();
+
+        if(existente.data){
+
+            await mugartSupabase
+
+                .from("product_mockups")
+
+                .update({
+
+                    image_url:imageUrl,
+
+                    thumbnail_url:imageUrl,
+
+                    ativo:true
+
+                })
+
+                .eq("id",existente.data.id);
+
+        }else{
+
+            await mugartSupabase
+
+                .from("product_mockups")
+
+                .insert({
+
+                    product_id:productId,
+
+                    tipo,
+
+                    nome:tipo,
+
+                    image_url:imageUrl,
+
+                    thumbnail_url:imageUrl,
+
+                    sort_order:1,
+
+                    ativo:true
+
+                });
+
+        }
+
+        await renderMockups(productId);
+
+    };
+
+    input.click();
+
+};
+
     const mockups = result.data || [];
 
     container.innerHTML = ADMIN3_MOCKUP_TYPES.map(tipo=>{
