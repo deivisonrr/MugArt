@@ -843,6 +843,8 @@ window.editAdmin3Product = async function(id) {
 
   if (!product) return;
 
+  await Personalizador.init(product.id);
+
   Admin3State.currentProductId = id;
   openDrawer(product);
 
@@ -1055,6 +1057,8 @@ async function saveProduct(event) {
   }
 
   const savedId = result.data?.id || currentId || Admin3State.currentProductId;
+  await Personalizador.init(savedId);
+  await Personalizador.salvar(); 
   await saveProductHistory(
     savedId,
     currentId ? "Produto atualizado" : "Produto criado",
