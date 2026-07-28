@@ -581,6 +581,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 });
 
+document
+    .querySelector("#btnUploadMockup")
+    ?.addEventListener("click",()=>{
+
+        uploadMockup(mugTipoAtual);
+
+    });
+
+document
+    .querySelector("#btnEditarArea")
+    ?.addEventListener("click",()=>{
+
+        editarArea(mugTipoAtual);
+
+    });
+
+document
+    .querySelector("#btnRemoverMockup")
+    ?.addEventListener("click",()=>{
+
+        removerMockup(mugTipoAtual);
+
+    });
+
 function bindAdmin3Events() {
   a3("#openProductDrawer")?.addEventListener("click", () => openDrawer());
   a3("#admin3NormalizeSkus")?.addEventListener("click", normalizeExistingSkus);
@@ -2128,6 +2152,40 @@ document.addEventListener("mousemove",e=>{
     area.style.top=y+"px";
 
 });
+
+};
+
+window.removerMockup = async function(tipo){
+
+    if(!confirm("Deseja remover este mockup?"))
+        return;
+
+    const productId =
+        document.querySelector("#admin3ProductId").value;
+
+    const registro =
+        mockupsProduto.find(x=>x.tipo===tipo);
+
+    if(!registro){
+
+        alert("Nenhum mockup encontrado.");
+
+        return;
+
+    }
+
+    const caminho = registro.image_url.split("/product-mockups/")[1];
+
+    await mugartSupabase.storage
+        .from("product-mockups")
+        .remove([caminho]);
+
+    await mugartSupabase
+        .from("product_mockups")
+        .delete()
+        .eq("id",registro.id);
+
+    await carregarMockupsProduto(productId);
 
 };
 
