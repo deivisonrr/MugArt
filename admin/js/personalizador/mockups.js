@@ -129,12 +129,125 @@ export function render(){
 
 }
 
+document
+
+.querySelectorAll(".uploadMockup")
+
+.forEach(btn=>{
+
+    btn.onclick=()=>{
+
+        upload(btn.dataset.tipo);
+
+    };
+
+});
+
+async function upload(tipo){
+
+    const input = document.createElement("input");
+
+    input.type = "file";
+
+    input.accept = "image/png,image/jpeg,image/webp";
+
+    input.onchange = async (e)=>{
+
+        const file = e.target.files[0];
+
+        if(!file)
+            return;
+
+        const extensao = file.name.split(".").pop();
+
+        const nomeArquivo =
+            `${produtoId}/${tipo}.${extensao}`;
+
+        const { error: uploadError } = await supabase
+            .storage
+            .from("product-mockups")
+            .upload(
+                nomeArquivo,
+                file,
+                {
+                    cacheControl:"3600",
+                    upsert:true
+                }
+            );
+
+        if(uploadError){
+
+            console.error(uploadError);
+
+            alert("Erro ao enviar imagem.");
+
+            return;
+
+        }
+
+        const { data } = supabase
+            .storage
+            .from("product-mockups")
+            .getPublicUrl(nomeArquivo);
+
+        const existente = buscar(tipo);
+
+        if(existente){
+
+            await supabase
+
+                .from("product_mockups")
+
+                .update({
+
+                    image_url:data.publicUrl
+
+                })
+
+                .eq("id",existente.id);
+
+        }else{
+
+            await supabase
+
+                .from("product_mockups")
+
+                .insert({
+
+                    product_id:produtoId,
+
+                    tipo,
+
+                    nome:tipo,
+
+                    image_url:data.publicUrl,
+
+                    thumbnail_url:data.publicUrl,
+
+                    sort_order:1,
+
+                    ativo:true
+
+                });
+
+        }
+
+        await carregar();
+
+    };
+
+    input.click();
+
+}
+
 export default{
 
     init,
 
     carregar,
 
-    render
+    render,
+
+    upload
 
 };
