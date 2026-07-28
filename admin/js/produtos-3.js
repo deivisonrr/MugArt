@@ -952,13 +952,12 @@ window.editAdmin3Product = async function(id) {
   updateAdmin3PromotionStatus();
   updatePublicationPreview();
 
-  await renderGallery(id);
-  await renderVariants(id);
-  await renderProductHistory(id);
-  await carregarMockupsProduto(id);
-  await carregarMockups(id);
-
-  const nextVariantSku = await generateNextVariantSku(product.sku || "");
+   await renderGallery(id);
+   await renderVariants(id);
+   await renderProductHistory(id);
+   await carregarMockupsProduto(id);
+   
+   const nextVariantSku = await generateNextVariantSku(product.sku || "");
   if (a3("#admin3VariantSku")) a3("#admin3VariantSku").value = nextVariantSku;
 };
 
@@ -1532,216 +1531,26 @@ window.deleteAdmin3Variant = async function(productId, variantId) {
 };
 
 function generateSeo() {
-  const name = a3("#admin3Name").value.trim();
-  const desc = a3("#admin3Description").value.trim();
 
-  if (!name) {
-    alert("Digite o nome do produto primeiro.");
-    return;
-  }
+    const name = a3("#admin3Name").value.trim();
+    const desc = a3("#admin3Description").value.trim();
 
-  a3("#admin3Slug").value = a3Slugify(name);
-  a3("#admin3SeoTitle").value = `${name} | MugArt`;
-  a3("#admin3SeoDescription").value = desc
-    ? desc.slice(0, 155)
-    : `${name} personalizada da MugArt. Caneca criativa, pronta para presentear e encantar.`;
-
-  updateSeoPreview();
-
-async function renderMockups(productId){
-
-    const container = a3("#mockupsContainer");
-
-    if(!container)
+    if (!name) {
+        alert("Digite o nome do produto primeiro.");
         return;
-
-    const result = await mugartSupabase
-
-        .from("product_mockups")
-
-        .select("*")
-
-        .eq("product_id", productId);
-
-    if(result.error){
-
-        container.innerHTML="<p>Erro ao carregar mockups.</p>";
-
-        return;
-
     }
 
-   window.uploadMockup = async function(tipo){
-
-    const productId = a3("#admin3ProductId").value;
-
-    if(!productId){
-
-        alert("Salve o produto primeiro.");
-
-        return;
-
-    }
-
-    const input = document.createElement("input");
-
-    input.type = "file";
-
-    input.accept = "image/png,image/jpeg,image/webp";
-
-    input.onchange = async (e)=>{
-
-        const file = e.target.files?.[0];
-
-        if(!file)
-            return;
-
-        const extension = file.name.split(".").pop().toLowerCase();
-
-        const filePath =
-            `mockups/${productId}/${tipo}.${extension}`;
-
-        const upload = await mugartSupabase.storage
-
-            .from(ADMIN3_MOCKUP_BUCKET)
-
-            .upload(filePath,file,{
-
-                cacheControl:"3600",
-
-                upsert:true
-
-            });
-
-        if(upload.error){
-
-            alert(upload.error.message);
-
-            return;
-
-        }
-
-        const publicUrl = mugartSupabase.storage
-
-            .from(ADMIN3_MOCKUP_BUCKET)
-
-            .getPublicUrl(filePath);
-
-        const imageUrl = publicUrl.data.publicUrl;
-
-        const existente = await mugartSupabase
-
-            .from("product_mockups")
-
-            .select("id")
-
-            .eq("product_id",productId)
-
-            .eq("tipo",tipo)
-
-            .maybeSingle();
-
-        if(existente.data){
-
-            await mugartSupabase
-
-                .from("product_mockups")
-
-                .update({
-
-                    image_url:imageUrl,
-
-                    thumbnail_url:imageUrl,
-
-                    ativo:true
-
-                })
-
-                .eq("id",existente.data.id);
-
-        }else{
-
-            await mugartSupabase
-
-                .from("product_mockups")
-
-                .insert({
-
-                    product_id:productId,
-
-                    tipo,
-
-                    nome:tipo,
-
-                    image_url:imageUrl,
-
-                    thumbnail_url:imageUrl,
-
-                    sort_order:1,
-
-                    ativo:true
-
-                });
-
-        }
-
-        await carregarMockupsProduto(id);
-
-    };
-
-    input.click();
-
-};
-
-    const mockups = result.data || [];
-
-    container.innerHTML = ADMIN3_MOCKUP_TYPES.map(tipo=>{
-
-        const item = mockups.find(x=>x.tipo===tipo.tipo);
-
-        return `
-
-<div class="mockup-card">
-
-    <div class="mockup-preview">
-
-        ${
-            item?.image_url
-            ?
-
-            `<img src="${item.image_url}">`
-
-            :
-
-            `<div class="mockup-empty">
-
-                Sem imagem
-
-            </div>`
-        }
-
-    </div>
-
-    <h3>${tipo.nome}</h3>
-
-    <button
-        class="admin3-secondary-btn"
-
-        onclick="uploadMockup('${tipo.tipo}')">
-
-        Upload
-
-    </button>
-
-</div>
-
-`;
-
-    }).join("");
+    a3("#admin3Slug").value = a3Slugify(name);
+    a3("#admin3SeoTitle").value = `${name} | MugArt`;
+    a3("#admin3SeoDescription").value = desc
+        ? desc.slice(0,155)
+        : `${name} personalizada da MugArt. Caneca criativa, pronta para presentear e encantar.`;
+
+    updateSeoPreview();
 
 }
-   
-}
+
+
 
 function updateSeoPreview() {
   const slug = a3("#admin3Slug")?.value || a3Slugify(a3("#admin3Name")?.value || "");
@@ -1757,17 +1566,10 @@ function updateSeoPreview() {
    MOCKUPS
 ========================================================== */
 
-async function carregarMockups(productId){
+let mugTipoAtual = "frente";
+let mockupsProduto = [];
 
-    const cards = document.querySelectorAll(".mockup-card");
-
-    cards.forEach(card=>{
-
-        const preview = card.querySelector(".mockup-preview");
-
-        preview.innerHTML = "<span>Carregando...</span>";
-
-    });
+async function carregarMockupsProduto(productId){
 
     const { data, error } = await mugartSupabase
 
@@ -1775,274 +1577,9 @@ async function carregarMockups(productId){
 
         .select("*")
 
-        .eq("product_id",productId);
+        .eq("product_id", productId)
 
-    if(error){
-
-        console.error(error);
-
-        return;
-
-    }
-
-    cards.forEach(card=>{
-
-        const tipo = card.dataset.tipo;
-
-        const registro = data.find(x=>x.tipo===tipo);
-
-        const preview = card.querySelector(".mockup-preview");
-
-        if(registro){
-
-            preview.innerHTML = `
-
-<img
-    src="${registro.image_url}"
-    alt="${tipo}"
->
-
-`;
-
-        }else{
-
-            preview.innerHTML = `
-
-<span>Sem imagem</span>
-
-`;
-
-        }
-
-    });
-
-}
-
-/* ==========================================================
-   UPLOAD MOCKUP
-========================================================== */
-
-window.uploadMockup = async function(tipo){
-
-    const productId = document.querySelector("#admin3ProductId").value;
-
-    if(!productId){
-
-        alert("Salve o produto antes de enviar os mockups.");
-
-        return;
-
-    }
-
-    const input = document.createElement("input");
-
-    input.type = "file";
-
-    input.accept = "image/png,image/jpeg,image/webp";
-
-    input.onchange = async ()=>{
-
-        const file = input.files[0];
-
-        if(!file)
-            return;
-
-        const extensao = file.name.split(".").pop();
-
-        const caminho = `${productId}/${tipo}.${extensao}`;
-
-        const { error } = await mugartSupabase.storage
-
-            .from("product-mockups")
-
-            .upload(caminho,file,{
-
-                upsert:true
-
-            });
-
-        if(error){
-
-            console.error(error);
-
-            alert(error.message);
-
-            return;
-
-        }
-
-        const { data:url } = mugartSupabase.storage
-
-            .from("product-mockups")
-
-            .getPublicUrl(caminho);
-
-        const existente = await mugartSupabase
-
-            .from("product_mockups")
-
-            .select("id")
-
-            .eq("product_id",productId)
-
-            .eq("tipo",tipo)
-
-            .maybeSingle();
-
-        if(existente.data){
-
-            await mugartSupabase
-
-                .from("product_mockups")
-
-                .update({
-
-                    image_url:url.publicUrl
-
-                })
-
-                .eq("id",existente.data.id);
-
-        }else{
-
-            await mugartSupabase
-
-                .from("product_mockups")
-
-                .insert({
-
-                    product_id:productId,
-
-                    tipo,
-
-                    nome:tipo,
-
-                    image_url:url.publicUrl,
-
-                    ativo:true,
-
-                    sort_order:1
-
-                });
-
-        }
-
-        await carregarMockups(productId);
-
-    };
-
-    input.click();
-
-}
-
-/* ==========================================================
-   EDITOR DA ÁREA DE IMPRESSÃO
-========================================================== */
-
-let areaAtual = null;
-
-window.editarArea = async function(tipo){
-
-    areaAtual = tipo;
-
-    document
-        .querySelector("#editorAreaModal")
-        .style.display = "flex";
-
-    document
-        .querySelector("#editorCanvas")
-        .innerHTML = "<p>Carregando...</p>";
-
-};
-
-window.fecharEditorArea = function(){
-
-    document
-        .querySelector("#editorAreaModal")
-        .style.display = "none";
-
-};
-
-window.salvarAreaImpressao = async function(){
-
-    alert("Próxima etapa: salvar área de impressão.");
-
-};
-
-/* ==========================================================
-   PERSONALIZAÇÃO DA CANECA
-========================================================== */
-
-let mugTipoAtual = "frente";
-
-let mockupsProduto = [];
-
-window.selecionarMockup = async function(tipo){
-
-    mugTipoAtual = tipo;
-
-    document.querySelectorAll(".mug-tab").forEach(btn=>{
-
-        btn.classList.toggle(
-            "active",
-            btn.dataset.tipo===tipo
-        );
-
-    });
-
-    document.querySelector("#mockupTitulo").textContent =
-        document.querySelector(
-            `.mug-tab[data-tipo="${tipo}"]`
-        ).textContent.trim();
-
-    mostrarMockupSelecionado();
-
-};
-
-function mostrarMockupSelecionado(){
-
-    const preview =
-        document.querySelector("#mockupPreview");
-
-    const registro =
-        mockupsProduto.find(
-            x=>x.tipo===mugTipoAtual
-        );
-
-    if(!registro){
-
-        preview.innerHTML = `
-            <span>Nenhum mockup enviado.</span>
-        `;
-
-        document.querySelector("#areaResumo").innerHTML =
-            "Nenhuma área configurada.";
-
-        return;
-
-    }
-
-    preview.innerHTML = `
-        <img src="${registro.image_url}">
-    `;
-
-    document.querySelector("#areaResumo").innerHTML =
-        "Área ainda não configurada.";
-
-}
-
-async function carregarMockupsProduto(productId){
-
-    const { data, error } =
-        await mugartSupabase
-
-        .from("product_mockups")
-
-        .select("*")
-
-        .eq("product_id",productId)
-
-        .order("sort_order");
+        .order("sort_order",{ascending:true});
 
     if(error){
 
@@ -2058,113 +1595,139 @@ async function carregarMockupsProduto(productId){
 
 }
 
-/* ==========================================================
-   ÁREA DE IMPRESSÃO
-========================================================== */
+window.selecionarMockup = function(tipo){
 
-let mockupAtual = null;
+    mugTipoAtual = tipo;
 
-window.editarArea = async function(tipo){
+    document.querySelectorAll(".mug-tab").forEach(btn=>{
 
-    const registro = mockupsProduto.find(
-        m => m.tipo === tipo
+        btn.classList.toggle(
+            "active",
+            btn.dataset.tipo===tipo
+        );
+
+    });
+
+    mostrarMockupSelecionado();
+
+};
+
+function mostrarMockupSelecionado(){
+
+    const preview=document.querySelector("#mockupPreview");
+
+    if(!preview)
+        return;
+
+    const registro=mockupsProduto.find(
+        m=>m.tipo===mugTipoAtual
     );
 
     if(!registro){
 
-        alert("Faça o upload do mockup antes de configurar a área.");
+        preview.innerHTML="<span>Nenhum mockup enviado.</span>";
 
         return;
 
     }
 
-    mockupAtual = registro;
+    preview.innerHTML=`<img src="${registro.image_url}">`;
 
-    const preview = document.querySelector("#mockupPreview");
-
-    preview.innerHTML = `
-
-<div id="editorWrapper">
-
-    <img
-        id="editorImagem"
-        src="${registro.image_url}"
-    >
-
-    <div id="printArea">
-
-    </div>
-
-</div>
-
-`;
+}
 
 /* ==========================================================
-   DRAG DA ÁREA
+   UPLOAD / REMOÇÃO DE MOCKUPS
 ========================================================== */
 
-let dragging = false;
+window.uploadMockup = async function (tipo) {
 
-let dragOffsetX = 0;
-let dragOffsetY = 0;
+    const productId = a3("#admin3ProductId").value;
 
-document.addEventListener("mousedown", e=>{
-
-    if(e.target.id!="printArea")
+    if (!productId) {
+        alert("Salve o produto primeiro.");
         return;
+    }
 
-    dragging = true;
+    const input = document.createElement("input");
 
-    const rect = e.target.getBoundingClientRect();
+    input.type = "file";
+    input.accept = "image/png,image/jpeg,image/webp";
 
-    dragOffsetX = e.clientX - rect.left;
-    dragOffsetY = e.clientY - rect.top;
+    input.onchange = async () => {
 
-});
+        const file = input.files?.[0];
 
-document.addEventListener("mouseup",()=>{
+        if (!file) return;
 
-    dragging = false;
+        const ext = file.name.split(".").pop().toLowerCase();
 
-});
+        const filePath = `${productId}/${tipo}.${ext}`;
 
-document.addEventListener("mousemove",e=>{
+        const upload = await mugartSupabase.storage
+            .from(ADMIN3_MOCKUP_BUCKET)
+            .upload(filePath, file, {
+                upsert: true,
+                cacheControl: "3600"
+            });
 
-    if(!dragging)
-        return;
+        if (upload.error) {
+            alert(upload.error.message);
+            return;
+        }
 
-    const wrapper=document.querySelector("#editorWrapper");
+        const publicUrl = mugartSupabase.storage
+            .from(ADMIN3_MOCKUP_BUCKET)
+            .getPublicUrl(filePath);
 
-    const area=document.querySelector("#printArea");
+        const imageUrl = publicUrl.data.publicUrl;
 
-    if(!wrapper || !area)
-        return;
+        const existente = await mugartSupabase
+            .from("product_mockups")
+            .select("id")
+            .eq("product_id", productId)
+            .eq("tipo", tipo)
+            .maybeSingle();
 
-    const rect=wrapper.getBoundingClientRect();
+        if (existente.data) {
 
-    let x=e.clientX-rect.left-dragOffsetX;
-    let y=e.clientY-rect.top-dragOffsetY;
+            await mugartSupabase
+                .from("product_mockups")
+                .update({
+                    image_url: imageUrl,
+                    thumbnail_url: imageUrl,
+                    ativo: true
+                })
+                .eq("id", existente.data.id);
 
-    x=Math.max(0,Math.min(x,rect.width-area.offsetWidth));
-    y=Math.max(0,Math.min(y,rect.height-area.offsetHeight));
+        } else {
 
-    area.style.left=x+"px";
-    area.style.top=y+"px";
+            await mugartSupabase
+                .from("product_mockups")
+                .insert({
+                    product_id: productId,
+                    tipo,
+                    nome: tipo,
+                    image_url: imageUrl,
+                    thumbnail_url: imageUrl,
+                    sort_order: 1,
+                    ativo: true
+                });
 
-});
+        }
+
+        await carregarMockupsProduto(productId);
+
+    };
+
+    input.click();
 
 };
 
 window.removerMockup = async function(tipo){
 
-    if(!confirm("Deseja remover este mockup?"))
-        return;
+    const productId = a3("#admin3ProductId").value;
 
-    const productId =
-        document.querySelector("#admin3ProductId").value;
-
-    const registro =
-        mockupsProduto.find(x=>x.tipo===tipo);
+    const registro = mockupsProduto.find(x=>x.tipo===tipo);
 
     if(!registro){
 
@@ -2174,18 +1737,161 @@ window.removerMockup = async function(tipo){
 
     }
 
+    if(!confirm("Deseja remover este mockup?"))
+        return;
+
     const caminho = registro.image_url.split("/product-mockups/")[1];
 
-    await mugartSupabase.storage
-        .from("product-mockups")
-        .remove([caminho]);
+    if(caminho){
+
+        await mugartSupabase.storage
+
+            .from(ADMIN3_MOCKUP_BUCKET)
+
+            .remove([caminho]);
+
+    }
 
     await mugartSupabase
+
         .from("product_mockups")
+
         .delete()
+
         .eq("id",registro.id);
 
     await carregarMockupsProduto(productId);
+
+};
+
+/* ==========================================================
+   EDITOR DA ÁREA DE IMPRESSÃO
+========================================================== */
+
+let mockupAtual = null;
+
+window.editarArea = function (tipo) {
+
+    const registro = mockupsProduto.find(m => m.tipo === tipo);
+
+    if (!registro) {
+        alert("Faça o upload do mockup antes.");
+        return;
+    }
+
+    mockupAtual = registro;
+
+    const preview = a3("#mockupPreview");
+
+    preview.innerHTML = `
+        <div id="editorWrapper" style="position:relative;display:inline-block;">
+            <img
+                id="editorImagem"
+                src="${registro.image_url}"
+                style="display:block;max-width:100%;">
+
+            <div
+                id="printArea"
+                style="
+                    position:absolute;
+                    left:${registro.area_x || 50}px;
+                    top:${registro.area_y || 50}px;
+                    width:${registro.area_width || 250}px;
+                    height:${registro.area_height || 250}px;
+                    border:2px dashed #ff9800;
+                    cursor:move;
+                    box-sizing:border-box;
+                ">
+            </div>
+        </div>
+    `;
+
+    iniciarDragPrintArea();
+
+};
+
+function iniciarDragPrintArea(){
+
+    const area = a3("#printArea");
+    const wrapper = a3("#editorWrapper");
+
+    if(!area || !wrapper) return;
+
+    let dragging=false;
+    let offsetX=0;
+    let offsetY=0;
+
+    area.onmousedown=(e)=>{
+
+        dragging=true;
+
+        const rect=area.getBoundingClientRect();
+
+        offsetX=e.clientX-rect.left;
+        offsetY=e.clientY-rect.top;
+
+    };
+
+    document.onmouseup=()=>{
+
+        dragging=false;
+
+    };
+
+    document.onmousemove=(e)=>{
+
+        if(!dragging) return;
+
+        const rect=wrapper.getBoundingClientRect();
+
+        let x=e.clientX-rect.left-offsetX;
+        let y=e.clientY-rect.top-offsetY;
+
+        x=Math.max(0,Math.min(x,rect.width-area.offsetWidth));
+        y=Math.max(0,Math.min(y,rect.height-area.offsetHeight));
+
+        area.style.left=x+"px";
+        area.style.top=y+"px";
+
+    };
+
+}
+
+window.salvarAreaImpressao = async function () {
+
+    if (!mockupAtual) {
+        alert("Nenhum mockup selecionado.");
+        return;
+    }
+
+    const area = a3("#printArea");
+
+    if (!area) {
+        alert("Área de impressão não encontrada.");
+        return;
+    }
+
+    const dados = {
+        area_x: parseInt(area.style.left || 0),
+        area_y: parseInt(area.style.top || 0),
+        area_width: area.offsetWidth,
+        area_height: area.offsetHeight
+    };
+
+    const { error } = await mugartSupabase
+        .from("product_mockups")
+        .update(dados)
+        .eq("id", mockupAtual.id);
+
+    if (error) {
+        console.error(error);
+        alert(error.message);
+        return;
+    }
+
+    Object.assign(mockupAtual, dados);
+
+    alert("Área salva com sucesso.");
 
 };
 
