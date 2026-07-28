@@ -931,7 +931,7 @@ window.editAdmin3Product = async function(id) {
   await renderGallery(id);
   await renderVariants(id);
   await renderProductHistory(id);
-  await renderMockups(id);
+  await carregarMockupsProduto(id);
   await carregarMockups(id);
 
   const nextVariantSku = await generateNextVariantSku(product.sku || "");
