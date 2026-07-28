@@ -1,4 +1,4 @@
-import { supabase } from "/js/supabase-config.js";
+const supabase = window.mugartSupabase;
 
 const TIPOS = [
     {
