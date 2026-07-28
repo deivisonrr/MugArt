@@ -1,158 +1,139 @@
 import { supabase } from "/js/supabase-config.js";
 
+const TIPOS = [
+    {
+        tipo: "frente",
+        nome: "☕ Frente"
+    },
+    {
+        tipo: "verso",
+        nome: "☕ Verso"
+    },
+    {
+        tipo: "alca_esquerda",
+        nome: "☕ Alça Esquerda"
+    },
+    {
+        tipo: "alca_direita",
+        nome: "☕ Alça Direita"
+    },
+    {
+        tipo: "interior",
+        nome: "☕ Interior"
+    }
+];
+
 let produtoId = null;
+
 let mockups = [];
 
-export function init(id) {
+export function init(id){
+
     produtoId = id;
+
 }
 
-export async function carregar() {
+export async function carregar(){
 
-    if (!produtoId) {
-        mockups = [];
-        return [];
-    }
+    if(!produtoId)
+        return;
 
     const { data, error } = await supabase
-        .from("product_mockups")
-        .select("*")
-        .eq("product_id", produtoId)
-        .order("sort_order", { ascending: true });
 
-    if (error) {
-        console.error("Erro ao carregar mockups:", error);
-        mockups = [];
-        return [];
+        .from("product_mockups")
+
+        .select("*")
+
+        .eq("product_id", produtoId);
+
+    if(error){
+
+        console.error(error);
+
+        return;
+
     }
 
     mockups = data || [];
 
     render();
 
-    return mockups;
 }
 
-export function listar() {
-    return mockups;
+function buscar(tipo){
+
+    return mockups.find(m=>m.tipo===tipo);
+
 }
 
-export async function adicionar(tipo) {
-
-    const novo = {
-        product_id: produtoId,
-        tipo,
-        nome: tipo,
-        image_url: "",
-        thumbnail_url: "",
-        sort_order: mockups.length + 1,
-        ativo: true
-    };
-
-    const { data, error } = await supabase
-        .from("product_mockups")
-        .insert(novo)
-        .select()
-        .single();
-
-    if (error)
-        throw error;
-
-    mockups.push(data);
-
-    render();
-}
-
-export async function remover(id) {
-
-    const { error } = await supabase
-        .from("product_mockups")
-        .delete()
-        .eq("id", id);
-
-    if (error)
-        throw error;
-
-    mockups = mockups.filter(x => x.id !== id);
-
-    render();
-}
-
-export function render() {
+export function render(){
 
     const container = document.querySelector("#mockupsContainer");
 
-    if (!container)
+    if(!container)
         return;
 
-    if (!mockups.length) {
+    container.innerHTML = "";
 
-        container.innerHTML = `
-            <div class="mockups-empty">
+    TIPOS.forEach(item=>{
 
-                Nenhum mockup cadastrado.
+        const registro = buscar(item.tipo);
 
-            </div>
-        `;
+        container.innerHTML += `
 
-        return;
-    }
+<div class="mockup-card">
 
-    container.innerHTML = mockups.map(item => `
+    <div class="mockup-header">
 
-        <div class="mockup-card">
+        <h3>${item.nome}</h3>
 
-            <div class="mockup-preview">
+    </div>
 
-                ${
-                    item.image_url
-                    ? `<img src="${item.image_url}">`
-                    : `<div class="mockup-placeholder">Sem imagem</div>`
-                }
+    <div class="mockup-preview">
 
-            </div>
+        ${
+            registro?.image_url
+            ?
 
-            <h3>${item.nome}</h3>
+            `<img src="${registro.image_url}">`
 
-            <small>${item.tipo}</small>
+            :
 
-            <div class="mockup-actions">
+            `<div class="mockup-empty">
 
-                <button
-                    class="secondary"
-                    data-upload="${item.id}">
+                Nenhuma imagem
 
-                    Upload
+            </div>`
+        }
 
-                </button>
+    </div>
 
-                <button
-                    class="danger"
-                    data-delete="${item.id}">
+    <div class="mockup-footer">
 
-                    Excluir
+        <button
+            class="secondary uploadMockup"
 
-                </button>
+            data-tipo="${item.tipo}">
 
-            </div>
+            Upload
 
-        </div>
+        </button>
 
-    `).join("");
+    </div>
+
+</div>
+
+`;
+
+    });
 
 }
 
-export default {
+export default{
 
     init,
 
     carregar,
-
-    listar,
-
-    adicionar,
-
-    remover,
 
     render
 
