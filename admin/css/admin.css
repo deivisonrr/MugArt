@@ -2624,3 +2624,46 @@ body.modal-open {
     }
 
 }
+
+/* ==========================================================
+   EDITOR DA ÁREA
+========================================================== */
+
+#editorWrapper{
+
+    position:relative;
+
+    display:inline-block;
+
+}
+
+#editorImagem{
+
+    display:block;
+
+    max-width:100%;
+
+    max-height:700px;
+
+}
+
+#printArea{
+
+    position:absolute;
+
+    left:25%;
+
+    top:25%;
+
+    width:220px;
+
+    height:110px;
+
+    border:3px dashed #ff9800;
+
+    background:rgba(255,152,0,.15);
+
+    cursor:move;
+
+}
+
