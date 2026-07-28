@@ -1,78 +1,69 @@
-/* ==========================================================
-   MUGART ERP
-   PERSONALIZADOR
-   INDEX
-========================================================== */
-
-import * as Modelos from "./modelos.js";
-import * as Galeria from "./galeria.js";
-import * as Variacoes from "./variacoes.js";
+import * as Modelo from "./modelo.js";
+import * as Mockups from "./mockups.js";
 import * as Areas from "./areas.js";
 import * as Editor from "./editor.js";
 import * as Arquivos from "./arquivos.js";
-import * as Historico from "./historico.js";
 
-const Personalizador = {
+let produtoAtual = null;
 
-    /* Banco */
+async function init(produtoId) {
 
-    db: window.mugartSupabase,
+    produtoAtual = produtoId;
 
-    /* Estados */
+    await Modelo.carregar(produtoId);
 
-    modelos: [],
+    await Mockups.carregar(produtoId);
 
-    modeloAtual: null,
+    await Areas.carregar(produtoId);
 
-    galeria: [],
+}
 
-    variacoes: [],
+async function salvar() {
 
-    areas: [],
+    await Modelo.salvar(produtoAtual);
 
-    arquivos: [],
+    await Mockups.salvar(produtoAtual);
 
-    historico: [],
+    await Areas.salvar(produtoAtual);
 
-    elementos: {},
+}
 
-    editor: {},
+function abrirMockups() {
 
-    zoom: 1
+    Mockups.abrir();
+
+}
+
+function abrirAreas() {
+
+    Areas.abrir();
+
+}
+
+function abrirEditor() {
+
+    Editor.abrir();
+
+}
+
+function abrirArquivos() {
+
+    Arquivos.abrir();
+
+}
+
+export default {
+
+    init,
+
+    salvar,
+
+    abrirMockups,
+
+    abrirAreas,
+
+    abrirEditor,
+
+    abrirArquivos
 
 };
-
-/* Junta todos os módulos */
-
-Object.assign(Personalizador, Modelos);
-Object.assign(Personalizador, Galeria);
-Object.assign(Personalizador, Variacoes);
-Object.assign(Personalizador, Areas);
-Object.assign(Personalizador, Editor);
-Object.assign(Personalizador, Arquivos);
-Object.assign(Personalizador, Historico);
-
-/* Global */
-
-window.Personalizador = Personalizador;
-
-/* Inicialização */
-
-document.addEventListener(
-
-    "DOMContentLoaded",
-
-    async () => {
-
-        await Personalizador.init();
-
-        if (Personalizador.iniciarEditor) {
-
-            Personalizador.iniciarEditor();
-
-        }
-
-    }
-
-);
-
