@@ -2,7 +2,6 @@
    MugArt Produtos 3.0
    Arquivo: admin/js/produtos-3.js
 ========================================================== */
-import Personalizador from "./personalizador/index.js";
 const ADMIN3_BUCKET = "product-images";
 const ADMIN3_MOCKUP_BUCKET = "product-mockups";
 
@@ -867,8 +866,6 @@ window.editAdmin3Product = async function(id) {
 
   if (!product) return;
 
-  await Personalizador.init(product.id);
-
   Admin3State.currentProductId = id;
   openDrawer(product);
 
@@ -1082,8 +1079,6 @@ async function saveProduct(event) {
   }
 
   const savedId = result.data?.id || currentId || Admin3State.currentProductId;
-  await Personalizador.init(savedId);
-  await Personalizador.salvar(); 
   await saveProductHistory(
     savedId,
     currentId ? "Produto atualizado" : "Produto criado",
