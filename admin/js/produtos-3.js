@@ -1895,3 +1895,37 @@ window.uploadMockup = async function(tipo){
 
 }
 
+/* ==========================================================
+   EDITOR DA ÁREA DE IMPRESSÃO
+========================================================== */
+
+let areaAtual = null;
+
+window.editarArea = async function(tipo){
+
+    areaAtual = tipo;
+
+    document
+        .querySelector("#editorAreaModal")
+        .style.display = "flex";
+
+    document
+        .querySelector("#editorCanvas")
+        .innerHTML = "<p>Carregando...</p>";
+
+};
+
+window.fecharEditorArea = function(){
+
+    document
+        .querySelector("#editorAreaModal")
+        .style.display = "none";
+
+};
+
+window.salvarAreaImpressao = async function(){
+
+    alert("Próxima etapa: salvar área de impressão.");
+
+};
+
