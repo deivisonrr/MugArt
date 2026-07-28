@@ -2033,3 +2033,47 @@ async function carregarMockupsProduto(productId){
     selecionarMockup("frente");
 
 }
+
+/* ==========================================================
+   ÁREA DE IMPRESSÃO
+========================================================== */
+
+let mockupAtual = null;
+
+window.editarArea = async function(tipo){
+
+    const registro = mockupsProduto.find(
+        m => m.tipo === tipo
+    );
+
+    if(!registro){
+
+        alert("Faça o upload do mockup antes de configurar a área.");
+
+        return;
+
+    }
+
+    mockupAtual = registro;
+
+    const preview = document.querySelector("#mockupPreview");
+
+    preview.innerHTML = `
+
+<div id="editorWrapper">
+
+    <img
+        id="editorImagem"
+        src="${registro.image_url}"
+    >
+
+    <div id="printArea">
+
+    </div>
+
+</div>
+
+`;
+
+};
+
