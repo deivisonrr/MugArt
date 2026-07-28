@@ -2,7 +2,7 @@
    MugArt Produtos 3.0
    Arquivo: admin/js/produtos-3.js
 ========================================================== */
-
+import Personalizador from "./personalizador/index.js";
 const ADMIN3_BUCKET = "product-images";
 
 const Admin3State = {
