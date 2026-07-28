@@ -1803,7 +1803,21 @@ window.editarArea = function (tipo) {
                     box-sizing:border-box;
             ">
             
-                <div class="resize-handle br"></div>
+                <div
+                   class="resize-handle"
+                   style="
+                       position:absolute;
+                       width:16px;
+                       height:16px;
+                       right:-8px;
+                       bottom:-8px;
+                       background:#ff9800;
+                       border:2px solid #fff;
+                       border-radius:50%;
+                       cursor:nwse-resize;
+                       z-index:999;
+                   ">
+               </div>
             
             </div>
         </div>
@@ -1876,34 +1890,43 @@ function iniciarResizePrintArea(){
     if(!handle) return;
 
     let resizing = false;
+    let startX;
+    let startY;
+    let startWidth;
+    let startHeight;
 
-    handle.onmousedown = e=>{
+    handle.onmousedown = function(e){
 
+        e.preventDefault();
         e.stopPropagation();
 
         resizing = true;
 
+        startX = e.clientX;
+        startY = e.clientY;
+
+        startWidth = area.offsetWidth;
+        startHeight = area.offsetHeight;
+
     };
 
-    document.addEventListener("mouseup",()=>{
-
-        resizing=false;
-
-    });
-
-    document.addEventListener("mousemove",e=>{
+    document.addEventListener("mousemove",function(e){
 
         if(!resizing) return;
 
-        const rect = area.getBoundingClientRect();
-
         area.style.width =
-            Math.max(50,e.clientX-rect.left)+"px";
+            Math.max(50,startWidth + (e.clientX-startX))+"px";
 
         area.style.height =
-            Math.max(50,e.clientY-rect.top)+"px";
+            Math.max(50,startHeight + (e.clientY-startY))+"px";
 
         atualizarResumoArea();
+
+    });
+
+    document.addEventListener("mouseup",function(){
+
+        resizing=false;
 
     });
 
