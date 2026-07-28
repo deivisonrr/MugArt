@@ -917,6 +917,7 @@ window.editAdmin3Product = async function(id) {
   await renderVariants(id);
   await renderProductHistory(id);
   await renderMockups(id);
+  await carregarMockups(id);
 
   const nextVariantSku = await generateNextVariantSku(product.sku || "");
   if (a3("#admin3VariantSku")) a3("#admin3VariantSku").value = nextVariantSku;
@@ -1710,4 +1711,69 @@ function updateSeoPreview() {
   if (a3("#admin3SeoUrlPreview")) a3("#admin3SeoUrlPreview").textContent = `mugart.com.br/produto/${slug || "..."}`;
   if (a3("#admin3SeoTitlePreview")) a3("#admin3SeoTitlePreview").textContent = title;
   if (a3("#admin3SeoDescPreview")) a3("#admin3SeoDescPreview").textContent = desc;
+}
+
+/* ==========================================================
+   MOCKUPS
+========================================================== */
+
+async function carregarMockups(productId){
+
+    const cards = document.querySelectorAll(".mockup-card");
+
+    cards.forEach(card=>{
+
+        const preview = card.querySelector(".mockup-preview");
+
+        preview.innerHTML = "<span>Carregando...</span>";
+
+    });
+
+    const { data, error } = await mugartSupabase
+
+        .from("product_mockups")
+
+        .select("*")
+
+        .eq("product_id",productId);
+
+    if(error){
+
+        console.error(error);
+
+        return;
+
+    }
+
+    cards.forEach(card=>{
+
+        const tipo = card.dataset.tipo;
+
+        const registro = data.find(x=>x.tipo===tipo);
+
+        const preview = card.querySelector(".mockup-preview");
+
+        if(registro){
+
+            preview.innerHTML = `
+
+<img
+    src="${registro.image_url}"
+    alt="${tipo}"
+>
+
+`;
+
+        }else{
+
+            preview.innerHTML = `
+
+<span>Sem imagem</span>
+
+`;
+
+        }
+
+    });
+
 }
