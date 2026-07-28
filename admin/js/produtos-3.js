@@ -555,15 +555,30 @@ async function publishScheduledProducts() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  if (!window.mugartSupabase) {
-    alert("Supabase não carregou.");
-    return;
-  }
 
-  bindAdmin3Events();
-  await publishScheduledProducts();
-  await loadAdmin3Data();
-  renderAdmin3();
+    if (!window.mugartSupabase) {
+        alert("Supabase não carregou.");
+        return;
+    }
+
+    bindAdmin3Events();
+
+    await publishScheduledProducts();
+
+    await loadAdmin3Data();
+
+    renderAdmin3();
+
+    document.querySelectorAll(".mug-tab").forEach(btn => {
+
+        btn.addEventListener("click", () => {
+
+            selecionarMockup(btn.dataset.tipo);
+
+        });
+
+    });
+
 });
 
 function bindAdmin3Events() {
@@ -941,6 +956,7 @@ window.deleteAdmin3Product = async function(id) {
 
   await loadAdmin3Data();
   renderAdmin3();
+  await carregarMockupsProduto(id);
 };
 
 async function saveProduct(event) {
@@ -1929,3 +1945,91 @@ window.salvarAreaImpressao = async function(){
 
 };
 
+/* ==========================================================
+   PERSONALIZAÇÃO DA CANECA
+========================================================== */
+
+let mugTipoAtual = "frente";
+
+let mockupsProduto = [];
+
+window.selecionarMockup = async function(tipo){
+
+    mugTipoAtual = tipo;
+
+    document.querySelectorAll(".mug-tab").forEach(btn=>{
+
+        btn.classList.toggle(
+            "active",
+            btn.dataset.tipo===tipo
+        );
+
+    });
+
+    document.querySelector("#mockupTitulo").textContent =
+        document.querySelector(
+            `.mug-tab[data-tipo="${tipo}"]`
+        ).textContent.trim();
+
+    mostrarMockupSelecionado();
+
+};
+
+function mostrarMockupSelecionado(){
+
+    const preview =
+        document.querySelector("#mockupPreview");
+
+    const registro =
+        mockupsProduto.find(
+            x=>x.tipo===mugTipoAtual
+        );
+
+    if(!registro){
+
+        preview.innerHTML = `
+            <span>Nenhum mockup enviado.</span>
+        `;
+
+        document.querySelector("#areaResumo").innerHTML =
+            "Nenhuma área configurada.";
+
+        return;
+
+    }
+
+    preview.innerHTML = `
+        <img src="${registro.image_url}">
+    `;
+
+    document.querySelector("#areaResumo").innerHTML =
+        "Área ainda não configurada.";
+
+}
+
+async function carregarMockupsProduto(productId){
+
+    const { data, error } =
+        await mugartSupabase
+
+        .from("product_mockups")
+
+        .select("*")
+
+        .eq("product_id",productId)
+
+        .order("sort_order");
+
+    if(error){
+
+        console.error(error);
+
+        return;
+
+    }
+
+    mockupsProduto = data || [];
+
+    selecionarMockup("frente");
+
+}
