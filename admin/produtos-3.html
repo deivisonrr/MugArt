@@ -114,14 +114,72 @@
     <form id="admin3ProductForm" class="admin3-form">
       <input type="hidden" id="admin3ProductId" />
 
-      <div class="admin3-tabs">
-        <button type="button" class="admin3-tab active" data-tab="info">Informações</button>
-        <button type="button" class="admin3-tab" data-tab="media">Imagens</button>
-        <button type="button" class="admin3-tab" data-tab="variants">Variações</button>
-        <button type="button" class="admin3-tab" data-tab="seo">SEO</button>
-        <button type="button" class="admin3-tab" data-tab="publication">Publicação</button>
-        <button type="button" class="admin3-tab" data-tab="history">Histórico</button>
-      </div>
+     <div class="admin3-tabs">
+
+    <button
+        type="button"
+        class="admin3-tab active"
+        data-tab="info">
+
+        Informações
+
+    </button>
+
+    <button
+        type="button"
+        class="admin3-tab"
+        data-tab="media">
+
+        Imagens
+
+    </button>
+
+    <button
+        type="button"
+        class="admin3-tab"
+        data-tab="variants">
+
+        Variações
+
+    </button>
+
+    <button
+        type="button"
+        class="admin3-tab"
+        data-tab="customization">
+
+        🎨 Personalização
+
+    </button>
+
+      <button
+          type="button"
+          class="admin3-tab"
+          data-tab="seo">
+  
+          SEO
+  
+      </button>
+  
+      <button
+          type="button"
+          class="admin3-tab"
+          data-tab="publication">
+  
+          Publicação
+  
+      </button>
+  
+      <button
+          type="button"
+          class="admin3-tab"
+          data-tab="history">
+  
+          Histórico
+  
+      </button>
+  
+  </div>
 
       <section class="admin3-tab-panel active" id="admin3-tab-info">
         <div class="admin3-grid">
@@ -316,6 +374,112 @@
         <button type="button" id="admin3AddVariantBtn">Adicionar variação</button>
         <div class="admin3-variants-list" id="admin3Variants"></div>
       </section>
+
+      <section
+    class="admin3-tab-panel"
+    id="admin3-tab-customization">
+
+    <div class="admin3-grid">
+
+        <label class="full">
+
+            <strong style="font-size:18px">
+
+                🎨 Personalização
+
+            </strong>
+
+            <small>
+
+                Configure como este produto poderá ser personalizado na loja.
+
+            </small>
+
+        </label>
+
+        <label class="full">
+
+            Produto personalizável
+
+            <select id="admin3CustomizationEnabled">
+
+                <option value="false">
+
+                    Não
+
+                </option>
+
+                <option value="true">
+
+                    Sim
+
+                </option>
+
+            </select>
+
+        </label>
+
+    </div>
+
+    <div
+        id="admin3CustomizationContainer"
+        style="display:none;margin-top:30px;">
+
+        <div class="admin3-grid">
+
+            <button
+                type="button"
+                id="btnCustomizationMockups">
+
+                🖼 Mockups
+
+            </button>
+
+            <button
+                type="button"
+                id="btnCustomizationAreas">
+
+                📐 Áreas de Impressão
+
+            </button>
+
+            <button
+                type="button"
+                id="btnCustomizationFonts">
+
+                🔤 Fontes
+
+            </button>
+
+            <button
+                type="button"
+                id="btnCustomizationCliparts">
+
+                🎨 Cliparts
+
+            </button>
+
+            <button
+                type="button"
+                id="btnCustomizationFiles">
+
+                📂 Arquivos
+
+            </button>
+
+            <button
+                type="button"
+                id="btnCustomizationPreview">
+
+                👁 Preview
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
 
       <section class="admin3-tab-panel" id="admin3-tab-seo">
         <div class="admin3-grid">
