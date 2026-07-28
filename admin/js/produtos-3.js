@@ -1801,7 +1801,10 @@ window.editarArea = function (tipo) {
                     border:2px dashed #ff9800;
                     cursor:move;
                     box-sizing:border-box;
-                ">
+            ">
+            
+                <div class="resize-handle br"></div>
+            
             </div>
         </div>
     `;
@@ -1852,8 +1855,83 @@ function iniciarDragPrintArea(){
 
         area.style.left=x+"px";
         area.style.top=y+"px";
+         
+        atualizarResumoArea();
 
     };
+
+   iniciarResizePrintArea();
+   atualizarResumoArea();
+
+}
+
+function iniciarResizePrintArea(){
+
+    const area = a3("#printArea");
+
+    if(!area) return;
+
+    const handle = area.querySelector(".resize-handle");
+
+    if(!handle) return;
+
+    let resizing = false;
+
+    handle.onmousedown = e=>{
+
+        e.stopPropagation();
+
+        resizing = true;
+
+    };
+
+    document.addEventListener("mouseup",()=>{
+
+        resizing=false;
+
+    });
+
+    document.addEventListener("mousemove",e=>{
+
+        if(!resizing) return;
+
+        const rect = area.getBoundingClientRect();
+
+        area.style.width =
+            Math.max(50,e.clientX-rect.left)+"px";
+
+        area.style.height =
+            Math.max(50,e.clientY-rect.top)+"px";
+
+        atualizarResumoArea();
+
+    });
+
+}
+
+function atualizarResumoArea(){
+
+    const area = a3("#printArea");
+
+    const resumo = a3("#areaResumo");
+
+    if(!area || !resumo) return;
+
+    resumo.innerHTML = `
+        X: ${parseInt(area.style.left)}
+
+        <br>
+
+        Y: ${parseInt(area.style.top)}
+
+        <br>
+
+        Largura: ${area.offsetWidth}px
+
+        <br>
+
+        Altura: ${area.offsetHeight}px
+    `;
 
 }
 
