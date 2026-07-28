@@ -4,6 +4,30 @@
 ========================================================== */
 import Personalizador from "./personalizador/index.js";
 const ADMIN3_BUCKET = "product-images";
+const ADMIN3_MOCKUP_BUCKET = "product-mockups";
+
+const ADMIN3_MOCKUP_TYPES = [
+  {
+    tipo: "frente",
+    nome: "☕ Frente"
+  },
+  {
+    tipo: "verso",
+    nome: "☕ Verso"
+  },
+  {
+    tipo: "alca_esquerda",
+    nome: "☕ Alça Esquerda"
+  },
+  {
+    tipo: "alca_direita",
+    nome: "☕ Alça Direita"
+  },
+  {
+    tipo: "interior",
+    nome: "☕ Interior"
+  }
+];
 
 const Admin3State = {
   products: [],
@@ -895,6 +919,7 @@ window.editAdmin3Product = async function(id) {
   await renderGallery(id);
   await renderVariants(id);
   await renderProductHistory(id);
+  await renderMockups(id);
 
   const nextVariantSku = await generateNextVariantSku(product.sku || "");
   if (a3("#admin3VariantSku")) a3("#admin3VariantSku").value = nextVariantSku;
@@ -1486,6 +1511,78 @@ function generateSeo() {
     : `${name} personalizada da MugArt. Caneca criativa, pronta para presentear e encantar.`;
 
   updateSeoPreview();
+
+async function renderMockups(productId){
+
+    const container = a3("#mockupsContainer");
+
+    if(!container)
+        return;
+
+    const result = await mugartSupabase
+
+        .from("product_mockups")
+
+        .select("*")
+
+        .eq("product_id", productId);
+
+    if(result.error){
+
+        container.innerHTML="<p>Erro ao carregar mockups.</p>";
+
+        return;
+
+    }
+
+    const mockups = result.data || [];
+
+    container.innerHTML = ADMIN3_MOCKUP_TYPES.map(tipo=>{
+
+        const item = mockups.find(x=>x.tipo===tipo.tipo);
+
+        return `
+
+<div class="mockup-card">
+
+    <div class="mockup-preview">
+
+        ${
+            item?.image_url
+            ?
+
+            `<img src="${item.image_url}">`
+
+            :
+
+            `<div class="mockup-empty">
+
+                Sem imagem
+
+            </div>`
+        }
+
+    </div>
+
+    <h3>${tipo.nome}</h3>
+
+    <button
+        class="admin3-secondary-btn"
+
+        onclick="uploadMockup('${tipo.tipo}')">
+
+        Upload
+
+    </button>
+
+</div>
+
+`;
+
+    }).join("");
+
+}
+   
 }
 
 function updateSeoPreview() {
