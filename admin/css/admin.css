@@ -2392,3 +2392,55 @@ body.modal-open {
   outline: none;
   box-shadow: 0 0 0 3px rgba(255, 212, 0, 0.1);
 }
+
+/* ==========================================================
+   PERSONALIZAÇÃO DE CANECAS
+========================================================== */
+
+.mockups-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:20px;
+    margin-top:20px;
+}
+
+.mockup-card{
+    background:#1d1f23;
+    border:1px solid #333;
+    border-radius:12px;
+    overflow:hidden;
+    transition:.25s;
+}
+
+.mockup-card:hover{
+    border-color:#f59e0b;
+    transform:translateY(-2px);
+}
+
+.mockup-title{
+    padding:14px;
+    font-size:16px;
+    font-weight:600;
+    text-align:center;
+    border-bottom:1px solid #333;
+}
+
+.mockup-preview{
+    height:220px;
+    background:#121417;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#777;
+}
+
+.mockup-preview img{
+    max-width:100%;
+    max-height:100%;
+    object-fit:contain;
+}
+
+.upload-mockup{
+    width:100%;
+    border-radius:0 !important;
+}
