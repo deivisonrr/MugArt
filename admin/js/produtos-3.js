@@ -1782,7 +1782,7 @@ async function carregarMockups(productId){
    UPLOAD MOCKUP
 ========================================================== */
 
-async function uploadMockup(tipo){
+window.uploadMockup = async function(tipo){
 
     const productId = document.querySelector("#admin3ProductId").value;
 
