@@ -1880,11 +1880,15 @@ function iniciarDragPrintArea(){
 
     };
 
-    document.onmouseup=()=>{
+    document.onmouseup = async () => {
 
-        dragging=false;
+    if (!dragging) return;
 
-    };
+    dragging = false;
+
+    await salvarAreaImpressao();
+
+};
 
     document.onmousemove=(e)=>{
 
@@ -1955,11 +1959,15 @@ function iniciarResizePrintArea(){
 
     });
 
-    document.addEventListener("mouseup",function(){
+    document.addEventListener("mouseup", async function () {
 
-        resizing=false;
+    if (!resizing) return;
 
-    });
+    resizing = false;
+
+    await salvarAreaImpressao();
+
+});
 
 }
 
