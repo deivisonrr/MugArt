@@ -1991,16 +1991,8 @@ function atualizarResumoArea(){
 
 window.salvarAreaImpressao = async function () {
 
-   console.log("===== SALVANDO =====");
-
-   const area = a3("#printArea");
-   
-   console.log("Elemento:", area);
-   console.log("left:", area.style.left);
-   console.log("top:", area.style.top);
-   console.log("offsetLeft:", area.offsetLeft);
-   console.log("offsetTop:", area.offsetTop);
-
+     const area = a3("#printArea");
+     
     if (!mockupAtual) {
         alert("Nenhum mockup selecionado.");
         return;
@@ -2012,6 +2004,7 @@ window.salvarAreaImpressao = async function () {
         alert("Área de impressão não encontrada.");
         return;
     }
+    console.log("===== SALVANDO =====");
 
     console.log("Antes de salvar");
     console.log("left:", area.style.left);
