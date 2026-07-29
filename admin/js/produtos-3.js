@@ -1998,9 +1998,7 @@ window.salvarAreaImpressao = async function () {
         return;
     }
 
-    const area = a3("#printArea");
-
-    if (!area) {
+      if (!area) {
         alert("Área de impressão não encontrada.");
         return;
     }
