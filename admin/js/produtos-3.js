@@ -2022,22 +2022,30 @@ console.log("Registro salvo:", consulta.data);
 
     console.log("Área salva:", dados);
 
-    mostrarMockupSelecionado();
-
-   const indice = mockupsProduto.findIndex(
+const indice = mockupsProduto.findIndex(
     x => x.id === mockupAtual.id
 );
 
 if (indice >= 0) {
-
     mockupsProduto[indice] = {
         ...mockupsProduto[indice],
         ...dados
     };
-
 }
 
-atualizarResumoArea();
+// apenas atualiza o resumo
+const resumo = a3("#areaResumo");
+
+if (resumo) {
+    resumo.innerHTML = `
+        X: ${dados.area_x}px<br>
+        Y: ${dados.area_y}px<br>
+        Largura: ${dados.area_width}px<br>
+        Altura: ${dados.area_height}px
+    `;
+}
+
+alert("Área salva com sucesso.");
 
 };
 
