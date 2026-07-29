@@ -2001,6 +2001,9 @@ window.salvarAreaImpressao = async function () {
         .update(dados)
         .eq("id", mockupAtual.id);
 
+    console.log("Dados enviados:", dados);
+    console.log("Erro:", error);
+
     if (error) {
         console.error(error);
         alert(error.message);
