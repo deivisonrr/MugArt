@@ -1857,6 +1857,12 @@ function iniciarDragPrintArea(){
     const area = a3("#printArea");
     const wrapper = a3("#editorWrapper");
 
+    console.log("Posição renderizada:");
+    console.log("left:", area.style.left);
+    console.log("top:", area.style.top);
+    console.log("offsetLeft:", area.offsetLeft);
+    console.log("offsetTop:", area.offsetTop);
+
     if(!area || !wrapper) return;
 
     let dragging=false;
