@@ -1593,11 +1593,11 @@ async function carregarMockupsProduto(productId){
 
     mockupsProduto = data || [];
 
-    console.log("Mockups carregados:", JSON.parse(JSON.stringify(mockupsProduto)));
+    console.log("Mockups carregados:", JSON.stringify(mockupsProduto, null, 2));
 
     selecionarMockup("frente");
 
-    console.log("Após selecionar:", JSON.parse(JSON.stringify(mockupsProduto)));
+    console.log("Após selecionar:", JSON.stringify(mockupsProduto, null, 2));
 
 }
 
