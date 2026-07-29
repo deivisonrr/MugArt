@@ -2012,6 +2012,14 @@ window.salvarAreaImpressao = async function () {
 
     Object.assign(mockupAtual, dados);
 
+    const consulta = await mugartSupabase
+     .from("product_mockups")
+     .select("*")
+     .eq("id", mockupAtual.id)
+     .single();
+
+console.log("Registro salvo:", consulta.data);
+
     console.log("Área salva:", dados);
 
     mostrarMockupSelecionado();
