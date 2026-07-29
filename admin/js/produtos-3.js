@@ -1995,17 +1995,18 @@ window.salvarAreaImpressao = async function () {
         return;
     }
 
+    console.log("Antes de salvar");
+    console.log("left:", area.style.left);
+    console.log("top:", area.style.top);
+    console.log("width:", area.offsetWidth);
+    console.log("height:", area.offsetHeight);
+
     const dados = {
         area_x: parseInt(area.style.left || 0),
         area_y: parseInt(area.style.top || 0),
         area_width: area.offsetWidth,
         area_height: area.offsetHeight
-        console.log("Antes de salvar");
-        console.log("left:", area.style.left);
-        console.log("top:", area.style.top);
-        console.log("width:", area.offsetWidth);
-        console.log("height:", area.offsetHeight);
-      };
+   };
 
     const { error } = await mugartSupabase
         .from("product_mockups")
