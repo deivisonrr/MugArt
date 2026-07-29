@@ -1791,6 +1791,8 @@ window.editarArea = function (tipo) {
 
     const registro = mockupsProduto.find(m => m.tipo === tipo);
 
+    console.log("Registro utilizado:", registro);
+
     if (!registro) {
         alert("Faça o upload do mockup antes.");
         return;
