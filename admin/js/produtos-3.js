@@ -1581,6 +1581,8 @@ async function carregarMockupsProduto(productId){
 
         .order("sort_order",{ascending:true});
 
+   console.log("Retorno do Supabase:", JSON.stringify(data, null, 2));
+
     if(error){
 
         console.error(error);
