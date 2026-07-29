@@ -2037,3 +2037,27 @@ window.salvarAreaImpressao = async function () {
 
     console.log("Área salva.");
 };
+
+window.centralizarArea = async function () {
+
+    const area = a3("#printArea");
+    const wrapper = a3("#editorWrapper");
+
+    if (!area || !wrapper) return;
+
+    const img = a3("#editorImagem");
+
+    const largura = img.clientWidth;
+    const altura = img.clientHeight;
+
+    const x = Math.round((largura - area.offsetWidth) / 2);
+    const y = Math.round((altura - area.offsetHeight) / 2);
+
+    area.style.left = x + "px";
+    area.style.top = y + "px";
+
+    atualizarResumoArea();
+
+    await salvarAreaImpressao();
+
+};
