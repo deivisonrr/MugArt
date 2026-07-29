@@ -1631,7 +1631,24 @@ function mostrarMockupSelecionado(){
 
     }
 
-    preview.innerHTML=`<img src="${registro.image_url}">`;
+    preview.innerHTML = `
+    <img
+        src="${registro.image_url}"
+        style="max-width:100%;display:block">
+`;
+
+const resumo = a3("#areaResumo");
+
+if (resumo) {
+
+    resumo.innerHTML = `
+        X: ${registro.area_x ?? 50}px<br>
+        Y: ${registro.area_y ?? 50}px<br>
+        Largura: ${registro.area_width ?? 250}px<br>
+        Altura: ${registro.area_height ?? 250}px
+    `;
+
+}
 
 }
 
@@ -1992,7 +2009,24 @@ window.salvarAreaImpressao = async function () {
 
     Object.assign(mockupAtual, dados);
 
-    alert("Área salva com sucesso.");
+    console.log("Área salva:", dados);
+
+    mostrarMockupSelecionado();
+
+   const indice = mockupsProduto.findIndex(
+    x => x.id === mockupAtual.id
+);
+
+if (indice >= 0) {
+
+    mockupsProduto[indice] = {
+        ...mockupsProduto[indice],
+        ...dados
+    };
+
+}
+
+atualizarResumoArea();
 
 };
 
