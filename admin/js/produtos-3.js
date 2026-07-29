@@ -1991,82 +1991,27 @@ function atualizarResumoArea(){
 
 window.salvarAreaImpressao = async function () {
 
-     const area = a3("#printArea");
-     
-    if (!mockupAtual) {
-        alert("Nenhum mockup selecionado.");
-        return;
-    }
+    if (!mockupAtual) return;
 
-      if (!area) {
-        alert("Área de impressão não encontrada.");
-        return;
-    }
+    const area = a3("#printArea");
+
+    if (!area) return;
+
     console.log("===== SALVANDO =====");
-
-    console.log("Antes de salvar");
+    console.log("Elemento:", area);
     console.log("left:", area.style.left);
     console.log("top:", area.style.top);
-    console.log("width:", area.offsetWidth);
-    console.log("height:", area.offsetHeight);
+    console.log("offsetLeft:", area.offsetLeft);
+    console.log("offsetTop:", area.offsetTop);
 
     const dados = {
         area_x: parseInt(area.style.left || 0),
         area_y: parseInt(area.style.top || 0),
         area_width: area.offsetWidth,
         area_height: area.offsetHeight
-   };
-
-    const { error } = await mugartSupabase
-        .from("product_mockups")
-        .update(dados)
-        .eq("id", mockupAtual.id);
+    };
 
     console.log("Dados enviados:", dados);
-    console.log("Erro:", error);
 
-    if (error) {
-        console.error(error);
-        alert(error.message);
-        return;
-    }
-
-    Object.assign(mockupAtual, dados);
-
-    const consulta = await mugartSupabase
-     .from("product_mockups")
-     .select("*")
-     .eq("id", mockupAtual.id)
-     .single();
-
-console.log("Registro salvo:", consulta.data);
-
-    console.log("Área salva:", dados);
-
-const indice = mockupsProduto.findIndex(
-    x => x.id === mockupAtual.id
-);
-
-if (indice >= 0) {
-    mockupsProduto[indice] = {
-        ...mockupsProduto[indice],
-        ...dados
-    };
+    // resto da função...
 }
-
-// apenas atualiza o resumo
-const resumo = a3("#areaResumo");
-
-if (resumo) {
-    resumo.innerHTML = `
-        X: ${dados.area_x}px<br>
-        Y: ${dados.area_y}px<br>
-        Largura: ${dados.area_width}px<br>
-        Altura: ${dados.area_height}px
-    `;
-}
-
-alert("Área salva com sucesso.");
-
-};
-
