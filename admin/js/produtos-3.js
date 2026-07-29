@@ -1991,22 +1991,35 @@ function atualizarResumoArea(){
 
 window.salvarAreaImpressao = async function () {
 
-    console.log("Entrou na função");
-
-    if (!mockupAtual) {
-        console.log("mockupAtual é NULL");
-        return;
-    }
+    if (!mockupAtual) return;
 
     const area = a3("#printArea");
 
-    if (!area) {
-        console.log("printArea NÃO encontrada");
+    if (!area) return;
+
+    const dados = {
+        area_x: parseInt(area.style.left || 0),
+        area_y: parseInt(area.style.top || 0),
+        area_width: area.offsetWidth,
+        area_height: area.offsetHeight
+    };
+
+    console.log("Salvando:", dados);
+
+    const { error } = await mugartSupabase
+        .from("product_mockups")
+        .update(dados)
+        .eq("id", mockupAtual.id);
+
+    if (error) {
+        console.error(error);
+        alert(error.message);
         return;
     }
 
-    console.log("mockupAtual:", mockupAtual);
-    console.log("printArea:", area);
+    Object.assign(mockupAtual, dados);
 
-    // resto da função...
-}
+    atualizarResumoArea();
+
+    alert("Área salva com sucesso.");
+};
