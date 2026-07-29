@@ -2012,7 +2012,14 @@ window.salvarAreaImpressao = async function () {
         area_height: area.offsetHeight
     };
 
-    console.log("Salvando:", dados);
+    // NÃO salva se nada mudou
+    const mudou =
+        mockupAtual.area_x !== dados.area_x ||
+        mockupAtual.area_y !== dados.area_y ||
+        mockupAtual.area_width !== dados.area_width ||
+        mockupAtual.area_height !== dados.area_height;
+
+    if (!mudou) return;
 
     const { error } = await mugartSupabase
         .from("product_mockups")
@@ -2021,7 +2028,6 @@ window.salvarAreaImpressao = async function () {
 
     if (error) {
         console.error(error);
-        alert(error.message);
         return;
     }
 
@@ -2029,5 +2035,5 @@ window.salvarAreaImpressao = async function () {
 
     atualizarResumoArea();
 
-    alert("Área salva com sucesso.");
+    console.log("Área salva.");
 };
