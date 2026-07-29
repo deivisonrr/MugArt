@@ -1991,27 +1991,22 @@ function atualizarResumoArea(){
 
 window.salvarAreaImpressao = async function () {
 
-    if (!mockupAtual) return;
+    console.log("Entrou na função");
+
+    if (!mockupAtual) {
+        console.log("mockupAtual é NULL");
+        return;
+    }
 
     const area = a3("#printArea");
 
-    if (!area) return;
+    if (!area) {
+        console.log("printArea NÃO encontrada");
+        return;
+    }
 
-    console.log("===== SALVANDO =====");
-    console.log("Elemento:", area);
-    console.log("left:", area.style.left);
-    console.log("top:", area.style.top);
-    console.log("offsetLeft:", area.offsetLeft);
-    console.log("offsetTop:", area.offsetTop);
-
-    const dados = {
-        area_x: parseInt(area.style.left || 0),
-        area_y: parseInt(area.style.top || 0),
-        area_width: area.offsetWidth,
-        area_height: area.offsetHeight
-    };
-
-    console.log("Dados enviados:", dados);
+    console.log("mockupAtual:", mockupAtual);
+    console.log("printArea:", area);
 
     // resto da função...
 }
