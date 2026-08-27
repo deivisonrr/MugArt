@@ -1,21 +1,34 @@
-# Landing Page MugArt — Compre 4, Ganhe a 5ª Grátis
+# MugArt — LP Exata da Arte Aprovada
 
-Estrutura pronta para publicar no GitHub Pages.
+Esta versão usa a arte aprovada como a própria composição visual da landing page.
+Assim ela fica visualmente igual à imagem, sem redesenhar os elementos em HTML/CSS.
 
-## Arquivos
-- `index.html`
-- `styles.css`
-- `script.js`
-- `assets/logo-mugart.png`
+## Interações
 
-## Antes de publicar
-Abra `script.js` e preencha `WHATSAPP_NUMBER` com o número oficial da MugArt no formato:
-`55 + DDD + número`, somente números.
+Existem áreas clicáveis invisíveis sobre os botões da arte:
 
-O botão da loja já aponta para:
-https://mugart.com.br/
+- WhatsApp:
+  https://wa.me/5511988849236
+- Loja:
+  https://mugart.com.br/
 
-A página também envia eventos para `dataLayer`:
-- `promocao_whatsapp_click`
-- `loja_hero`
-- `loja_offer`
+Também existe um botão de loja na chamada final da arte.
+
+## Publicação
+
+Coloque os arquivos dentro de:
+
+promocao/
+  index.html
+  assets/
+    landing-page-promocao.png
+
+URL esperada:
+
+https://mugart.com.br/promocao/
+
+Os cliques enviam eventos para `window.dataLayer` para uso no GTM/GA4.
+
+## Botão flutuante
+A página também possui um botão flutuante de WhatsApp no canto inferior direito,
+visível durante a navegação e adaptado para celular.

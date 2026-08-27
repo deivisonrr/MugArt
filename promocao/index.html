@@ -3,156 +3,194 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Promoção MugArt: compre 4 canecas personalizadas e ganhe a 5ª grátis.">
-  <title>Compre 4, Ganhe a 5ª Grátis | MugArt</title>
-  <link rel="stylesheet" href="./styles.css">
+  <meta name="description" content="MugArt — Compre 4 canecas personalizadas e ganhe a 5ª grátis. Fale pelo WhatsApp ou vá para a loja.">
+  <title>MugArt | Compre 4, Ganhe a 5ª Grátis</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #fff; }
+    body { font-family: Arial, Helvetica, sans-serif; }
+    .lp {
+      width: 100%;
+      max-width: 1024px;
+      margin: 0 auto;
+      position: relative;
+      line-height: 0;
+    }
+    .lp img {
+      display: block;
+      width: 100%;
+      height: auto;
+      user-select: none;
+    }
+    .hotspot {
+      position: absolute;
+      display: block;
+      z-index: 5;
+      border-radius: 12px;
+      line-height: normal;
+      outline: none;
+    }
+    .hotspot:focus-visible {
+      outline: 3px solid #08bde7;
+      outline-offset: 3px;
+    }
+    /*
+      Coordinates are based on the approved 1024 x 1536 artwork.
+      They scale automatically with the image/container.
+    */
+    .whatsapp-hero {
+      left: 4.1%;
+      top: 33.75%;
+      width: 31.2%;
+      height: 4.45%;
+    }
+    .store-hero {
+      left: 4.1%;
+      top: 38.45%;
+      width: 31.2%;
+      height: 4.45%;
+    }
+    .store-final {
+      left: 59.5%;
+      top: 85.8%;
+      width: 32%;
+      height: 4.0%;
+    }
+    .whatsapp-final {
+      left: 4.1%;
+      top: 33.75%;
+      width: 31.2%;
+      height: 4.45%;
+    }
+
+    .floating-whatsapp {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 20;
+      min-width: 62px;
+      height: 62px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: #11bd63;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      text-decoration: none;
+      box-shadow: 0 7px 22px rgba(0,0,0,.24);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .floating-whatsapp:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 10px 27px rgba(0,0,0,.28);
+    }
+    .wa-symbol {
+      width: 31px;
+      height: 31px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 21px;
+      font-weight: 900;
+      transform: rotate(-35deg);
+    }
+    .wa-label { white-space: nowrap; }
+
+    @media (max-width: 600px) {
+      .floating-whatsapp {
+        right: 16px;
+        bottom: 16px;
+        width: 58px;
+        min-width: 58px;
+        height: 58px;
+        padding: 0;
+      }
+      .wa-label { display: none; }
+      .wa-symbol {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hotspot { border-radius: 8px; }
+    }
+    .accessibility-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
 </head>
 <body>
-  <div class="promo-strip">
-    <span>🎁 PROMOÇÃO ESPECIAL MUGART</span>
-    <span>Compre 4 canecas e ganhe a 5ª grátis!</span>
-  </div>
+  <main class="lp" aria-label="Promoção MugArt — compre 4, ganhe a 5ª grátis">
+    <img
+      src="./assets/landing-page-promocao.png"
+      alt="Promoção MugArt: comprou 4 canecas, ganhou a 5ª grátis. Personalize suas canecas e aproveite a promoção."
+    >
 
-  <main>
-    <section class="hero">
-      <div class="hero-inner">
-        <div class="brand">
-          <img src="./assets/logo-mugart.png" alt="MugArt">
-        </div>
+    <!-- Botões transparentes sobre a arte aprovada -->
+    <a
+      class="hotspot whatsapp-hero"
+      href="https://wa.me/5511988849236?text=Ol%C3%A1!%20Vim%20pela%20promo%C3%A7%C3%A3o%20da%20MugArt.%20Quero%20comprar%204%20canecas%20e%20ganhar%20a%205%C2%AA%20gr%C3%A1tis."
+      target="_blank"
+      rel="noopener"
+      aria-label="Falar com a MugArt pelo WhatsApp"
+      data-event="promocao_whatsapp_click"
+    ><span class="accessibility-text">Falar no WhatsApp</span></a>
 
-        <div class="hero-grid">
-          <div class="hero-copy">
-            <span class="eyebrow"><span>🎁</span> PROMOÇÃO POR TEMPO LIMITADO</span>
+    <a
+      class="hotspot store-hero"
+      href="https://mugart.com.br/"
+      aria-label="Ir para a loja MugArt"
+      data-event="promocao_loja_click"
+    ><span class="accessibility-text">Ir para a loja</span></a>
 
-            <h1>COMPROU 4,<br>GANHOU A <strong>5ª GRÁTIS!</strong></h1>
-
-            <p class="hero-text">
-              Escolha suas artes, personalize suas canecas e leve a 5ª por nossa conta.
-            </p>
-
-            <div class="hero-actions">
-              <a class="btn btn-whatsapp js-whatsapp" href="#" data-event="whatsapp_hero">
-                <span class="wa-icon">◉</span>
-                <span>FALAR NO WHATSAPP<small>Atendimento MugArt</small></span>
-              </a>
-              <a class="btn btn-store" href="https://mugart.com.br/" data-event="loja_hero">
-                <span>PERSONALIZAR AGORA</span><b>→</b>
-              </a>
-            </div>
-
-            <div class="trust-row">
-              <div><span>🚚</span><b>Envio para<br>todo o Brasil</b></div>
-              <div><span>✓</span><b>Compra<br>segura</b></div>
-              <div><span>★</span><b>Qualidade<br>MugArt</b></div>
-            </div>
-          </div>
-
-          <div class="mug-showcase" aria-label="Exemplos de canecas personalizadas">
-            <div class="splash splash-yellow"></div>
-            <div class="splash splash-blue"></div>
-            <div class="splash splash-pink"></div>
-
-            <div class="mug mug-1"><div class="mug-print">MELHORES<br><b>AMIGOS</b><br>melhores<br>momentos</div></div>
-            <div class="mug mug-2"><div class="mug-print">🐶<br><b>MEU PET</b></div></div>
-            <div class="mug mug-3"><div class="mug-print">♡<br><b>FAMÍLIA</b><br>é tudo</div></div>
-            <div class="mug mug-4"><div class="mug-print">TE<br><b>AMO</b><br>♥</div></div>
-            <div class="mug mug-5"><div class="mug-print">GAME<br><b>ON</b><br>PLAY • WIN</div></div>
-
-            <div class="free-badge">
-              <small>A 5ª É</small>
-              <strong>GRÁTIS!</strong>
-              <span>🎁</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="steps section">
-      <div class="section-title">
-        <span></span><h2>COMO FUNCIONA</h2><span></span>
-      </div>
-
-      <div class="step-grid">
-        <article class="step">
-          <div class="step-number blue">1</div>
-          <div class="step-icon">☕</div>
-          <h3>ESCOLHA 4 CANECAS</h3>
-          <p>Personalize com suas fotos, frases ou artes favoritas.</p>
-        </article>
-        <div class="arrow">→</div>
-        <article class="step">
-          <div class="step-number yellow">2</div>
-          <div class="step-icon">🛒</div>
-          <h3>FAÇA SEU PEDIDO</h3>
-          <p>Escolha os modelos e finalize sua compra.</p>
-        </article>
-        <div class="arrow">→</div>
-        <article class="step">
-          <div class="step-number pink">3</div>
-          <div class="step-icon">🎁</div>
-          <h3>GANHE A 5ª GRÁTIS</h3>
-          <p>A quinta caneca é presente da MugArt. 💛</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="categories section">
-      <div class="section-title">
-        <span></span><h2>PERSONALIZE DO SEU JEITO</h2><span></span>
-      </div>
-      <div class="category-grid">
-        <div class="category blue-border"><div class="cat-mug">☕</div><b>FAMÍLIA</b></div>
-        <div class="category pink-border"><div class="cat-mug">♡</div><b>CASAL</b></div>
-        <div class="category yellow-border"><div class="cat-mug">🐶</div><b>PET</b></div>
-        <div class="category blue-border"><div class="cat-mug">✦</div><b>FRASES</b></div>
-        <div class="category pink-border"><div class="cat-mug">★</div><b>PROFISSÕES</b></div>
-        <div class="category yellow-border"><div class="cat-mug">🎮</div><b>HOBBIES</b></div>
-      </div>
-    </section>
-
-    <section class="offer">
-      <div class="offer-gift">🎁</div>
-      <div>
-        <h2>LEVE 5 CANECAS<br><strong>PAGANDO APENAS 4!</strong></h2>
-        <p>A 5ª é por nossa conta.</p>
-      </div>
-      <div class="offer-divider"></div>
-      <div class="offer-cta">
-        <h3>Não deixe sua caneca de fora! 😍</h3>
-        <p>Monte seu kit agora e garanta a 5ª caneca grátis.</p>
-        <a class="btn btn-store" href="https://mugart.com.br/" data-event="loja_offer">PERSONALIZAR MINHAS CANECAS →</a>
-      </div>
-    </section>
-
-    <section class="benefits section">
-      <div class="benefit"><span>★</span><b>Qualidade<br>MugArt</b></div>
-      <div class="benefit"><span>✓</span><b>Compra<br>segura</b></div>
-      <div class="benefit"><span>☕</span><b>Canecas<br>personalizadas</b></div>
-      <div class="benefit"><span>🎁</span><b>Promoção<br>especial</b></div>
-      <div class="benefit"><span>♡</span><b>Feito com<br>carinho</b></div>
-    </section>
-
-    <section class="rules section">
-      <div class="rules-box">
-        <h2>REGRAS DA PROMOÇÃO</h2>
-        <ul>
-          <li>Promoção válida para 5 canecas no mesmo pedido.</li>
-          <li>A 5ª caneca é gratuita, conforme as condições da promoção.</li>
-          <li>Válida para modelos e personalizações participantes.</li>
-          <li>Promoção por tempo limitado ou enquanto durarem os estoques.</li>
-          <li>Confira as condições finais no momento da compra.</li>
-        </ul>
-      </div>
-    </section>
+    <a
+      class="hotspot store-final"
+      href="https://mugart.com.br/"
+      aria-label="Quero minhas canecas — ir para a loja MugArt"
+      data-event="promocao_loja_final_click"
+    ><span class="accessibility-text">Quero minhas canecas</span></a>
   </main>
 
-  <footer>
-    <img src="./assets/logo-mugart.png" alt="MugArt">
-    <p>Sua ideia, sua caneca.</p>
-    <small>© MugArt — Canecas personalizadas</small>
-  </footer>
 
-  <script src="./script.js"></script>
+  <a
+    class="floating-whatsapp"
+    href="https://wa.me/5511988849236?text=Ol%C3%A1!%20Vim%20pela%20promo%C3%A7%C3%A3o%20da%20MugArt.%20Quero%20comprar%204%20canecas%20e%20ganhar%20a%205%C2%AA%20gr%C3%A1tis."
+    target="_blank"
+    rel="noopener"
+    aria-label="Falar com a MugArt pelo WhatsApp"
+    data-event="promocao_whatsapp_floating"
+  >
+    <span class="wa-symbol" aria-hidden="true">◔</span>
+    <span class="wa-label">Fale conosco</span>
+  </a>
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    document.querySelectorAll("[data-event]").forEach(function (link) {
+      link.addEventListener("click", function () {
+        window.dataLayer.push({
+          event: link.dataset.event,
+          campaign: "compre4_ganhe5",
+          destination: link.href
+        });
+      });
+    });
+  </script>
 </body>
 </html>
