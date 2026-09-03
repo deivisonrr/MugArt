@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Canecas personalizadas para empresas e brindes corporativos.">
+<title>MugArt Empresas | Canecas Personalizadas</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="css/empresas.css?v=1">
+</head>
+<body>
+<header class="header">
+  <a class="brand" href="loja.html"><span>Mug<span>Art</span></span></a>
+  <nav class="nav">
+    <a href="loja.html">Loja</a>
+    <a href="personalizar.html">Personalize</a>
+    <a class="active" href="empresas.html">Empresas</a>
+    <a href="#contato">Contato</a>
+  </nav>
+  <a class="head-btn" href="#contato">Falar com especialista</a>
+</header>
+
+<main>
+<section class="hero">
+  <div>
+    <span class="eyebrow">MUGART EMPRESAS</span>
+    <h1>Sua marca presente<br><strong>todos os dias.</strong></h1>
+    <p>Canecas personalizadas para brindes corporativos, eventos, clientes, colaboradores e ações especiais.</p>
+    <div class="actions">
+      <a class="btn primary" href="#simulador">Simular minha marca</a>
+      <a class="btn secondary" href="#contato">Solicitar orçamento</a>
+    </div>
+    <div class="trust">✓ Personalização com sua identidade &nbsp; ✓ Atendimento corporativo &nbsp; ✓ Produção sob demanda</div>
+  </div>
+  <div class="hero-mug">
+    <div class="shadow"></div><div class="mug"><div class="handle"></div><div class="body"><b>SUA<br>MARCA</b></div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="heading"><span class="eyebrow">PARA QUE USAR?</span><h2>Um brinde que continua trabalhando pela sua marca.</h2></div>
+  <div class="cards">
+    <article><i>🎁</i><h3>Brindes corporativos</h3><p>Presenteie clientes, parceiros e colaboradores com algo útil e memorável.</p></article>
+    <article><i>🎯</i><h3>Eventos e campanhas</h3><p>Leve sua identidade visual para feiras, lançamentos e ações promocionais.</p></article>
+    <article><i>🏢</i><h3>Endomarketing</h3><p>Fortaleça o sentimento de pertencimento e a cultura da empresa.</p></article>
+    <article><i>💼</i><h3>Kits personalizados</h3><p>Combine a caneca com kits de boas-vindas ou ações especiais.</p></article>
+  </div>
+</section>
+
+<section id="simulador" class="section simulator-section">
+  <div class="heading center">
+    <span class="eyebrow">SIMULADOR DE MARCA</span>
+    <h2>Veja como sua identidade pode ficar na caneca.</h2>
+    <p>Envie sua logo em <strong>PNG, JPG/JPEG ou SVG</strong> e faça uma prévia.</p>
+  </div>
+  <div class="simulator">
+    <aside class="controls">
+      <label class="upload" for="logoInput">
+        <span class="upload-icon">↑</span><strong>Envie sua logo</strong>
+        <small>Somente PNG, JPG/JPEG ou SVG</small>
+        <input id="logoInput" type="file" accept="image/png,image/jpeg,image/svg+xml,.png,.jpg,.jpeg,.svg">
+      </label>
+      <div id="fileMessage" class="message"></div>
+      <label>Modelo da caneca
+        <select id="modelSelect">
+          <option value="branca">Caneca Branca</option>
+          <option value="preta">Interna e Alça Preta</option>
+          <option value="rosa">Interna e Alça Rosa</option>
+          <option value="azul">Interna e Alça Azul</option>
+          <option value="magica">Caneca Mágica</option>
+        </select>
+      </label>
+      <label>Quantidade aproximada
+        <select id="quantitySelect">
+          <option>25 unidades</option><option>50 unidades</option>
+          <option selected>100 unidades</option><option>250 unidades</option>
+          <option>500 unidades</option><option>1.000+ unidades</option>
+        </select>
+      </label>
+      <button id="generateBtn" class="btn primary full" type="button">Gerar simulação</button>
+      <small class="note">A integração com IA pode ser ativada no próximo passo.</small>
+    </aside>
+
+    <div class="preview">
+      <div class="preview-top"><strong>Prévia da sua marca</strong><span id="status">Envie uma logo para começar</span></div>
+      <div class="views">
+        <div class="view large"><span>Frente</span><div class="mock"><div class="phandle"></div><div class="pbody"><img class="logo" alt="Logo"></div></div></div>
+        <div class="view"><span>3/4</span><div class="mock angle"><div class="phandle"></div><div class="pbody"><img class="logo" alt=""></div></div></div>
+        <div class="view"><span>Lateral</span><div class="mock side"><div class="phandle"></div><div class="pbody"><img class="logo" alt=""></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="heading center"><span class="eyebrow">COMO FUNCIONA</span><h2>Do arquivo da sua marca ao brinde.</h2></div>
+  <div class="steps">
+    <div><b>01</b><h3>Envie sua logo</h3><p>PNG, JPG/JPEG ou SVG.</p></div>
+    <div><b>02</b><h3>Faça a simulação</h3><p>Escolha o modelo e veja a prévia.</p></div>
+    <div><b>03</b><h3>Conte o que precisa</h3><p>Informe quantidade e detalhes.</p></div>
+    <div><b>04</b><h3>Receba seu orçamento</h3><p>Nossa equipe entra em contato.</p></div>
+  </div>
+</section>
+
+<section id="contato" class="section contact">
+  <div><span class="eyebrow">PROJETO CORPORATIVO</span><h2>Vamos colocar sua marca na caneca?</h2><p>Envie sua necessidade e fale diretamente com a MugArt.</p></div>
+  <form id="quoteForm">
+    <input id="company" placeholder="Nome da empresa" required>
+    <input id="name" placeholder="Seu nome" required>
+    <input id="email" type="email" placeholder="E-mail corporativo">
+    <input id="phone" placeholder="WhatsApp" required>
+    <textarea id="details" rows="4" placeholder="Conte um pouco sobre o projeto"></textarea>
+    <button class="btn primary full">Solicitar orçamento pelo WhatsApp</button>
+  </form>
+</section>
+</main>
+<footer><strong>MugArt</strong><span>Canecas personalizadas para marcas que querem ser lembradas.</span></footer>
+<script src="js/empresas.js?v=1"></script>
+</body>
+</html>
