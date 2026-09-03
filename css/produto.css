@@ -168,9 +168,20 @@ main {
   transition: transform .18s ease;
 }
 
-.product-main-media img.zoomed {
-  transform: scale(1.75);
+/* ==========================================================
+   ZOOM DA IMAGEM DO PRODUTO
+========================================================== */
+
+#productMainImage {
+  transform: scale(1);
   transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
+  transition: transform .18s ease;
+  will-change: transform;
+}
+
+#productMainImage.zoomed {
+  transform: scale(1.75);
+  cursor: zoom-out;
 }
 
 .product-main-media video {
@@ -1091,28 +1102,4 @@ main {
   .product-shipping-form {
     grid-template-columns: 1fr;
   }
-
-  /* ==========================================================
-   ZOOM DA IMAGEM DO PRODUTO
-========================================================== */
-
-.product-main-media {
-  overflow: hidden;
-  cursor: zoom-in;
-}
-
-#productMainImage {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transform: scale(1);
-  transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
-  transition: transform 0.25s ease;
-  will-change: transform;
-}
-
-#productMainImage.zoomed {
-  transform: scale(2);
-  cursor: zoom-out;
-}
 }
