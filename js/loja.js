@@ -870,7 +870,7 @@ function productCardTemplate(product) {
 
       (discount ? '<span class="discount-badge">-' + discount + "%</span>" : "") +
 
-      '<button class="product-image-btn" type="button" data-action="view">' +
+      '<button class="product-image-btn" type="button" data-action="page">' +
         '<img src="' + product.image + '" alt="' + (product.imageAlt || product.name) + '" loading="lazy" />' +
       '</button>' +
 
@@ -901,13 +901,66 @@ function productCardTemplate(product) {
     "</article>";
 }
 
+function getProductPageUrl(product) {
+  if (!product) return null;
+
+  var productSlug =
+    product.slug ||
+    product.id;
+
+  if (!productSlug) return null;
+
+  return "produto.html?slug=" +
+    encodeURIComponent(productSlug);
+}
+
+function openProductPage(productId) {
+  var product = getProductById(productId);
+
+  if (!product) {
+    console.warn("Produto não encontrado para abrir a página:", productId);
+    return;
+  }
+
+  var url = getProductPageUrl(product);
+
+  if (!url) {
+    console.warn("Não foi possível gerar a URL do produto:", product);
+    return;
+  }
+
+  /*
+   * Navega para a página individual do produto.
+   *
+   * A página produto.html aceita:
+   * - o slug do produto, quando cadastrado;
+   * - o UUID do produto, como fallback.
+   */
+  window.location.href = url;
+}
+
 function bindProductCards() {
   $all(".store-product-card").forEach(function(card) {
     var productId = card.dataset.productId;
 
+    if (!productId) return;
+
     if (card.dataset.bound === "true") return;
     card.dataset.bound = "true";
 
+    /*
+     * Cada ação do card é tratada separadamente.
+     *
+     * FAVORITO:
+     * continua apenas marcando/desmarcando o favorito.
+     *
+     * ADICIONAR:
+     * - produto com variação: abre o modal para escolher a variação;
+     * - produto sem variação: adiciona diretamente.
+     *
+     * VIEW/PAGE:
+     * abre a página individual do produto.
+     */
     card.querySelectorAll("[data-action]").forEach(function(button) {
       button.addEventListener("click", function(event) {
         event.preventDefault();
@@ -915,8 +968,15 @@ function bindProductCards() {
 
         var action = button.dataset.action;
 
+        if (action === "favorite") {
+          toggleFavorite(productId);
+          return;
+        }
+
         if (action === "add") {
           var product = getProductById(productId);
+
+          if (!product) return;
 
           if (productHasVariations(product)) {
             openProductModal(productId);
@@ -927,30 +987,38 @@ function bindProductCards() {
           return;
         }
 
-        if (action === "view") {
-          openProductModal(productId);
+        if (action === "view" || action === "page") {
+          openProductPage(productId);
           return;
-        }
-
-        if (action === "page") {
-          var selectedProduct = getProductById(productId);
-          var productSlug = selectedProduct && selectedProduct.slug
-            ? selectedProduct.slug
-            : productId;
-
-          window.location.href =
-            "produto.html?slug=" + encodeURIComponent(productSlug);
-          return;
-        }
-
-        if (action === "favorite") {
-          toggleFavorite(productId);
         }
       });
     });
 
-    card.addEventListener("click", function() {
-      openProductModal(productId);
+    /*
+     * Clique no restante do card também abre a página individual.
+     *
+     * Os botões acima usam stopPropagation(), portanto:
+     * - Favorito não navega;
+     * - Adicionar não navega;
+     * - Ver produto navega;
+     * - imagem navega.
+     */
+    card.addEventListener("click", function(event) {
+      /*
+       * Se o clique vier de algum elemento interativo que não
+       * tenha sido capturado acima, não interfere nele.
+       */
+      var target = event.target;
+
+      if (
+        target &&
+        target.closest &&
+        target.closest("button, a, input, select, textarea")
+      ) {
+        return;
+      }
+
+      openProductPage(productId);
     });
   });
 }
