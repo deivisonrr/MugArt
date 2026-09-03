@@ -1,0 +1,59 @@
+<!-- SUBSTITUA O BLOCO DO SIMULADOR ATUAL POR ESTE -->
+<section id="simulador" class="section simulator-section">
+  <div class="container">
+    <div class="section-title center">
+      <span class="eyebrow">SIMULADOR MUGART</span>
+      <h2>Coloque sua arte na sua caneca.</h2>
+      <p>Envie sua arte e posicione diretamente sobre a caneca. A simulação é gratuita.</p>
+    </div>
+    <div class="mugart-simulator">
+      <aside class="sim-controls">
+        <label class="sim-upload" for="logoInput">
+          <strong>↑ Enviar logo ou arte</strong>
+          <small>PNG, JPG/JPEG ou SVG • até 10 MB</small>
+          <input id="logoInput" type="file" accept="image/png,image/jpeg,image/svg+xml,.png,.jpg,.jpeg,.svg">
+        </label>
+        <div id="fileMessage" class="file-message">Nenhuma arte enviada.</div>
+
+        <label class="sim-field">Modelo
+          <select id="modelSelect">
+            <option value="branca">Caneca Branca</option>
+            <option value="preta">Interna e Alça Preta</option>
+            <option value="rosa">Interna e Alça Rosa</option>
+            <option value="azul">Interna e Alça Azul</option>
+            <option value="magica">Caneca Mágica</option>
+          </select>
+        </label>
+
+        <label class="sim-field">Tamanho da arte
+          <input id="logoScale" type="range" min="45" max="170" value="100">
+        </label>
+        <label class="sim-field">Rotação
+          <input id="logoRotation" type="range" min="-20" max="20" value="0">
+        </label>
+
+        <div class="sim-actions">
+          <button id="centerSimulation" class="sim-btn sim-btn-light" type="button">Centralizar</button>
+          <button id="resetSimulation" class="sim-btn sim-btn-secondary" type="button">Redefinir</button>
+        </div>
+        <button id="downloadSimulation" class="sim-btn sim-btn-primary" type="button">Salvar simulação</button>
+
+        <small style="color:#8993a0;font-size:10px;line-height:1.5">
+          Dica: depois de enviar a arte, arraste-a diretamente sobre a caneca.
+        </small>
+      </aside>
+
+      <div class="sim-result">
+        <div class="sim-result-head">
+          <div><strong>Prévia da sua caneca</strong><small id="simStatus">Carregando modelo...</small></div>
+          <span class="sim-free-badge">GRÁTIS</span>
+        </div>
+        <div class="sim-canvas-wrap">
+          <canvas id="mugCanvas" width="900" height="650"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<link rel="stylesheet" href="css/simulador-interativo.css?v=1">
+<script src="js/simulador-interativo.js?v=1"></script>
