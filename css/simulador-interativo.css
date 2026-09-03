@@ -1,0 +1,20 @@
+.mugart-simulator{display:grid;grid-template-columns:320px 1fr;gap:20px;max-width:1180px;margin:35px auto}
+.sim-controls,.sim-result{background:#fff;border:1px solid #e8edf3;border-radius:18px;box-shadow:0 12px 35px rgba(20,35,60,.08)}
+.sim-controls{padding:20px;display:flex;flex-direction:column;gap:15px}
+.sim-upload{border:2px dashed #dce2ea;border-radius:14px;padding:24px;text-align:center;cursor:pointer}
+.sim-upload:hover{border-color:#18c9ee;background:#f9feff}.sim-upload input{display:none}
+.sim-upload strong,.sim-upload small{display:block}.sim-upload strong{margin:8px 0 4px}.sim-upload small{font-size:11px;color:#8791a0}
+.file-message{font-size:11px;min-height:15px;color:#697386}.file-message.error{color:#d33}.file-message.success{color:#25834a}
+.sim-field{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800}
+.sim-field select{padding:11px;border:1px solid #dfe4eb;border-radius:9px;background:#fff}
+.sim-field input[type=range]{accent-color:#f5c400;width:100%}
+.sim-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sim-btn{border:0;border-radius:9px;padding:12px;font-weight:900;cursor:pointer}
+.sim-btn-primary{background:#f5c400;color:#111}.sim-btn-secondary{background:#172033;color:#fff}
+.sim-btn-light{background:#edf1f5;color:#172033}
+.sim-result{padding:18px}.sim-result-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sim-result-head small{display:block;color:#8993a3;margin-top:4px}.sim-free-badge{font-size:10px;font-weight:900;padding:6px 8px;border-radius:7px;background:#dff8ea;color:#217642}
+.sim-canvas-wrap{background:#f5f7fa;border-radius:14px;padding:8px}
+#mugCanvas{width:100%;height:auto;display:block;border-radius:10px;touch-action:none;cursor:grab}
+#mugCanvas:active{cursor:grabbing}
+@media(max-width:850px){.mugart-simulator{grid-template-columns:1fr}}
