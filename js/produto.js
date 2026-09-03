@@ -1352,52 +1352,56 @@
 
     if (!main || !image) return;
 
-    main.addEventListener(
-      "mousemove",
-      function (event) {
-        if (
-          window.innerWidth <= 850
-        ) {
-          return;
-        }
+    // Remove qualquer zoom anterior
+    image.style.transform = "scale(1)";
+    image.style.transformOrigin = "50% 50%";
 
-        var rect =
-          main.getBoundingClientRect();
-
-        var x =
-          (
-            (event.clientX - rect.left) /
-            rect.width
-          ) * 100;
-
-        var y =
-          (
-            (event.clientY - rect.top) /
-            rect.height
-          ) * 100;
-
-        image.style.setProperty(
-          "--zoom-x",
-          x + "%"
-        );
-
-        image.style.setProperty(
-          "--zoom-y",
-          y + "%"
-        );
-
-        image.classList.add("zoomed");
+    // Usa propriedades de evento para evitar acumular listeners
+    // quando a imagem/mídia é trocada.
+    main.onmousemove = function (event) {
+      if (window.innerWidth <= 850) {
+        image.style.transform = "scale(1)";
+        return;
       }
-    );
 
-    main.addEventListener(
-      "mouseleave",
-      function () {
-        image.classList.remove(
-          "zoomed"
-        );
+      var rect =
+        main.getBoundingClientRect();
+
+      if (!rect.width || !rect.height) {
+        return;
       }
-    );
+
+      var x =
+        ((event.clientX - rect.left) /
+          rect.width) * 100;
+
+      var y =
+        ((event.clientY - rect.top) /
+          rect.height) * 100;
+
+      // Mantém os valores dentro da área da imagem/container.
+      x = Math.max(0, Math.min(100, x));
+      y = Math.max(0, Math.min(100, y));
+
+      image.style.transformOrigin =
+        x + "% " + y + "%";
+
+      image.style.transform =
+        "scale(1.75)";
+
+      main.style.cursor = "zoom-in";
+    };
+
+    main.onmouseleave = function () {
+      image.style.transform =
+        "scale(1)";
+
+      image.style.transformOrigin =
+        "50% 50%";
+
+      main.style.cursor =
+        "zoom-in";
+    };
   }
 
   function changeMedia(direction) {
