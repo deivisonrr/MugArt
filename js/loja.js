@@ -17,12 +17,16 @@ var MUGART_CONFIG = {
 
 var StoreState = {
   products: [],
+  categories: [],
+  categoryMap: {},
   cart: [],
   favorites: [],
   currentPage: 1,
   filters: {
     search: "",
+    productType: "todos",
     category: "todos",
+    subcategory: "todos",
     color: "todos",
     sort: "featured",
     maxPrice: 9999
@@ -162,7 +166,8 @@ async function loadProductsFromSupabase() {
         categories (
           id,
           name,
-          slug
+          slug,
+          parent_id
         )
       `)
       .eq("active", true)
@@ -214,6 +219,43 @@ async function loadProductsFromSupabase() {
       console.warn("As imagens adicionais não puderam ser carregadas:", productImagesResult.error);
     } else {
       productImages = productImagesResult.data || [];
+    }
+
+    var categoriesResult = await window.mugartSupabase
+      .from("categories")
+      .select("id, name, slug, parent_id")
+      .order("name", { ascending: true });
+
+    if (categoriesResult.error) {
+      console.warn("As categorias não puderam ser carregadas:", categoriesResult.error);
+      StoreState.categories = [];
+    } else {
+      StoreState.categories = categoriesResult.data || [];
+    }
+
+    StoreState.categoryMap = {};
+    StoreState.categories.forEach(function(category) {
+      StoreState.categoryMap[String(category.id)] = category;
+    });
+
+    function resolveCategoryHierarchy(categoryId) {
+      var chain = [];
+      var current = categoryId ? StoreState.categoryMap[String(categoryId)] : null;
+      var safety = 0;
+      while (current && safety < 10) {
+        chain.unshift(current);
+        if (!current.parent_id) break;
+        current = StoreState.categoryMap[String(current.parent_id)];
+        safety++;
+      }
+      return {
+        productType: chain[0] ? chain[0].name : "",
+        productTypeId: chain[0] ? chain[0].id : null,
+        category: chain[1] ? chain[1].name : "",
+        categoryId: chain[1] ? chain[1].id : null,
+        subcategory: chain[2] ? chain[2].name : "",
+        subcategoryId: chain[2] ? chain[2].id : null
+      };
     }
 
     StoreState.products = (productsResult.data || []).map(function(product) {
@@ -278,12 +320,18 @@ async function loadProductsFromSupabase() {
       var displayPrice = Number(product.price || 0);
       var displayStock = Number(product.stock || 0);
 
+      var hierarchy = resolveCategoryHierarchy(product.categories ? product.categories.id : null);
+
       return {
         id: product.id,
         sku: product.sku || product.id,
         name: product.name || "Produto sem nome",
-        category: product.categories ? product.categories.name : "Sem categoria",
-        categoryId: product.categories ? product.categories.id : null,
+        productType: hierarchy.productType || "Sem tipo",
+        productTypeId: hierarchy.productTypeId,
+        category: hierarchy.category || (product.categories ? product.categories.name : "Sem categoria"),
+        categoryId: hierarchy.categoryId || (product.categories ? product.categories.id : null),
+        subcategory: hierarchy.subcategory || "",
+        subcategoryId: hierarchy.subcategoryId,
         color: product.color || "Não informado",
         price: displayPrice,
         oldPrice: Number(product.old_price || 0),
@@ -564,81 +612,55 @@ function bindHeader() {
 
 function bindFilters() {
   var searchInput = $("#storeSearch");
+  var productTypeSelect = $("#productTypeFilter");
   var categorySelect = $("#categoryFilter");
+  var subcategorySelect = $("#subcategoryFilter");
   var colorSelect = $("#colorFilter");
   var sortSelect = $("#sortFilter");
   var priceMax = $("#priceMaxFilter");
   var clearFilters = $("#clearFilters");
 
-  if (searchInput) {
-    searchInput.addEventListener("input", function(event) {
-      StoreState.filters.search = event.target.value;
-      StoreState.currentPage = 1;
-      renderProducts();
+  if (searchInput) searchInput.addEventListener("input", function(event) {
+    StoreState.filters.search = event.target.value; StoreState.currentPage = 1; renderProducts();
+    pushDataLayer({ event: "store_search", search_term: event.target.value });
+  });
 
-      pushDataLayer({
-        event: "store_search",
-        search_term: event.target.value
-      });
-    });
-  }
+  if (productTypeSelect) productTypeSelect.addEventListener("change", function(event) {
+    StoreState.filters.productType = event.target.value;
+    StoreState.filters.category = "todos"; StoreState.filters.subcategory = "todos";
+    StoreState.currentPage = 1; renderCategoryHierarchyFilters(); renderProducts();
+  });
 
-  if (categorySelect) {
-    categorySelect.addEventListener("change", function(event) {
-      StoreState.filters.category = event.target.value;
-      StoreState.currentPage = 1;
-      renderProducts();
-    });
-  }
+  if (categorySelect) categorySelect.addEventListener("change", function(event) {
+    StoreState.filters.category = event.target.value; StoreState.filters.subcategory = "todos";
+    StoreState.currentPage = 1; renderCategoryHierarchyFilters(); renderProducts();
+  });
 
-  if (colorSelect) {
-    colorSelect.addEventListener("change", function(event) {
-      StoreState.filters.color = event.target.value;
-      StoreState.currentPage = 1;
-      renderProducts();
-    });
-  }
+  if (subcategorySelect) subcategorySelect.addEventListener("change", function(event) {
+    StoreState.filters.subcategory = event.target.value; StoreState.currentPage = 1; renderProducts();
+  });
 
-  if (sortSelect) {
-    sortSelect.addEventListener("change", function(event) {
-      StoreState.filters.sort = event.target.value;
-      StoreState.currentPage = 1;
-      renderProducts();
-    });
-  }
+  if (colorSelect) colorSelect.addEventListener("change", function(event) {
+    StoreState.filters.color = event.target.value; StoreState.currentPage = 1; renderProducts();
+  });
 
-  if (priceMax) {
-    priceMax.addEventListener("input", function(event) {
-      StoreState.filters.maxPrice = Number(event.target.value);
-      StoreState.currentPage = 1;
-      updatePriceLabel();
-      renderProducts();
-    });
-  }
+  if (sortSelect) sortSelect.addEventListener("change", function(event) {
+    StoreState.filters.sort = event.target.value; StoreState.currentPage = 1; renderProducts();
+  });
 
-  if (clearFilters) {
-    clearFilters.addEventListener("click", function() {
-      StoreState.filters.search = "";
-      StoreState.filters.category = "todos";
-      StoreState.filters.color = "todos";
-      StoreState.filters.sort = "featured";
+  if (priceMax) priceMax.addEventListener("input", function(event) {
+    StoreState.filters.maxPrice = Number(event.target.value); StoreState.currentPage = 1; updatePriceLabel(); renderProducts();
+  });
 
-      if (searchInput) searchInput.value = "";
-      if (categorySelect) categorySelect.value = "todos";
-      if (colorSelect) colorSelect.value = "todos";
-      if (sortSelect) sortSelect.value = "featured";
-
-      if (priceMax) {
-        priceMax.value = priceMax.max;
-        StoreState.filters.maxPrice = Number(priceMax.max);
-      }
-
-      StoreState.currentPage = 1;
-      updatePriceLabel();
-      renderCategories();
-      renderProducts();
-    });
-  }
+  if (clearFilters) clearFilters.addEventListener("click", function() {
+    StoreState.filters.search = ""; StoreState.filters.productType = "todos";
+    StoreState.filters.category = "todos"; StoreState.filters.subcategory = "todos";
+    StoreState.filters.color = "todos"; StoreState.filters.sort = "featured";
+    if (searchInput) searchInput.value = "";
+    if (colorSelect) colorSelect.value = "todos"; if (sortSelect) sortSelect.value = "featured";
+    if (priceMax) { priceMax.value = priceMax.max; StoreState.filters.maxPrice = Number(priceMax.max); }
+    StoreState.currentPage = 1; updatePriceLabel(); renderCategoryHierarchyFilters(); renderProducts();
+  });
 }
 
 function updatePriceLabel() {
@@ -649,52 +671,50 @@ function updatePriceLabel() {
   }
 }
 
-function renderCategories() {
-  var categorySelect = $("#categoryFilter");
-  var categoryList = $("#categoryList");
-  var map = {};
-  var categories = ["todos"];
+function escapeHtml(value) {
+  return String(value == null ? "" : value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
 
-  StoreState.products.forEach(function(product) {
-    map[product.category] = true;
-  });
+function getCategoryChildren(parentId) {
+  return StoreState.categories.filter(function(category) { return String(category.parent_id || "") === String(parentId || ""); });
+}
 
-  Object.keys(map).forEach(function(category) {
-    categories.push(category);
-  });
+function renderCategoryHierarchyFilters() {
+  var typeSelect=$("#productTypeFilter"), categorySelect=$("#categoryFilter"), subSelect=$("#subcategoryFilter"), list=$("#categoryList");
+  var selectedType=StoreState.filters.productType, selectedCategory=StoreState.filters.category, selectedSub=StoreState.filters.subcategory;
+  var types=StoreState.categories.filter(function(c){return !c.parent_id;});
 
-  if (categorySelect) {
-    categorySelect.innerHTML = categories.map(function(category) {
-      var label = category === "todos" ? "Todas as categorias" : category;
-      return '<option value="' + category + '">' + label + '</option>';
-    }).join("");
-
-    categorySelect.value = StoreState.filters.category;
+  if(typeSelect){
+    typeSelect.innerHTML='<option value="todos">Todos os tipos</option>'+types.map(function(c){return '<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+'</option>';}).join("");
+    typeSelect.value=selectedType; if(typeSelect.value!==selectedType){typeSelect.value="todos";StoreState.filters.productType="todos";selectedType="todos";}
   }
 
-  if (categoryList) {
-    categoryList.innerHTML = categories.map(function(category) {
-      var label = category === "todos" ? "Todas" : category;
-      var active = category === StoreState.filters.category ? "active" : "";
+  var cats=[]; if(selectedType==="todos"){types.forEach(function(t){cats=cats.concat(getCategoryChildren(t.id));});}else{cats=getCategoryChildren(selectedType);}
+  cats.sort(function(a,b){return String(a.name).localeCompare(String(b.name),"pt-BR");});
+  if(categorySelect){
+    categorySelect.innerHTML='<option value="todos">Todas as categorias</option>'+cats.map(function(c){return '<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+'</option>';}).join("");
+    categorySelect.value=selectedCategory; if(categorySelect.value!==selectedCategory){categorySelect.value="todos";StoreState.filters.category="todos";selectedCategory="todos";}
+  }
 
-      return '<button class="category-chip ' + active + '" type="button" data-category="' + category + '">' + label + '</button>';
+  var subs=[]; if(selectedCategory!=="todos"){subs=getCategoryChildren(selectedCategory);}else{cats.forEach(function(c){subs=subs.concat(getCategoryChildren(c.id));});}
+  subs.sort(function(a,b){return String(a.name).localeCompare(String(b.name),"pt-BR");});
+  if(subSelect){
+    subSelect.innerHTML='<option value="todos">Todas as subcategorias</option>'+subs.map(function(c){return '<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+'</option>';}).join("");
+    subSelect.value=selectedSub; if(subSelect.value!==selectedSub){subSelect.value="todos";StoreState.filters.subcategory="todos";}
+    subSelect.disabled=subs.length===0;
+  }
+
+  if(list){
+    var chips=["todos"].concat(types.map(function(t){return String(t.id);}));
+    list.innerHTML=chips.map(function(id){
+      var label="Todos"; if(id!=="todos"){var t=StoreState.categories.find(function(c){return String(c.id)===id;});label=t?t.name:id;}
+      return '<button class="category-chip '+(id===selectedType?'active':'')+'" type="button" data-product-type="'+escapeHtml(id)+'">'+escapeHtml(label)+'</button>';
     }).join("");
-
-    $all(".category-chip").forEach(function(button) {
-      button.addEventListener("click", function() {
-        StoreState.filters.category = button.dataset.category;
-        StoreState.currentPage = 1;
-
-        if ($("#categoryFilter")) {
-          $("#categoryFilter").value = StoreState.filters.category;
-        }
-
-        renderCategories();
-        renderProducts();
-      });
-    });
+    $all(".category-chip").forEach(function(button){button.addEventListener("click",function(){StoreState.filters.productType=button.dataset.productType||"todos";StoreState.filters.category="todos";StoreState.filters.subcategory="todos";StoreState.currentPage=1;renderCategoryHierarchyFilters();renderProducts();});});
   }
 }
+
+function renderCategories(){ renderCategoryHierarchyFilters(); }
 
 function renderColors() {
   var colorSelect = $("#colorFilter");
@@ -718,40 +738,13 @@ function renderColors() {
 }
 
 function getFilteredProducts() {
-  var search = StoreState.filters.search;
-  var category = StoreState.filters.category;
-  var color = StoreState.filters.color;
-  var sort = StoreState.filters.sort;
-  var maxPrice = StoreState.filters.maxPrice;
-  var searchTerm = normalizeText(search);
-
-  var products = StoreState.products.filter(function(product) {
-    var matchesSearch =
-      !searchTerm ||
-      normalizeText(product.name).indexOf(searchTerm) >= 0 ||
-      normalizeText(product.description).indexOf(searchTerm) >= 0 ||
-      normalizeText(product.category).indexOf(searchTerm) >= 0 ||
-      normalizeText(product.color).indexOf(searchTerm) >= 0 ||
-      product.tags.some(function(tag) {
-        return normalizeText(tag).indexOf(searchTerm) >= 0;
-      });
-
-    var matchesCategory = category === "todos" || product.category === category;
-    var matchesColor = color === "todos" || product.color === color;
-    var matchesPrice = product.price <= maxPrice;
-
-    return matchesSearch && matchesCategory && matchesColor && matchesPrice;
+  var search=StoreState.filters.search, type=StoreState.filters.productType, category=StoreState.filters.category, sub=StoreState.filters.subcategory, color=StoreState.filters.color, sort=StoreState.filters.sort, maxPrice=StoreState.filters.maxPrice;
+  var term=normalizeText(search);
+  var products=StoreState.products.filter(function(product){
+    var matchesSearch=!term || normalizeText(product.name).indexOf(term)>=0 || normalizeText(product.description).indexOf(term)>=0 || normalizeText(product.productType).indexOf(term)>=0 || normalizeText(product.category).indexOf(term)>=0 || normalizeText(product.subcategory).indexOf(term)>=0 || normalizeText(product.color).indexOf(term)>=0 || product.tags.some(function(tag){return normalizeText(tag).indexOf(term)>=0;});
+    return matchesSearch && (type==="todos" || String(product.productTypeId||"")===String(type)) && (category==="todos" || String(product.categoryId||"")===String(category)) && (sub==="todos" || String(product.subcategoryId||"")===String(sub)) && (color==="todos" || product.color===color) && product.price<=maxPrice;
   });
-
-  products.sort(function(a, b) {
-    if (sort === "price_asc") return a.price - b.price;
-    if (sort === "price_desc") return b.price - a.price;
-    if (sort === "name_asc") return a.name.localeCompare(b.name);
-    if (sort === "stock_desc") return b.stock - a.stock;
-
-    return Number(b.featured) - Number(a.featured);
-  });
-
+  products.sort(function(a,b){if(sort==="price_asc")return a.price-b.price;if(sort==="price_desc")return b.price-a.price;if(sort==="name_asc")return a.name.localeCompare(b.name);if(sort==="stock_desc")return b.stock-a.stock;return Number(b.featured)-Number(a.featured);});
   return products;
 }
 
@@ -854,6 +847,11 @@ function renderPagination(totalProducts) {
   });
 }
 
+function getProductHierarchyLabel(product) {
+  if(!product)return "";
+  return escapeHtml([product.productType,product.category,product.subcategory].filter(Boolean).join(" • "));
+}
+
 function productCardTemplate(product) {
   var isFavorite = StoreState.favorites.indexOf(product.id) >= 0;
 
@@ -875,7 +873,7 @@ function productCardTemplate(product) {
       '</button>' +
 
       '<div class="product-info">' +
-        '<span class="product-category">' + product.category + "</span>" +
+        '<span class="product-category">' + getProductHierarchyLabel(product) + "</span>" +
         "<h3>" + product.name + "</h3>" +
         "<p>" + product.description + "</p>" +
 
@@ -1243,7 +1241,7 @@ function renderProductModal() {
       '</div>' +
 
       '<div class="modal-product-info">' +
-        '<span class="product-category">' + product.category + '</span>' +
+        '<span class="product-category">' + getProductHierarchyLabel(product) + '</span>' +
         '<h2>' + product.name + '</h2>' +
         '<p>' + product.description + '</p>' +
 
