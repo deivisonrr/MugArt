@@ -3,20 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>MugArt Admin | Categorias</title>
-
   <link rel="icon" href="../assets/favicon.ico" sizes="any">
   <link rel="shortcut icon" href="../assets/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="css/admin.css" />
+  <style>
+    .category-parent-help{display:block;margin-top:6px;font-size:12px;opacity:.65}
+    .category-tree-item{margin-bottom:8px}
+    .category-tree-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025)}
+    .category-tree-name{display:flex;align-items:center;gap:9px;min-width:0}.category-tree-name strong{overflow:hidden;text-overflow:ellipsis}.category-tree-name small{opacity:.55;font-size:11px}
+    .category-tree-actions{display:flex;gap:7px}.category-tree-actions button{cursor:pointer}
+    @media(max-width:700px){.category-tree-row{align-items:flex-start;flex-direction:column}.category-tree-actions{width:100%}.category-tree-actions button{flex:1}}
+  </style>
 </head>
-
 <body class="admin-body">
   <aside class="admin-sidebar">
-    <a class="admin-brand" href="dashboard.html">
-      <img src="../assets/logo.png" alt="MugArt" />
-    </a>
-
+    <a class="admin-brand" href="dashboard.html"><img src="../assets/logo.png" alt="MugArt" /></a>
     <nav>
       <a href="dashboard.html">Dashboard</a>
       <a href="/admin/produtos-3.html">Produtos Pro</a>
@@ -28,54 +30,32 @@
       <a href="configuracoes.html">Configurações</a>
       <a href="../loja.html">Ver Loja</a>
     </nav>
-
     <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
   </aside>
-
   <main class="admin-main">
-    <header class="admin-header">
-      <div>
-        <p class="eyebrow">Organização</p>
-        <h1>Categorias</h1>
-      </div>
-    </header>
-
+    <header class="admin-header"><div><p class="eyebrow">Organização</p><h1>Categorias</h1></div></header>
     <section class="admin-grid-2">
       <form id="categoryForm" class="admin-panel form-panel">
-        <div class="panel-head">
-          <div>
-            <p class="eyebrow">Cadastro</p>
-            <h2>Nova categoria</h2>
-          </div>
-        </div>
-
-        <label>
-          Nome da categoria
-          <input id="categoryName" required placeholder="Caneca Coração" />
+        <div class="panel-head"><div><p class="eyebrow">Cadastro</p><h2>Nova categoria</h2></div></div>
+        <label>Nome da categoria<input id="categoryName" required placeholder="Caneca Coração" /></label>
+        <label>Categoria pai
+          <select id="categoryParent">
+            <option value="">Nenhuma — categoria principal</option>
+          </select>
+          <small class="category-parent-help">Deixe "Nenhuma" para criar uma categoria principal.</small>
         </label>
-
         <button type="submit">Salvar categoria</button>
       </form>
-
       <section class="admin-panel">
-        <div class="panel-head">
-          <div>
-            <p class="eyebrow">Lista</p>
-            <h2>Categorias cadastradas</h2>
-          </div>
-        </div>
-
+        <div class="panel-head"><div><p class="eyebrow">Lista</p><h2>Categorias cadastradas</h2></div></div>
         <div id="categoriesList" class="chip-list"></div>
       </section>
     </section>
   </main>
-
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script src="/js/supabase-config.js?v=5"></script>
-   <script src="/admin/js/admin-auth.js?v=1"></script>
-   <script src="/admin/js/admin.js?v=5"></script>
-   <script src="/js/analytics-loader.js"></script>
-
-  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase-config.js?v=5"></script>
+  <script src="/admin/js/admin-auth.js?v=1"></script>
+  <script src="/admin/js/admin.js?v=5"></script>
+  <script src="/js/analytics-loader.js"></script>
 </body>
 </html>
