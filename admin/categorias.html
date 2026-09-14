@@ -3,359 +3,293 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MugArt Admin | Categorias</title>
-  <link rel="icon" href="../assets/favicon.ico" sizes="any">
-  <link rel="stylesheet" href="css/admin.css">
-  <style>
-    .catalog-forms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
-    .catalog-card{padding:20px}
-    .catalog-card h2{margin:0 0 6px}
-    .catalog-card p{opacity:.68;font-size:.9rem}
-    .catalog-card label{display:block;margin-bottom:14px}
-    .catalog-card input,.catalog-card select{width:100%;margin-top:7px}
-    .catalog-card button{width:100%}
-    .catalog-tree{display:grid;gap:12px}
-    .catalog-type{border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.025)}
-    .catalog-type-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px 18px;background:rgba(255,255,255,.04)}
-    .catalog-type-title{font-size:1.05rem;font-weight:800}
-    .catalog-actions,.catalog-mini-actions{display:flex;gap:7px;flex-wrap:wrap}
-    .catalog-actions button,.catalog-mini-actions button{width:auto}
-    .catalog-categories{padding:12px 18px 18px 42px;display:grid;gap:10px}
-    .catalog-category{border-left:2px solid rgba(255,255,255,.12);padding-left:16px}
-    .catalog-category-head,.catalog-subcategory{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .catalog-category-name{font-weight:700}
-    .catalog-subcategories{display:grid;gap:6px;margin:8px 0 0 4px;padding-left:18px}
-    .catalog-subcategory{padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.025)}
-    .catalog-subcategory span::before{content:"↳ ";opacity:.5}
-    .catalog-empty{opacity:.65;padding:12px 0}
-    @media(max-width:980px){.catalog-forms{grid-template-columns:1fr}}
-  </style>
-</head>
-<body class="admin-body">
-  <aside class="admin-sidebar">
-    <a class="admin-brand" href="dashboard.html">
-      <img src="../assets/logo.png" alt="MugArt">
-    </a>
-    <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="/admin/produtos-3.html">Produtos Pro</a>
-      <a class="active" href="categorias.html">Categorias</a>
-      <a href="pedidos.html">Pedidos</a>
-      <a href="cupons.html">Cupons</a>
-      <a href="/admin/utm.html">Gerador de UTM</a>
-      <a href="/admin/modo-site.html">Modo do site</a>
-      <a href="configuracoes.html">Configurações</a>
-      <a href="../loja.html">Ver Loja</a>
-    </nav>
-    <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
-  </aside>
-
-  <main class="admin-main">
-    <header class="admin-header">
-      <div>
-        <p class="eyebrow">Organização do catálogo</p>
-        <h1>Tipos, categorias e subcategorias</h1>
-        <p>Estrutura: Tipo de produto → Categoria → Subcategoria.</p>
-      </div>
-    </header>
-
-    <section class="catalog-forms">
-      <form id="catalogTypeForm" class="admin-panel catalog-card">
-        <p class="eyebrow">Nível 1</p>
-        <h2>Tipo de produto</h2>
-        <p>Ex.: Canecas, Xícaras, Garrafas.</p>
-        <label>Nome do tipo
-          <input id="catalogTypeName" required placeholder="Canecas">
-        </label>
-        <button type="submit">Adicionar tipo</button>
-      </form>
-
-      <form id="catalogCategoryForm" class="admin-panel catalog-card">
-        <p class="eyebrow">Nível 2</p>
-        <h2>Categoria</h2>
-        <p>Ex.: Datas Comemorativas, Café da tarde.</p>
-        <label>Tipo de produto
-          <select id="catalogCategoryType" required></select>
-        </label>
-        <label>Nome da categoria
-          <input id="catalogCategoryName" required placeholder="Datas Comemorativas">
-        </label>
-        <button type="submit">Adicionar categoria</button>
-      </form>
-
-      <form id="catalogSubcategoryForm" class="admin-panel catalog-card">
-        <p class="eyebrow">Nível 3</p>
-        <h2>Subcategoria</h2>
-        <p>Ex.: Halloween, Flores, Natal.</p>
-        <label>Tipo de produto
-          <select id="catalogSubcategoryType" required></select>
-        </label>
-        <label>Categoria
-          <select id="catalogSubcategoryCategory" required disabled></select>
-        </label>
-        <label>Nome da subcategoria
-          <input id="catalogSubcategoryName" required placeholder="Halloween">
-        </label>
-        <button type="submit">Adicionar subcategoria</button>
-      </form>
-    </section>
-
-    <section class="admin-panel" style="margin-top:20px">
-      <div class="panel-head">
-        <div>
-          <p class="eyebrow">Catálogo atual</p>
-          <h2>Estrutura cadastrada</h2>
-        </div>
-        <button id="catalogRefresh" type="button">Atualizar</button>
-      </div>
-      <div id="catalogTree" class="catalog-tree">
-        <p class="catalog-empty">Carregando...</p>
-      </div>
-    </section>
-  </main>
+  <title>MugArt Admin | Tipos, Categorias e Subcategorias</title>
+  <link rel="icon" href="../assets/favicon.ico">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/supabase-config.js?v=5"></script>
   <script src="/admin/js/admin-auth.js?v=1"></script>
 
-  <script>
-    const catalogState = { rows: [] };
-
-    function cEscape(value) {
-      return String(value ?? "")
-        .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
+  <style>
+    :root{
+      --bg:#080b0d;
+      --panel:#111619;
+      --panel2:#151b1e;
+      --border:#30383c;
+      --text:#fff;
+      --muted:#aeb7ba;
+      --pink:#ff3b78;
+      --pink2:#ff4f88;
+      --yellow:#e8c900;
+      --danger:#ff4d5f;
+      --green:#39d98a;
     }
-
-    function cSlugify(text) {
-      return String(text || "")
-        .toLowerCase().normalize("NFD")
-        .replace(/[\u0300-\u036f]/g,"")
-        .replace(/[^a-z0-9]+/g,"-")
-        .replace(/(^-|-$)+/g,"");
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(255,59,120,.10), transparent 35%),
+        radial-gradient(circle at 90% 20%, rgba(0,190,190,.08), transparent 35%),
+        var(--bg);
+      color:var(--text);
+      font-family:Arial,Helvetica,sans-serif;
     }
-
-    function cRows(parentId) {
-      return catalogState.rows
-        .filter(row => (row.parent_id || null) === (parentId || null))
-        .sort((a,b) => a.name.localeCompare(b.name,"pt-BR"));
+    .page{padding:28px 24px 60px;max-width:1500px;margin:auto}
+    h1{
+      margin:0 0 6px;
+      font-size:clamp(34px,4vw,62px);
+      line-height:.95;
+      font-weight:900;
+      letter-spacing:-2px;
     }
-
-    function cById(id) {
-      return catalogState.rows.find(row => row.id === id) || null;
+    .subtitle{margin:0 0 24px;color:#fff;font-size:16px}
+    .accent{color:var(--yellow)}
+    .card{
+      background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:26px;
+      box-shadow:0 20px 60px rgba(0,0,0,.22);
     }
-
-    async function loadCatalog() {
-      const result = await mugartSupabase
-        .from("categories")
-        .select("id,name,slug,active,created_at,parent_id")
-        .order("name",{ascending:true});
-
-      if (result.error) {
-        console.error(result.error);
-        alert("Erro ao carregar catálogo: " + result.error.message);
-        return;
-      }
-
-      catalogState.rows = result.data || [];
-      renderSelects();
-      renderTree();
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      margin-bottom:22px;
+      flex-wrap:wrap;
     }
-
-    function renderSelects() {
-      const types = cRows(null);
-      const options = '<option value="">Selecione o tipo</option>' +
-        types.map(x => `<option value="${x.id}">${cEscape(x.name)}</option>`).join("");
-
-      document.querySelector("#catalogCategoryType").innerHTML = options;
-      document.querySelector("#catalogSubcategoryType").innerHTML = options;
-      renderSubcategoryCategories("");
+    .topbar h2{margin:0;font-size:26px}
+    .mode{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      color:var(--muted);
+      font-size:14px;
     }
-
-    function renderSubcategoryCategories(typeId) {
-      const select = document.querySelector("#catalogSubcategoryCategory");
-      const categories = typeId ? cRows(typeId) : [];
-      select.disabled = !typeId;
-      select.innerHTML = typeId
-        ? '<option value="">Selecione a categoria</option>' +
-          categories.map(x => `<option value="${x.id}">${cEscape(x.name)}</option>`).join("")
-        : '<option value="">Selecione o tipo primeiro</option>';
+    .mode strong{color:var(--yellow)}
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
     }
+    .level{
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:18px;
+      background:rgba(0,0,0,.20);
+    }
+    .level-title{
+      color:var(--yellow);
+      font-weight:900;
+      font-size:13px;
+      text-transform:uppercase;
+      margin-bottom:5px;
+    }
+    .level h3{margin:0 0 5px;font-size:21px}
+    .level p{margin:0 0 16px;color:var(--muted);font-size:13px;min-height:32px}
+    label{
+      display:block;
+      margin:12px 0 6px;
+      font-size:13px;
+      font-weight:700;
+    }
+    input,select{
+      width:100%;
+      height:44px;
+      border-radius:12px;
+      border:1px solid #3b4448;
+      background:#0e1215;
+      color:#fff;
+      padding:0 13px;
+      outline:none;
+    }
+    input:focus,select:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,59,120,.12)}
+    input:disabled,select:disabled{opacity:.45;cursor:not-allowed}
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    button{
+      border:0;
+      border-radius:12px;
+      min-height:44px;
+      padding:0 18px;
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .primary{background:var(--pink)}
+    .primary:hover{background:var(--pink2)}
+    .secondary{background:#293136}
+    .danger{background:var(--danger)}
+    .wide-actions{
+      display:flex;
+      gap:12px;
+      margin-top:22px;
+      flex-wrap:wrap;
+    }
+    .wide-actions button{min-width:170px}
+    .status{
+      margin-top:18px;
+      padding:13px 15px;
+      border-radius:12px;
+      background:#0e1215;
+      border:1px solid var(--border);
+      color:var(--muted);
+      min-height:46px;
+    }
+    .status.ok{border-color:rgba(57,217,138,.45);color:#b9ffd9}
+    .status.error{border-color:rgba(255,77,95,.5);color:#ffd0d5}
+    .divider{height:1px;background:var(--border);margin:28px 0}
+    .existing-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .existing-head h2{margin:0;font-size:24px}
+    .search{max-width:340px}
+    .tree{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .tree-row{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:13px 15px;
+      background:rgba(255,255,255,.025);
+    }
+    .tree-row.level1{margin-left:0}
+    .tree-row.level2{margin-left:28px}
+    .tree-row.level3{margin-left:56px}
+    .row-main{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .path{
+      color:#fff;
+      font-weight:700;
+      word-break:break-word;
+    }
+    .badge{
+      display:inline-block;
+      font-size:10px;
+      font-weight:900;
+      color:#111;
+      background:var(--yellow);
+      padding:4px 7px;
+      border-radius:7px;
+      margin-right:8px;
+    }
+    .row-actions{display:flex;gap:7px;flex-shrink:0}
+    .row-actions button{min-height:34px;padding:0 10px;font-size:12px}
+    .empty{padding:24px;color:var(--muted);text-align:center;border:1px dashed var(--border);border-radius:14px}
+    @media(max-width:1050px){
+      .form-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:650px){
+      .page{padding:20px 14px 40px}
+      .card{padding:18px;border-radius:18px}
+      .tree-row.level2,.tree-row.level3{margin-left:0}
+      .row-main{align-items:flex-start;flex-direction:column}
+      .row-actions{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <h1>TIPOS, CATEGORIAS E SUBCATEGORIAS</h1>
+    <p class="subtitle">Tudo em <span class="accent">uma única janela</span>: escolha o que já existe para editar ou crie uma nova estrutura.</p>
 
-    function renderTree() {
-      const container = document.querySelector("#catalogTree");
-      const types = cRows(null);
+    <section class="card">
+      <div class="topbar">
+        <h2 id="formTitle">Cadastrar estrutura</h2>
+        <div class="mode">Modo: <strong id="modeText">Novo cadastro</strong></div>
+      </div>
 
-      if (!types.length) {
-        container.innerHTML = '<p class="catalog-empty">Nenhum tipo de produto cadastrado.</p>';
-        return;
-      }
+      <div class="form-grid">
+        <div class="level">
+          <div class="level-title">Nível 1</div>
+          <h3>Tipo de produto</h3>
+          <p>Ex.: Canecas, Xícaras, Garrafas.</p>
 
-      container.innerHTML = types.map(type => {
-        const categories = cRows(type.id);
+          <label for="typeSelect">Tipo existente</label>
+          <select id="typeSelect">
+            <option value="">+ Novo tipo</option>
+          </select>
 
-        return `<article class="catalog-type">
-          <div class="catalog-type-head">
-            <div class="catalog-type-title">📦 ${cEscape(type.name)}</div>
-            <div class="catalog-actions">
-              <button type="button" onclick="editCatalogItem('${type.id}')">Editar</button>
-              <button type="button" onclick="deleteCatalogItem('${type.id}')">Excluir</button>
-            </div>
+          <label for="typeName">Nome do tipo</label>
+          <input id="typeName" type="text" placeholder="Ex.: Canecas">
+
+          <div class="actions">
+            <button class="primary" id="saveTypeBtn">Salvar tipo</button>
           </div>
-          <div class="catalog-categories">
-            ${categories.length ? categories.map(category => {
-              const subs = cRows(category.id);
+        </div>
 
-              return `<div class="catalog-category">
-                <div class="catalog-category-head">
-                  <div class="catalog-category-name">📁 ${cEscape(category.name)}</div>
-                  <div class="catalog-mini-actions">
-                    <button type="button" onclick="editCatalogItem('${category.id}')">Editar</button>
-                    <button type="button" onclick="deleteCatalogItem('${category.id}')">Excluir</button>
-                  </div>
-                </div>
-                <div class="catalog-subcategories">
-                  ${subs.length ? subs.map(sub => `
-                    <div class="catalog-subcategory">
-                      <span>${cEscape(sub.name)}</span>
-                      <div class="catalog-mini-actions">
-                        <button type="button" onclick="editCatalogItem('${sub.id}')">Editar</button>
-                        <button type="button" onclick="deleteCatalogItem('${sub.id}')">Excluir</button>
-                      </div>
-                    </div>`).join("") :
-                    '<small class="catalog-empty">Nenhuma subcategoria.</small>'}
-                </div>
-              </div>`;
-            }).join("") : '<p class="catalog-empty">Nenhuma categoria.</p>'}
+        <div class="level">
+          <div class="level-title">Nível 2</div>
+          <h3>Categoria</h3>
+          <p>Ex.: Datas Comemorativas, Café da tarde.</p>
+
+          <label for="categorySelect">Categoria existente</label>
+          <select id="categorySelect" disabled>
+            <option value="">+ Nova categoria</option>
+          </select>
+
+          <label for="categoryName">Nome da categoria</label>
+          <input id="categoryName" type="text" placeholder="Ex.: Datas Comemorativas" disabled>
+
+          <div class="actions">
+            <button class="primary" id="saveCategoryBtn" disabled>Salvar categoria</button>
           </div>
-        </article>`;
-      }).join("");
-    }
+        </div>
 
-    async function insertItem(name,parentId) {
-      const clean = name.trim();
-      if (!clean) return false;
+        <div class="level">
+          <div class="level-title">Nível 3</div>
+          <h3>Subcategoria</h3>
+          <p>Ex.: Halloween, Flores, Natal.</p>
 
-      const duplicate = catalogState.rows.find(row =>
-        (row.parent_id || null) === (parentId || null) &&
-        row.name.trim().toLowerCase() === clean.toLowerCase()
-      );
+          <label for="subcategorySelect">Subcategoria existente</label>
+          <select id="subcategorySelect" disabled>
+            <option value="">+ Nova subcategoria</option>
+          </select>
 
-      if (duplicate) {
-        alert("Já existe um item com esse nome neste nível.");
-        return false;
-      }
+          <label for="subcategoryName">Nome da subcategoria</label>
+          <input id="subcategoryName" type="text" placeholder="Ex.: Halloween" disabled>
 
-      const result = await mugartSupabase.from("categories").insert({
-        name: clean,
-        slug: cSlugify(clean),
-        parent_id: parentId || null,
-        active: true
-      });
+          <div class="actions">
+            <button class="primary" id="saveSubcategoryBtn" disabled>Salvar subcategoria</button>
+          </div>
+        </div>
+      </div>
 
-      if (result.error) {
-        alert("Erro ao cadastrar: " + result.error.message);
-        return false;
-      }
-      return true;
-    }
+      <div class="wide-actions">
+        <button class="secondary" id="newBtn">Novo / Limpar</button>
+        <button class="danger" id="deleteBtn" disabled>Excluir selecionado</button>
+      </div>
 
-    document.querySelector("#catalogTypeForm").addEventListener("submit",async e=>{
-      e.preventDefault();
-      if(await insertItem(document.querySelector("#catalogTypeName").value,null)){
-        e.target.reset();
-        await loadCatalog();
-      }
-    });
+      <div id="status" class="status">Carregando categorias...</div>
 
-    document.querySelector("#catalogCategoryForm").addEventListener("submit",async e=>{
-      e.preventDefault();
-      const typeId=document.querySelector("#catalogCategoryType").value;
-      if(!typeId){alert("Selecione o tipo de produto.");return;}
-      if(await insertItem(document.querySelector("#catalogCategoryName").value,typeId)){
-        e.target.reset();
-        await loadCatalog();
-      }
-    });
+      <div class="divider"></div>
 
-    document.querySelector("#catalogSubcategoryType").addEventListener("change",e=>{
-      renderSubcategoryCategories(e.target.value);
-    });
+      <div class="existing-head">
+        <h2>Estrutura cadastrada</h2>
+        <input id="search" class="search" type="search" placeholder="Pesquisar tipo, categoria ou subcategoria...">
+      </div>
 
-    document.querySelector("#catalogSubcategoryForm").addEventListener("submit",async e=>{
-      e.preventDefault();
-      const categoryId=document.querySelector("#catalogSubcategoryCategory").value;
-      if(!categoryId){alert("Selecione a categoria.");return;}
-      if(await insertItem(document.querySelector("#catalogSubcategoryName").value,categoryId)){
-        e.target.reset();
-        await loadCatalog();
-      }
-    });
+      <div id="tree" class="tree"></div>
+    </section>
+  </main>
 
-    window.editCatalogItem=async function(id){
-      const item=cById(id);
-      if(!item)return;
-
-      const name=prompt("Nome:",item.name);
-      if(name===null)return;
-
-      const clean=name.trim();
-      if(!clean){alert("O nome não pode ficar vazio.");return;}
-
-      const duplicate=catalogState.rows.find(row =>
-        row.id!==id &&
-        (row.parent_id||null)===(item.parent_id||null) &&
-        row.name.trim().toLowerCase()===clean.toLowerCase()
-      );
-
-      if(duplicate){alert("Já existe um item com esse nome neste nível.");return;}
-
-      const result=await mugartSupabase.from("categories")
-        .update({name:clean,slug:cSlugify(clean)})
-        .eq("id",id);
-
-      if(result.error){alert("Erro ao editar: "+result.error.message);return;}
-      await loadCatalog();
-    };
-
-    window.deleteCatalogItem=async function(id){
-      const item=cById(id);
-      if(!item)return;
-
-      const children=cRows(id);
-      if(children.length){
-        alert("Este item possui itens abaixo dele. Remova as categorias/subcategorias antes de excluir.");
-        return;
-      }
-
-      const products=await mugartSupabase.from("products")
-        .select("id",{count:"exact",head:true})
-        .eq("category_id",id);
-
-      if(products.error){
-        alert("Não foi possível verificar os produtos vinculados.");
-        return;
-      }
-
-      if((products.count||0)>0){
-        alert(`Este item está vinculado a ${products.count} produto(s). Altere esses produtos antes de excluir.`);
-        return;
-      }
-
-      if(!confirm(`Excluir "${item.name}"?`))return;
-
-      const result=await mugartSupabase.from("categories").delete().eq("id",id);
-      if(result.error){alert("Erro ao excluir: "+result.error.message);return;}
-      await loadCatalog();
-    };
-
-    document.querySelector("#catalogRefresh").addEventListener("click",loadCatalog);
-
-    document.addEventListener("DOMContentLoaded",async()=>{
-      if(!window.mugartSupabase){alert("Supabase não carregou.");return;}
-      await loadCatalog();
-    });
-  </script>
+  <script src="./categorias-unificado.js?v=1"></script>
 </body>
 </html>
