@@ -1,15 +1,8 @@
 /* ==========================================================
-   MugArt Admin + Supabase + Upload de Imagens
-   Arquivo: admin/js/admin.js
-
-   Login temporário:
-   admin@mugart.com.br
-   123456
+   MugArt Admin
+   Funcionalidades do painel
+   A autenticação fica em admin-auth.js
 ========================================================== */
-
-const ADMIN_KEYS = {
-  auth: "mugart_admin_auth"
-};
 
 const STORAGE_BUCKET = "product-images";
 
@@ -37,83 +30,27 @@ function slugify(text) {
     .replace(/(^-|-$)+/g, "");
 }
 
-function isLoginPage() {
-  return (
-    location.pathname.endsWith("/admin/") ||
-    location.pathname.endsWith("/admin") ||
-    location.pathname.includes("/admin/index.html")
-  );
-}
-
-function requireAuth() {
-  if (isLoginPage()) return;
-
-  const auth = localStorage.getItem(ADMIN_KEYS.auth);
-
-  if (auth !== "true") {
-    location.href = "index.html";
-  }
-}
-
-function requireSupabase() {
+async function initializeAdminFeatures() {
   if (!window.mugartSupabase) {
-    alert("Supabase não carregou. Verifique se supabase-config.js foi adicionado antes do admin.js.");
-    return false;
+    console.error("[Admin] Supabase não carregou.");
+    return;
   }
 
-  return true;
+  if ($("#metricProducts")) await renderDashboard();
+  if ($("#productForm")) await initProductsPage();
+  if ($("#categoryForm")) await initCategoriesPage();
+  if ($("#ordersTable")) await initOrdersPage();
+  if ($("#analyticsSettingsForm")) await initAnalyticsSettingsPage();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  requireAuth();
+window.addEventListener(
+  "mugart-admin-ready",
+  initializeAdminFeatures,
+  { once: true }
+);
 
-  bindLogin();
-  bindLogout();
+/* SUPABASE */
 
-  if (!isLoginPage() && !requireSupabase()) return;
-
-  if ($("#metricProducts")) renderDashboard();
-  if ($("#productForm")) initProductsPage();
-  if ($("#categoryForm")) initCategoriesPage();
-  if ($("#ordersTable")) initOrdersPage();
-});
-
-/* ==========================
-   LOGIN TEMPORÁRIO
-========================== */
-
-function bindLogin() {
-  const form = $("#loginForm");
-  if (!form) return;
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const email = $("#loginEmail").value.trim();
-    const password = $("#loginPassword").value.trim();
-
-    if (email === "admin@mugart.com.br" && password === "123456") {
-      localStorage.setItem(ADMIN_KEYS.auth, "true");
-      location.href = "dashboard.html";
-    } else {
-      alert("Login inválido. Use admin@mugart.com.br / 123456 para teste.");
-    }
-  });
-}
-
-function bindLogout() {
-  const btn = $("#logoutBtn");
-  if (!btn) return;
-
-  btn.addEventListener("click", () => {
-    localStorage.removeItem(ADMIN_KEYS.auth);
-    location.href = "index.html";
-  });
-}
-
-/* ==========================
-   SUPABASE QUERIES
-========================== */
 
 async function getCategories() {
   const result = await mugartSupabase
@@ -175,9 +112,7 @@ async function getOrders() {
   return result.data || [];
 }
 
-/* ==========================
-   DASHBOARD
-========================== */
+/* DASHBOARD */
 
 async function renderDashboard() {
   const products = await getProducts();
@@ -211,19 +146,506 @@ async function renderDashboard() {
     : `<tr><td colspan="4">Nenhum produto com estoque baixo.</td></tr>`;
 }
 
-/* ==========================
-   PRODUTOS
-========================== */
+/* PRODUTOS */
 
 async function initProductsPage() {
   await populateCategorySelect();
-  setupImageUploadUI();
+  bindProductImageUpload();
+  bindProductSeoFields();
   await renderProductsTable();
 
   $("#productForm").addEventListener("submit", saveProductFromForm);
   $("#clearProductForm").addEventListener("click", clearProductForm);
   $("#newProductBtn")?.addEventListener("click", clearProductForm);
   $("#productSearch").addEventListener("input", renderProductsTable);
+}
+
+function bindProductImageUpload() {
+  const fileInput = $("#productImageFile");
+  const uploadBtn = $("#uploadProductImageBtn");
+  const urlInput = $("#productImage");
+
+  if (fileInput) {
+    fileInput.addEventListener("change", previewSelectedImage);
+  }
+
+  if (uploadBtn) {
+    uploadBtn.addEventListener("click", uploadSelectedProductImage);
+  }
+
+  if (urlInput) {
+    urlInput.addEventListener("input", updateImagePreviewFromUrl);
+  }
+}
+
+
+function generateProductSlug(value) {
+  return slugify(value).slice(0, 180);
+}
+
+function bindProductSeoFields() {
+  const nameInput = $("#productName");
+  const slugInput = $("#productSlug");
+  const titleInput = $("#productSeoTitle");
+  const descriptionInput = $("#productSeoDescription");
+
+  nameInput?.addEventListener("input", () => {
+    if (!slugInput.dataset.edited) {
+      slugInput.value = generateProductSlug(nameInput.value);
+    }
+
+    if (!titleInput.dataset.edited) {
+      titleInput.value = nameInput.value
+        ? `${nameInput.value} | MugArt`
+        : "";
+    }
+
+    updateProductSeoPreview();
+  });
+
+  slugInput?.addEventListener("input", () => {
+    /*
+     * Quando o usuário edita manualmente, preserva exatamente
+     * os caracteres digitados. A codificação segura acontece
+     * somente ao gerar a URL final com encodeURIComponent.
+     */
+    slugInput.dataset.edited = "true";
+    updateProductSeoPreview();
+  });
+
+  titleInput?.addEventListener("input", () => {
+    titleInput.dataset.edited = "true";
+    updateProductSeoPreview();
+  });
+
+  descriptionInput?.addEventListener("input", updateProductSeoPreview);
+  $("#productFocusKeyword")?.addEventListener("input", updateProductSeoPreview);
+  $("#productImageAlt")?.addEventListener("input", updateProductSeoPreview);
+  $("#productImage")?.addEventListener("input", updateProductSeoPreview);
+  $("#productNoindex")?.addEventListener("change", updateProductSeoPreview);
+
+  updateProductSeoPreview();
+}
+
+
+function normalizeSeoText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function seoIncludes(text, keyword) {
+  const normalizedKeyword = normalizeSeoText(keyword);
+
+  if (!normalizedKeyword) {
+    return false;
+  }
+
+  return normalizeSeoText(text).includes(
+    normalizedKeyword
+  );
+}
+
+function calculateProductSeoScore() {
+  const name =
+    $("#productName")?.value.trim() || "";
+
+  const slug =
+    $("#productSlug")?.value.trim() || "";
+
+  const title =
+    $("#productSeoTitle")?.value.trim() || "";
+
+  const description =
+    $("#productSeoDescription")?.value.trim() || "";
+
+  const imageAlt =
+    $("#productImageAlt")?.value.trim() || "";
+
+  const keyword =
+    $("#productFocusKeyword")?.value.trim() || "";
+
+  const productDescription =
+    $("#productDescription")?.value.trim() || "";
+
+  const imageUrl =
+    $("#productImage")?.value.trim() || "";
+
+  const checks = [
+    {
+      id: "keyword",
+      label: "Palavra-chave principal preenchida",
+      passed: Boolean(keyword),
+      points: 10
+    },
+    {
+      id: "slug",
+      label: "URL do produto preenchida",
+      passed: Boolean(slug),
+      points: 10
+    },
+    {
+      id: "title_length",
+      label: "Título SEO entre 45 e 65 caracteres",
+      passed:
+        title.length >= 45 &&
+        title.length <= 65,
+      points: 15
+    },
+    {
+      id: "description_length",
+      label: "Meta description entre 120 e 165 caracteres",
+      passed:
+        description.length >= 120 &&
+        description.length <= 165,
+      points: 15
+    },
+    {
+      id: "keyword_title",
+      label: "Palavra-chave presente no título SEO",
+      passed: seoIncludes(title, keyword),
+      points: 10
+    },
+    {
+      id: "keyword_description",
+      label: "Palavra-chave presente na meta description",
+      passed: seoIncludes(description, keyword),
+      points: 10
+    },
+    {
+      id: "keyword_slug",
+      label: "Palavra-chave relacionada ao slug",
+      passed:
+        Boolean(keyword) &&
+        normalizeSeoText(keyword)
+          .split(/\s+/)
+          .filter(Boolean)
+          .some((word) =>
+            normalizeSeoText(slug).includes(word)
+          ),
+      points: 10
+    },
+    {
+      id: "image_alt",
+      label: "Texto alternativo da imagem preenchido",
+      passed: Boolean(imageAlt),
+      points: 10
+    },
+    {
+      id: "image",
+      label: "Imagem principal cadastrada",
+      passed: Boolean(imageUrl),
+      points: 5
+    },
+    {
+      id: "content",
+      label: "Descrição do produto com pelo menos 80 caracteres",
+      passed: productDescription.length >= 80,
+      points: 5
+    }
+  ];
+
+  const score = checks.reduce(
+    (total, check) =>
+      total + (check.passed ? check.points : 0),
+    0
+  );
+
+  return {
+    score,
+    checks,
+    name,
+    slug,
+    title,
+    description,
+    imageAlt,
+    keyword,
+    imageUrl
+  };
+}
+
+function getSeoScoreLevel(score) {
+  if (score >= 80) {
+    return {
+      className: "good",
+      label: "Ótimo"
+    };
+  }
+
+  if (score >= 55) {
+    return {
+      className: "medium",
+      label: "Pode melhorar"
+    };
+  }
+
+  return {
+    className: "poor",
+    label: "Incompleto"
+  };
+}
+
+function renderSeoAnalysis() {
+  const analysis =
+    calculateProductSeoScore();
+
+  const level =
+    getSeoScoreLevel(analysis.score);
+
+  const circle =
+    $("#seoScoreCircle");
+
+  const value =
+    $("#seoScoreValue");
+
+  const checklist =
+    $("#seoChecklist");
+
+  if (value) {
+    value.textContent =
+      String(analysis.score);
+  }
+
+  if (circle) {
+    circle.classList.remove(
+      "poor",
+      "medium",
+      "good"
+    );
+
+    circle.classList.add(
+      level.className
+    );
+
+    circle.setAttribute(
+      "aria-label",
+      `SEO Score ${analysis.score} de 100: ${level.label}`
+    );
+  }
+
+  if (checklist) {
+    checklist.innerHTML =
+      analysis.checks
+        .map((check) => `
+          <div class="seo-check-item ${
+            check.passed
+              ? "passed"
+              : "failed"
+          }">
+            <span class="seo-check-icon">
+              ${
+                check.passed
+                  ? "✓"
+                  : "!"
+              }
+            </span>
+
+            <div>
+              <strong>
+                ${check.label}
+              </strong>
+
+              <small>
+                ${
+                  check.passed
+                    ? `+${check.points} pontos`
+                    : `${check.points} pontos disponíveis`
+                }
+              </small>
+            </div>
+          </div>
+        `)
+        .join("");
+  }
+
+  updateSeoCharacterStatus(
+    "#seoTitleCount",
+    analysis.title.length,
+    45,
+    65
+  );
+
+  updateSeoCharacterStatus(
+    "#seoDescriptionCount",
+    analysis.description.length,
+    120,
+    165
+  );
+}
+
+function updateSeoCharacterStatus(
+  selector,
+  length,
+  idealMin,
+  idealMax
+) {
+  const element =
+    $(selector);
+
+  if (!element) {
+    return;
+  }
+
+  element.classList.remove(
+    "counter-poor",
+    "counter-medium",
+    "counter-good"
+  );
+
+  if (
+    length >= idealMin &&
+    length <= idealMax
+  ) {
+    element.classList.add(
+      "counter-good"
+    );
+
+    return;
+  }
+
+  if (
+    length >= Math.max(1, idealMin - 15) &&
+    length <= idealMax + 10
+  ) {
+    element.classList.add(
+      "counter-medium"
+    );
+
+    return;
+  }
+
+  element.classList.add(
+    "counter-poor"
+  );
+}
+
+function updateSeoSocialPreview(
+  title,
+  description
+) {
+  const whatsappTitle =
+    $("#seoWhatsappTitle");
+
+  const whatsappDescription =
+    $("#seoWhatsappDescription");
+
+  const whatsappImage =
+    $("#seoWhatsappImage");
+
+  if (whatsappTitle) {
+    whatsappTitle.textContent =
+      title;
+  }
+
+  if (whatsappDescription) {
+    whatsappDescription.textContent =
+      description;
+  }
+
+  if (whatsappImage) {
+    whatsappImage.src =
+      $("#productImage")?.value.trim() ||
+      "../assets/hero-caneca.png";
+
+    whatsappImage.alt =
+      $("#productImageAlt")?.value.trim() ||
+      title;
+  }
+}
+
+function updateProductSeoPreview() {
+  const productName =
+    $("#productName")?.value.trim() ||
+    "Título do produto";
+
+  const rawSlug =
+    $("#productSlug")?.value.trim() ||
+    "";
+
+  const title =
+    $("#productSeoTitle")?.value.trim() ||
+    `${productName} | MugArt`;
+
+  const description =
+    $("#productSeoDescription")?.value.trim() ||
+    "A descrição SEO aparecerá aqui.";
+
+  /*
+   * O campo permanece exatamente como foi digitado.
+   * Somente a URL recebe codificação para funcionar no navegador.
+   */
+  const generatedUrl = rawSlug
+    ? `https://mugart.com.br/produto.html?slug=${encodeURIComponent(rawSlug)}`
+    : "";
+
+  if ($("#slugFullPreview")) {
+    $("#slugFullPreview").textContent =
+      generatedUrl ||
+      "Preencha o slug para gerar a URL.";
+  }
+
+  if ($("#productCanonicalPreview")) {
+    $("#productCanonicalPreview").textContent =
+      generatedUrl ||
+      "Será gerada automaticamente após preencher o slug.";
+  }
+
+  if ($("#seoTitleCount")) {
+    $("#seoTitleCount").textContent = String(
+      $("#productSeoTitle")?.value.length || 0
+    );
+  }
+
+  if ($("#seoDescriptionCount")) {
+    $("#seoDescriptionCount").textContent = String(
+      $("#productSeoDescription")?.value.length || 0
+    );
+  }
+
+  if ($("#seoPreviewTitle")) {
+    $("#seoPreviewTitle").textContent = title;
+  }
+
+  if ($("#seoPreviewUrl")) {
+    $("#seoPreviewUrl").textContent =
+      generatedUrl ||
+      "https://mugart.com.br/produto.html?slug=...";
+  }
+
+  if ($("#seoPreviewDescription")) {
+    $("#seoPreviewDescription").textContent =
+      description;
+  }
+
+  updateSeoSocialPreview(
+    title,
+    description
+  );
+
+  renderSeoAnalysis();
+
+  const complete =
+    Boolean(rawSlug) &&
+    Boolean($("#productFocusKeyword")?.value.trim()) &&
+    Boolean($("#productSeoTitle")?.value.trim()) &&
+    Boolean($("#productSeoDescription")?.value.trim()) &&
+    Boolean($("#productImageAlt")?.value.trim());
+
+  const completion = $("#seoCompletion");
+
+  if (completion) {
+    completion.textContent =
+      complete
+        ? "SEO completo"
+        : "SEO incompleto";
+
+    completion.classList.toggle(
+      "complete",
+      complete
+    );
+  }
 }
 
 async function populateCategorySelect() {
@@ -237,50 +659,19 @@ async function populateCategorySelect() {
     return;
   }
 
-  select.innerHTML = categories
-    .map((category) => `<option value="${category.id}">${category.name}</option>`)
-    .join("");
-}
+  function addOptions(parentId = null, level = 0) {
+    return categories
+      .filter((category) => (category.parent_id || null) === parentId)
+      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"))
+      .map((category) => {
+        const prefix = level === 0 ? "" : `${"— ".repeat(level)}`;
+        const option = `<option value="${category.id}">${prefix}${escapeAdminHtml(category.name)}</option>`;
+        return option + addOptions(category.id, level + 1);
+      })
+      .join("");
+  }
 
-function setupImageUploadUI() {
-  const imageInput = $("#productImage");
-  if (!imageInput) return;
-
-  const oldLabel = imageInput.closest("label");
-  if (!oldLabel || $("#productImageFile")) return;
-
-  oldLabel.classList.add("full");
-
-  oldLabel.insertAdjacentHTML("beforeend", `
-    <div class="upload-box">
-      <div class="image-preview-wrap">
-        <img id="productImagePreview" src="" alt="Preview do produto" />
-        <span id="productImagePlaceholder">Nenhuma imagem selecionada</span>
-      </div>
-
-      <div class="upload-actions">
-        <label class="upload-btn">
-          Escolher imagem
-          <input id="productImageFile" type="file" accept="image/png,image/jpeg,image/webp" />
-        </label>
-
-        <button id="uploadProductImageBtn" type="button" class="upload-send-btn">
-          Enviar imagem
-        </button>
-      </div>
-
-      <small class="upload-help">
-        A imagem será enviada para o Supabase Storage e a URL será preenchida automaticamente.
-      </small>
-    </div>
-  `);
-
-  imageInput.placeholder = "A URL será preenchida automaticamente após upload";
-
-  $("#productImageFile").addEventListener("change", previewSelectedImage);
-  $("#uploadProductImageBtn").addEventListener("click", uploadSelectedProductImage);
-
-  imageInput.addEventListener("input", updateImagePreviewFromUrl);
+  select.innerHTML = addOptions();
 }
 
 function previewSelectedImage(event) {
@@ -405,7 +796,16 @@ async function saveProductFromForm(event) {
     image_url: $("#productImage").value.trim(),
     description: $("#productDescription").value.trim(),
     active: $("#productActive").value === "true",
-    featured: $("#productFeatured").value === "true"
+    featured: $("#productFeatured").value === "true",
+    slug: $("#productSlug").value.trim() || generateProductSlug($("#productName").value),
+    seo_title: $("#productSeoTitle").value.trim() || null,
+    seo_description: $("#productSeoDescription").value.trim() || null,
+    focus_keyword: $("#productFocusKeyword").value.trim() || null,
+    image_alt: $("#productImageAlt").value.trim() || null,
+    canonical_url: $("#productSlug").value.trim()
+      ? `https://mugart.com.br/produto.html?slug=${encodeURIComponent($("#productSlug").value.trim())}`
+      : null,
+    noindex: $("#productNoindex").value === "true"
   };
 
   let result;
@@ -414,11 +814,15 @@ async function saveProductFromForm(event) {
     result = await mugartSupabase
       .from("products")
       .update(product)
-      .eq("id", currentId);
+      .eq("id", currentId)
+      .select()
+      .single();
   } else {
     result = await mugartSupabase
       .from("products")
-      .insert(product);
+      .insert(product)
+      .select()
+      .single();
   }
 
   if (result.error) {
@@ -427,16 +831,38 @@ async function saveProductFromForm(event) {
     return;
   }
 
-  clearProductForm();
+  const savedProduct = result.data;
+
+  $("#productId").value = savedProduct.id;
+  $("#productFormTitle").textContent = "Editar produto";
+
+  if (typeof window.initializeProductVariants === "function") {
+    await window.initializeProductVariants(savedProduct.id);
+  }
+
+  if (typeof window.initializeProductImages === "function") {
+    await window.initializeProductImages(savedProduct.id);
+  }
+
   await renderProductsTable();
 
-  alert("Produto salvo com sucesso.");
+  alert("Produto salvo com sucesso. Agora você pode cadastrar ou editar as variações.");
 }
 
 function clearProductForm() {
   $("#productForm").reset();
   $("#productId").value = "";
   $("#productFormTitle").textContent = "Novo produto";
+
+  if ($("#productSlug")) {
+    $("#productSlug").dataset.edited = "";
+  }
+
+  if ($("#productSeoTitle")) {
+    $("#productSeoTitle").dataset.edited = "";
+  }
+
+  updateProductSeoPreview();
 
   const preview = $("#productImagePreview");
   const placeholder = $("#productImagePlaceholder");
@@ -448,6 +874,14 @@ function clearProductForm() {
 
   if (placeholder) {
     placeholder.style.display = "block";
+  }
+
+  if (typeof window.initializeProductVariants === "function") {
+    window.initializeProductVariants(null);
+  }
+
+  if (typeof window.initializeProductImages === "function") {
+    window.initializeProductImages(null);
   }
 }
 
@@ -520,9 +954,27 @@ window.editProduct = async function(id) {
   $("#productDescription").value = product.description || "";
   $("#productActive").value = String(product.active);
   $("#productFeatured").value = String(product.featured);
+  $("#productSlug").value = product.slug || generateProductSlug(product.name);
+  $("#productSeoTitle").value = product.seo_title || "";
+  $("#productSeoDescription").value = product.seo_description || "";
+  $("#productFocusKeyword").value = product.focus_keyword || "";
+  $("#productImageAlt").value = product.image_alt || "";
+  $("#productNoindex").value = String(product.noindex === true);
+  $("#productSlug").dataset.edited = product.slug ? "true" : "";
+  $("#productSeoTitle").dataset.edited = product.seo_title ? "true" : "";
   $("#productFormTitle").textContent = "Editar produto";
 
+  updateProductSeoPreview();
+
   updateImagePreviewFromUrl();
+
+  if (typeof window.initializeProductVariants === "function") {
+    await window.initializeProductVariants(product.id);
+  }
+
+  if (typeof window.initializeProductImages === "function") {
+    await window.initializeProductImages(product.id);
+  }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
@@ -543,33 +995,58 @@ window.deleteProduct = async function(id) {
   await renderProductsTable();
 };
 
-/* ==========================
-   CATEGORIAS
-========================== */
+/* CATEGORIAS */
+
+let adminCategoriesCache = [];
 
 async function initCategoriesPage() {
+  const form = $("#categoryForm");
+  if (!form) return;
+
   await renderCategoriesList();
 
-  $("#categoryForm").addEventListener("submit", async (event) => {
+  if (form.dataset.bound === "true") return;
+  form.dataset.bound = "true";
+
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const name = $("#categoryName").value.trim();
-    if (!name) return;
+    const parentId = $("#categoryParent")?.value || null;
+
+    if (!name) {
+      alert("Digite o nome da categoria.");
+      return;
+    }
+
+    const duplicate = adminCategoriesCache.find((category) =>
+      category.name.trim().toLowerCase() === name.toLowerCase() &&
+      (category.parent_id || null) === (parentId || null)
+    );
+
+    if (duplicate) {
+      alert("Já existe uma categoria com esse nome nesse nível.");
+      return;
+    }
 
     const result = await mugartSupabase
       .from("categories")
       .insert({
-        name: name,
+        name,
         slug: slugify(name),
+        parent_id: parentId,
         active: true
       });
 
     if (result.error) {
+      console.error(result.error);
       alert("Erro ao salvar categoria: " + result.error.message);
       return;
     }
 
     $("#categoryName").value = "";
+    if ($("#categoryParent")) $("#categoryParent").value = "";
+
     await renderCategoriesList();
   });
 }
@@ -579,19 +1056,207 @@ async function renderCategoriesList() {
   if (!list) return;
 
   const categories = await getCategories();
+  adminCategoriesCache = categories;
 
-  list.innerHTML = categories.length
-    ? categories.map((category) => `
-      <span class="category-chip-admin">
-        ${category.name}
-        <button type="button" onclick="deleteCategory('${category.id}')">x</button>
-      </span>
-    `).join("")
-    : `<p>Nenhuma categoria cadastrada.</p>`;
+  renderCategoryParentSelect(categories);
+
+  if (!categories.length) {
+    list.innerHTML = `<p>Nenhuma categoria cadastrada.</p>`;
+    return;
+  }
+
+  const roots = categories
+    .filter((category) => !category.parent_id)
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+
+  list.innerHTML = roots
+    .map((category) => renderCategoryTree(category, categories, 0))
+    .join("");
 }
 
+function renderCategoryParentSelect(categories) {
+  const select = $("#categoryParent");
+  if (!select) return;
+
+  const currentValue = select.value || "";
+
+  const roots = categories
+    .filter((category) => !category.parent_id)
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+
+  select.innerHTML = `
+    <option value="">Nenhuma — categoria principal</option>
+    ${roots.map((category) => `
+      <option value="${category.id}">${escapeAdminHtml(category.name)}</option>
+    `).join("")}
+  `;
+
+  if (roots.some((category) => category.id === currentValue)) {
+    select.value = currentValue;
+  }
+}
+
+function renderCategoryTree(category, categories, level = 0) {
+  const children = categories
+    .filter((item) => item.parent_id === category.id)
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+
+  return `
+    <div class="category-tree-item" style="margin-left:${level * 24}px;">
+      <div class="category-tree-row">
+        <div class="category-tree-name">
+          <span>${level === 0 ? "📁" : "↳"}</span>
+          <strong>${escapeAdminHtml(category.name)}</strong>
+          <small>${level === 0 ? "Categoria principal" : "Subcategoria"}</small>
+        </div>
+
+        <div class="category-tree-actions">
+          <button type="button" onclick="editCategory('${category.id}')">Editar</button>
+          <button type="button" onclick="deleteCategory('${category.id}')">Excluir</button>
+        </div>
+      </div>
+
+      ${children.map((child) => renderCategoryTree(child, categories, level + 1)).join("")}
+    </div>
+  `;
+}
+
+function escapeAdminHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function categoryHasDescendant(categoryId, possibleParentId) {
+  let current = adminCategoriesCache.find(
+    (category) => category.id === possibleParentId
+  );
+
+  const visited = new Set();
+
+  while (current?.parent_id) {
+    if (visited.has(current.id)) return false;
+    visited.add(current.id);
+
+    if (current.parent_id === categoryId) return true;
+
+    current = adminCategoriesCache.find(
+      (category) => category.id === current.parent_id
+    );
+  }
+
+  return false;
+}
+
+window.editCategory = async function(id) {
+  const category = adminCategoriesCache.find(
+    (item) => item.id === id
+  );
+
+  if (!category) return;
+
+  const name = prompt("Nome da categoria:", category.name);
+  if (name === null) return;
+
+  const cleanName = name.trim();
+  if (!cleanName) {
+    alert("O nome da categoria não pode ficar vazio.");
+    return;
+  }
+
+  const possibleParents = adminCategoriesCache.filter(
+    (item) =>
+      item.id !== id &&
+      !categoryHasDescendant(id, item.id)
+  );
+
+  const currentParent = category.parent_id
+    ? adminCategoriesCache.find((item) => item.id === category.parent_id)
+    : null;
+
+  const parentNames = possibleParents
+    .filter((item) => item.id !== category.parent_id)
+    .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"))
+    .map((item) => item.name);
+
+  let parentId = category.parent_id || null;
+
+  if (possibleParents.length) {
+    const answer = prompt(
+      "Categoria pai. Deixe vazio para categoria principal.\n\n" +
+      "Categorias disponíveis:\n" +
+      parentNames.map((name) => `- ${name}`).join("\n"),
+      currentParent?.name || ""
+    );
+
+    if (answer === null) return;
+
+    const cleanParent = answer.trim();
+
+    if (!cleanParent) {
+      parentId = null;
+    } else {
+      const foundParent = possibleParents.find(
+        (item) => item.name.toLowerCase() === cleanParent.toLowerCase()
+      );
+
+      if (!foundParent) {
+        alert("Categoria pai não encontrada. Digite exatamente o nome mostrado na lista.");
+        return;
+      }
+
+      parentId = foundParent.id;
+    }
+  }
+
+  const duplicate = adminCategoriesCache.find((item) =>
+    item.id !== id &&
+    item.name.trim().toLowerCase() === cleanName.toLowerCase() &&
+    (item.parent_id || null) === (parentId || null)
+  );
+
+  if (duplicate) {
+    alert("Já existe uma categoria com esse nome nesse nível.");
+    return;
+  }
+
+  const result = await mugartSupabase
+    .from("categories")
+    .update({
+      name: cleanName,
+      slug: slugify(cleanName),
+      parent_id: parentId
+    })
+    .eq("id", id);
+
+  if (result.error) {
+    console.error(result.error);
+    alert("Erro ao editar categoria: " + result.error.message);
+    return;
+  }
+
+  await renderCategoriesList();
+};
+
 window.deleteCategory = async function(id) {
-  if (!confirm("Deseja excluir esta categoria?")) return;
+  const category = adminCategoriesCache.find(
+    (item) => item.id === id
+  );
+
+  if (!category) return;
+
+  const children = adminCategoriesCache.filter(
+    (item) => item.parent_id === id
+  );
+
+  const message = children.length
+    ? `A categoria "${category.name}" possui ${children.length} subcategoria(s). Elas serão mantidas e virarão categorias principais.\n\nDeseja continuar?`
+    : `Deseja excluir a categoria "${category.name}"?`;
+
+  if (!confirm(message)) return;
 
   const result = await mugartSupabase
     .from("categories")
@@ -599,16 +1264,18 @@ window.deleteCategory = async function(id) {
     .eq("id", id);
 
   if (result.error) {
-    alert("Erro ao excluir categoria. Verifique se existem produtos vinculados.");
+    console.error(result.error);
+    alert(
+      "Erro ao excluir categoria. Se houver produtos vinculados, mova-os para outra categoria antes de excluir.\n\n" +
+      result.error.message
+    );
     return;
   }
 
   await renderCategoriesList();
 };
 
-/* ==========================
-   PEDIDOS
-========================== */
+/* PEDIDOS */
 
 async function initOrdersPage() {
   $("#createFakeOrder")?.addEventListener("click", createFakeOrder);
@@ -707,3 +1374,280 @@ window.deleteOrder = async function(id) {
 
   await renderOrdersTable();
 };
+
+/* ==========================
+   CONFIGURAÇÕES DE ANALYTICS
+========================== */
+
+async function initAnalyticsSettingsPage() {
+  await loadAnalyticsSettings();
+
+  const form = $("#analyticsSettingsForm");
+
+  if (!form) return;
+
+  form.addEventListener("submit", saveAnalyticsSettings);
+}
+
+async function loadAnalyticsSettings() {
+  const gtmIdInput = $("#googleTagManagerId");
+  const ga4IdInput = $("#googleAnalyticsId");
+  const gtmActiveInput = $("#googleTagManagerActive");
+  const ga4ActiveInput = $("#googleAnalyticsActive");
+  const statusElement = $("#analyticsSettingsStatus");
+
+  if (
+    !gtmIdInput ||
+    !ga4IdInput ||
+    !gtmActiveInput ||
+    !ga4ActiveInput
+  ) {
+    return;
+  }
+
+  if (statusElement) {
+    statusElement.textContent = "Carregando configurações...";
+    statusElement.className = "settings-status loading";
+  }
+
+  const result = await mugartSupabase
+    .from("site_settings")
+    .select("setting_key, setting_value, is_active")
+    .in("setting_key", [
+      "google_tag_manager_id",
+      "google_analytics_id"
+    ]);
+
+  if (result.error) {
+    console.error(
+      "Erro ao carregar configurações de Analytics:",
+      result.error
+    );
+
+    if (statusElement) {
+      statusElement.textContent =
+        "Não foi possível carregar as configurações.";
+
+      statusElement.className = "settings-status error";
+    }
+
+    return;
+  }
+
+  const settings = {};
+
+  for (const item of result.data || []) {
+    settings[item.setting_key] = item;
+  }
+
+  const gtmSetting = settings.google_tag_manager_id;
+  const ga4Setting = settings.google_analytics_id;
+
+  gtmIdInput.value = gtmSetting?.setting_value || "";
+  ga4IdInput.value = ga4Setting?.setting_value || "";
+
+  gtmActiveInput.checked = gtmSetting?.is_active === true;
+  ga4ActiveInput.checked = ga4Setting?.is_active === true;
+
+  updateAnalyticsStatusCards();
+
+  if (statusElement) {
+    statusElement.textContent = "Configurações carregadas.";
+    statusElement.className = "settings-status success";
+  }
+}
+
+async function saveAnalyticsSettings(event) {
+  event.preventDefault();
+
+  const gtmId = $("#googleTagManagerId")
+    .value
+    .trim()
+    .toUpperCase();
+
+  const ga4Id = $("#googleAnalyticsId")
+    .value
+    .trim()
+    .toUpperCase();
+
+  const gtmActive = $("#googleTagManagerActive").checked;
+  const ga4Active = $("#googleAnalyticsActive").checked;
+
+  const saveButton = $("#saveAnalyticsSettings");
+  const statusElement = $("#analyticsSettingsStatus");
+
+  if (gtmId && !validateGtmId(gtmId)) {
+    alert(
+      "O ID do Google Tag Manager deve seguir o formato GTM-XXXXXXX."
+    );
+
+    $("#googleTagManagerId").focus();
+    return;
+  }
+
+  if (ga4Id && !validateGa4Id(ga4Id)) {
+    alert(
+      "O ID do Google Analytics deve seguir o formato G-XXXXXXXXXX."
+    );
+
+    $("#googleAnalyticsId").focus();
+    return;
+  }
+
+  if (gtmActive && !gtmId) {
+    alert(
+      "Informe o ID do Google Tag Manager antes de ativá-lo."
+    );
+
+    $("#googleTagManagerId").focus();
+    return;
+  }
+
+  if (ga4Active && !ga4Id) {
+    alert(
+      "Informe o ID do Google Analytics antes de ativá-lo."
+    );
+
+    $("#googleAnalyticsId").focus();
+    return;
+  }
+
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent = "Salvando...";
+  }
+
+  if (statusElement) {
+    statusElement.textContent = "Salvando configurações...";
+    statusElement.className = "settings-status loading";
+  }
+
+  const settings = [
+    {
+      setting_key: "google_tag_manager_id",
+      setting_value: gtmId,
+      is_active: gtmActive,
+      updated_at: new Date().toISOString()
+    },
+    {
+      setting_key: "google_analytics_id",
+      setting_value: ga4Id,
+      is_active: ga4Active,
+      updated_at: new Date().toISOString()
+    }
+  ];
+
+  const result = await mugartSupabase
+    .from("site_settings")
+    .upsert(settings, {
+      onConflict: "setting_key"
+    });
+
+  if (saveButton) {
+    saveButton.disabled = false;
+    saveButton.textContent = "Salvar configurações";
+  }
+
+  if (result.error) {
+    console.error(
+      "Erro ao salvar configurações de Analytics:",
+      result.error
+    );
+
+    if (statusElement) {
+      statusElement.textContent =
+        "Erro ao salvar as configurações.";
+
+      statusElement.className = "settings-status error";
+    }
+
+    alert(
+      "Erro ao salvar configurações: " +
+      result.error.message
+    );
+
+    return;
+  }
+
+  updateAnalyticsStatusCards();
+
+  if (statusElement) {
+    statusElement.textContent =
+      "Configurações salvas com sucesso.";
+
+    statusElement.className = "settings-status success";
+  }
+
+  alert(
+    "Configurações de Google Tag Manager e Google Analytics salvas."
+  );
+}
+
+function validateGtmId(value) {
+  if (!value) return true;
+
+  return /^GTM-[A-Z0-9]+$/i.test(value);
+}
+
+function validateGa4Id(value) {
+  if (!value) return true;
+
+  return /^G-[A-Z0-9]+$/i.test(value);
+}
+
+function updateAnalyticsStatusCards() {
+  const gtmId = $("#googleTagManagerId")?.value.trim();
+  const ga4Id = $("#googleAnalyticsId")?.value.trim();
+
+  const gtmActive = $("#googleTagManagerActive")?.checked;
+  const ga4Active = $("#googleAnalyticsActive")?.checked;
+
+  updateIntegrationStatus(
+    "#gtmIntegrationStatus",
+    gtmActive,
+    gtmId
+  );
+
+  updateIntegrationStatus(
+    "#ga4IntegrationStatus",
+    ga4Active,
+    ga4Id
+  );
+}
+
+function updateIntegrationStatus(
+  selector,
+  isActive,
+  integrationId
+) {
+  const element = $(selector);
+
+  if (!element) return;
+
+  if (isActive && integrationId) {
+    element.textContent = "Ativo";
+    element.className = "integration-status active";
+    return;
+  }
+
+  element.textContent = "Inativo";
+  element.className = "integration-status inactive";
+}
+
+document.addEventListener("change", (event) => {
+  if (
+    event.target.matches("#googleTagManagerActive") ||
+    event.target.matches("#googleAnalyticsActive")
+  ) {
+    updateAnalyticsStatusCards();
+  }
+});
+
+document.addEventListener("input", (event) => {
+  if (
+    event.target.matches("#googleTagManagerId") ||
+    event.target.matches("#googleAnalyticsId")
+  ) {
+    updateAnalyticsStatusCards();
+  }
+});
