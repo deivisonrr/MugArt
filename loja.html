@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="css/loja.css?v=6">
   <link rel="stylesheet" href="css/header-account.css?v=3">
+  <link rel="stylesheet" href="css/filtros-hierarquia.css?v=1">
 
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -190,8 +191,24 @@
         </label>
 
         <label>
+          Tipo de produto
+          <select id="productTypeFilter">
+            <option value="todos">Todos os tipos</option>
+          </select>
+        </label>
+        
+        <label>
           Categoria
-          <select id="categoryFilter"></select>
+          <select id="categoryFilter">
+            <option value="todos">Todas as categorias</option>
+          </select>
+        </label>
+        
+        <label>
+          Subcategoria
+          <select id="subcategoryFilter">
+            <option value="todos">Todas as subcategorias</option>
+          </select>
         </label>
 
         <label>
