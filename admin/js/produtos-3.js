@@ -710,9 +710,66 @@ function renderAdmin3() {
   renderProducts();
 }
 
+function getCategoryById(id) {
+  return Admin3State.categories.find((category) => String(category.id) === String(id)) || null;
+}
+
+function getCategoryLevel(category) {
+  if (!category) return null;
+
+  // Nível 1 = Tipo de produto
+  if (!category.parent_id) return 1;
+
+  const parent = getCategoryById(category.parent_id);
+
+  // Nível 2 = Categoria
+  if (parent && !parent.parent_id) return 2;
+
+  // Nível 3 = Subcategoria
+  return 3;
+}
+
+function getSubcategories() {
+  return Admin3State.categories.filter((category) => {
+    return getCategoryLevel(category) === 3;
+  });
+}
+
+function getCategoryHierarchy(categoryId) {
+  const selected = getCategoryById(categoryId);
+  if (!selected) return { type: null, category: null, subcategory: null };
+
+  let subcategory = selected;
+  let category = getCategoryById(subcategory.parent_id);
+  let type = category ? getCategoryById(category.parent_id) : null;
+
+  // Compatibilidade com produtos antigos:
+  // se o category_id ainda aponta para tipo/categoria, devolvemos o que for possível.
+  const level = getCategoryLevel(selected);
+
+  if (level === 1) {
+    type = selected;
+    category = null;
+    subcategory = null;
+  } else if (level === 2) {
+    type = category;
+    category = selected;
+    subcategory = null;
+  }
+
+  return { type, category, subcategory };
+}
+
+function getCategoryPath(categoryId) {
+  const hierarchy = getCategoryHierarchy(categoryId);
+  return [hierarchy.type?.name, hierarchy.category?.name, hierarchy.subcategory?.name]
+    .filter(Boolean)
+    .join(" > ");
+}
+
 function renderCategoryOptions() {
   const filter = a3("#admin3CategoryFilter");
-  const field = a3("#admin3Category");
+  const field = a3("#admin3Subcategory");
 
   if (filter) {
     filter.innerHTML = `<option value="todos">Todas</option>` + Admin3State.categories
@@ -721,9 +778,25 @@ function renderCategoryOptions() {
   }
 
   if (field) {
-    field.innerHTML = Admin3State.categories.length
-      ? Admin3State.categories.map((category) => `<option value="${category.id}">${category.name}</option>`).join("")
-      : `<option value="">Cadastre uma categoria primeiro</option>`;
+    const subcategories = getSubcategories();
+
+    if (!subcategories.length) {
+      field.innerHTML = `<option value="">Cadastre uma subcategoria primeiro</option>`;
+      return;
+    }
+
+    field.innerHTML = `<option value="">Selecione a subcategoria</option>` +
+      subcategories
+        .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"))
+        .map((subcategory) => {
+          const hierarchy = getCategoryHierarchy(subcategory.id);
+          const path = [hierarchy.type?.name, hierarchy.category?.name, subcategory.name]
+            .filter(Boolean)
+            .join(" > ");
+
+          return `<option value="${subcategory.id}">${path}</option>`;
+        })
+        .join("");
   }
 }
 
@@ -752,7 +825,8 @@ function getFilteredProducts() {
       product.name.toLowerCase().includes(search) ||
       (product.sku || "").toLowerCase().includes(search) ||
       (product.color || "").toLowerCase().includes(search) ||
-      (product.categories?.name || "").toLowerCase().includes(search);
+      (product.categories?.name || "").toLowerCase().includes(search) ||
+      getCategoryPath(product.category_id).toLowerCase().includes(search);
 
     const matchesCategory = category === "todos" || product.category_id === category;
 
@@ -799,7 +873,7 @@ function productCardTemplate(product) {
       </div>
 
       <div class="admin3-badges">
-        <span class="admin3-badge">${product.categories ? product.categories.name : "Sem categoria"}</span>
+        <span class="admin3-badge">${getCategoryPath(product.category_id) || (product.categories ? product.categories.name : "Sem categoria")}</span>
         <span class="admin3-badge">${product.color || "Sem cor"}</span>
         <span class="admin3-badge ${Number(product.stock || 0) <= Number(product.min_stock ?? 5) ? "red" : ""}">Estoque: ${product.stock || 0}</span>
         ${product.featured ? `<span class="admin3-badge yellow">Destaque</span>` : ""}
@@ -836,7 +910,7 @@ function productRowTemplate(product) {
       </div>
 
       <div class="admin3-badges">
-        <span class="admin3-badge">${product.categories ? product.categories.name : "Sem categoria"}</span>
+        <span class="admin3-badge">${getCategoryPath(product.category_id) || (product.categories ? product.categories.name : "Sem categoria")}</span>
         <span class="admin3-badge">${product.color || "Sem cor"}</span>
         <span class="admin3-badge ${Number(product.stock || 0) <= Number(product.min_stock ?? 5) ? "red" : ""}">Estoque: ${product.stock || 0}</span>
       </div>
@@ -912,7 +986,12 @@ window.editAdmin3Product = async function(id) {
   a3("#admin3ProductId").value = product.id;
   a3("#admin3Name").value = product.name || "";
   a3("#admin3Sku").value = product.sku || "";
-  a3("#admin3Category").value = product.category_id || "";
+  const productHierarchy = getCategoryHierarchy(product.category_id);
+  const subcategoryField = a3("#admin3Subcategory");
+
+  if (subcategoryField) {
+    subcategoryField.value = productHierarchy.subcategory?.id || "";
+  }
   a3("#admin3Color").value = product.color || "";
   if (a3("#admin3Ean")) a3("#admin3Ean").value = product.ean || "";
   if (a3("#admin3Brand")) a3("#admin3Brand").value = product.brand || "MugArt";
@@ -992,8 +1071,11 @@ async function saveProduct(event) {
     beforeData = Admin3State.products.find((item) => item.id === currentId) || null;
   }
 
-  if (!a3("#admin3Category").value) {
-    alert("Cadastre uma categoria primeiro.");
+  const selectedSubcategoryId = a3("#admin3Subcategory")?.value || "";
+  const selectedHierarchy = getCategoryHierarchy(selectedSubcategoryId);
+
+  if (!selectedSubcategoryId || !selectedHierarchy.subcategory) {
+    alert("Selecione uma subcategoria para o produto.");
     return;
   }
 
@@ -1055,7 +1137,7 @@ async function saveProduct(event) {
   const product = {
     name: a3("#admin3Name").value.trim(),
     sku,
-    category_id: a3("#admin3Category").value,
+    category_id: selectedSubcategoryId,
     color: a3("#admin3Color").value.trim(),
     ean: a3("#admin3Ean")?.value.replace(/\D/g, "") || null,
     brand: a3("#admin3Brand")?.value.trim() || "MugArt",

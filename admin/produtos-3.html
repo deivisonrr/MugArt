@@ -117,9 +117,12 @@
             <input id="admin3Sku" placeholder="Gerado automaticamente" readonly="" required=""/>
 <small>O SKU é criado automaticamente.</small>
 </label>
-<label>
-            Categoria
-            <select id="admin3Category" required=""></select>
+<label class="full">
+            Subcategoria
+            <select id="admin3Subcategory" required="">
+              <option value="">Selecione a subcategoria</option>
+            </select>
+            <small>O tipo de produto e a categoria serão herdados automaticamente da subcategoria.</small>
 </label>
 <label>
     Cor
@@ -483,6 +486,6 @@
 <script src="/js/supabase-config.js?v=5"></script>
 <script src="/admin/js/admin-auth.js?v=1"></script>
 <script src="/admin/js/admin.js?v=5"></script>
-<script type="module" src="js/produtos-3.js?v=43"></script>
+<script type="module" src="js/produtos-3.js?v=44"></script>
 </body>
 </html>
