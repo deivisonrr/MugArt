@@ -289,61 +289,245 @@
     setStatus("Item excluído com sucesso.","ok");
   }
 
+    // Guarda quais tipos e categorias estão expandidos
+  const expandedTypes = new Set();
+  const expandedCategories = new Set();
+
   function renderTree() {
     const term = els.search.value.trim().toLowerCase();
     const html = [];
 
-    for(const type of roots().sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"))) {
-      const cats = childrenOf(type.id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+    const sortedTypes = roots().sort((a, b) =>
+      a.name.localeCompare(b.name, "pt-BR")
+    );
 
-      let typeShown = false;
+    for (const type of sortedTypes) {
 
-      for(const cat of cats) {
-        const subs = childrenOf(cat.id).sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
+      const cats = childrenOf(type.id).sort((a, b) =>
+        a.name.localeCompare(b.name, "pt-BR")
+      );
+
+      // Verifica se existe algum resultado dentro deste tipo
+      let typeMatch =
+        !term ||
+        type.name.toLowerCase().includes(term);
+
+      let visibleCategories = [];
+
+      for (const cat of cats) {
+
+        const subs = childrenOf(cat.id).sort((a, b) =>
+          a.name.localeCompare(b.name, "pt-BR")
+        );
+
         const catPath = `${type.name} / ${cat.name}`;
-        const catMatch = !term || catPath.toLowerCase().includes(term);
 
-        if(catMatch) {
-          html.push(`
-            <div class="tree-row level2">
-              <div class="row-main">
-                <div class="path"><span class="badge">CAT</span>${esc(catPath)}</div>
-                <div class="row-actions"><button class="secondary" data-edit="${esc(cat.id)}">Editar</button></div>
-              </div>
-            </div>`);
-          typeShown = true;
-        }
+        const catMatches =
+          !term ||
+          catPath.toLowerCase().includes(term);
 
-        for(const sub of subs) {
+        const visibleSubs = subs.filter(sub => {
           const path = `${type.name} / ${cat.name} / ${sub.name}`;
-          if(term && !path.toLowerCase().includes(term)) continue;
+          return !term || path.toLowerCase().includes(term);
+        });
+
+        if (catMatches || visibleSubs.length > 0) {
+          visibleCategories.push({
+            cat,
+            subs,
+            visibleSubs,
+            catMatches
+          });
+
+          typeMatch = true;
+        }
+      }
+
+      // Se não houver resultado para este tipo, não mostra
+      if (!typeMatch) continue;
+
+      const hasChildren = cats.length > 0;
+
+      /*
+       * Quando existe uma pesquisa:
+       * mostramos automaticamente os níveis que possuem resultados.
+       *
+       * Sem pesquisa:
+       * respeitamos exatamente o que o usuário abriu/fechou.
+       */
+      const typeExpanded =
+        term
+          ? visibleCategories.length > 0
+          : expandedTypes.has(String(type.id));
+
+      html.push(`
+        <div class="tree-row level1 ${typeExpanded ? "expanded" : ""}">
+          <div class="row-main">
+
+            <div class="tree-label"
+                 data-toggle-type="${esc(type.id)}">
+
+              ${
+                hasChildren
+                  ? `<span class="tree-arrow">${typeExpanded ? "▼" : "▶"}</span>`
+                  : `<span class="tree-arrow empty-arrow">•</span>`
+              }
+
+              <span class="badge">TIPO</span>
+              <span class="path-name">${esc(type.name)}</span>
+
+            </div>
+
+            <div class="row-actions">
+              <button
+                class="secondary"
+                data-edit="${esc(type.id)}">
+                Editar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      `);
+
+      // Se estiver recolhido, não renderiza os filhos
+      if (!typeExpanded) continue;
+
+      for (const item of visibleCategories) {
+
+        const cat = item.cat;
+        const subs = item.subs;
+        const visibleSubs = item.visibleSubs;
+
+        const hasSubcategories = subs.length > 0;
+
+        const catExpanded =
+          term
+            ? visibleSubs.length > 0
+            : expandedCategories.has(String(cat.id));
+
+        html.push(`
+          <div class="tree-row level2 ${catExpanded ? "expanded" : ""}">
+
+            <div class="row-main">
+
+              <div class="tree-label"
+                   data-toggle-category="${esc(cat.id)}">
+
+                ${
+                  hasSubcategories
+                    ? `<span class="tree-arrow">${catExpanded ? "▼" : "▶"}</span>`
+                    : `<span class="tree-arrow empty-arrow">•</span>`
+                }
+
+                <span class="badge">CAT</span>
+                <span class="path-name">${esc(cat.name)}</span>
+
+              </div>
+
+              <div class="row-actions">
+                <button
+                  class="secondary"
+                  data-edit="${esc(cat.id)}">
+                  Editar
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        `);
+
+        // Se a categoria estiver recolhida, não mostra subcategorias
+        if (!catExpanded) continue;
+
+        const subsToShow = term ? visibleSubs : subs;
+
+        for (const sub of subsToShow) {
 
           html.push(`
             <div class="tree-row level3">
-              <div class="row-main">
-                <div class="path"><span class="badge">SUB</span>${esc(path)}</div>
-                <div class="row-actions"><button class="secondary" data-edit="${esc(sub.id)}">Editar</button></div>
-              </div>
-            </div>`);
-          typeShown = true;
-        }
-      }
 
-      if(!term || type.name.toLowerCase().includes(term) || typeShown) {
-        html.unshift(`
-          <div class="tree-row level1">
-            <div class="row-main">
-              <div class="path"><span class="badge">TIPO</span>${esc(type.name)}</div>
-              <div class="row-actions"><button class="secondary" data-edit="${esc(type.id)}">Editar</button></div>
+              <div class="row-main">
+
+                <div class="tree-label no-toggle">
+
+                  <span class="tree-arrow empty-arrow">•</span>
+
+                  <span class="badge">SUB</span>
+                  <span class="path-name">${esc(sub.name)}</span>
+
+                </div>
+
+                <div class="row-actions">
+                  <button
+                    class="secondary"
+                    data-edit="${esc(sub.id)}">
+                    Editar
+                  </button>
+                </div>
+
+              </div>
+
             </div>
-          </div>`);
+          `);
+        }
       }
     }
 
-    els.tree.innerHTML = html.length ? html.join("") : '<div class="empty">Nenhum item encontrado.</div>';
+    els.tree.innerHTML = html.length
+      ? html.join("")
+      : '<div class="empty">Nenhum item encontrado.</div>';
 
+    // Editar
     els.tree.querySelectorAll("[data-edit]").forEach(btn => {
-      btn.addEventListener("click", () => editCategory(btn.dataset.edit));
+      btn.addEventListener("click", () =>
+        editCategory(btn.dataset.edit)
+      );
+    });
+
+    // Expandir/recolher tipos
+    els.tree.querySelectorAll("[data-toggle-type]").forEach(el => {
+
+      el.addEventListener("click", () => {
+
+        const id = String(el.dataset.toggleType);
+
+        if (expandedTypes.has(id)) {
+          expandedTypes.delete(id);
+
+          // Ao recolher o tipo, também recolhemos suas categorias
+          const cats = childrenOf(id);
+
+          cats.forEach(cat => {
+            expandedCategories.delete(String(cat.id));
+          });
+
+        } else {
+          expandedTypes.add(id);
+        }
+
+        renderTree();
+      });
+
+    });
+
+    // Expandir/recolher categorias
+    els.tree.querySelectorAll("[data-toggle-category]").forEach(el => {
+
+      el.addEventListener("click", () => {
+
+        const id = String(el.dataset.toggleCategory);
+
+        if (expandedCategories.has(id)) {
+          expandedCategories.delete(id);
+        } else {
+          expandedCategories.add(id);
+        }
+
+        renderTree();
+      });
+
     });
   }
 
