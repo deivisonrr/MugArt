@@ -1,486 +1,99 @@
-<style>
-  :root{
-    --bg:#080b0d;
-    --panel:#111619;
-    --border:#30383c;
-    --text:#fff;
-    --muted:#aeb7ba;
-    --pink:#ff3b78;
-    --pink2:#ff4f88;
-    --yellow:#e8c900;
-    --danger:#ff4d5f;
-    --green:#39d98a
-  }
-
-  *{
-    box-sizing:border-box
-  }
-
-  body{
-    margin:0;
-    min-height:100vh;
-    background:
-      radial-gradient(
-        circle at 10% 0%,
-        rgba(255,59,120,.10),
-        transparent 35%
-      ),
-      radial-gradient(
-        circle at 90% 20%,
-        rgba(0,190,190,.08),
-        transparent 35%
-      ),
-      var(--bg);
-    color:var(--text);
-    font-family:Arial,Helvetica,sans-serif
-  }
-
-  /* Área da página de categorias */
-  .page{
-    padding:28px 24px 60px;
-    max-width:1500px;
-    margin:auto
-  }
-
-  h1{
-    margin:0 0 6px;
-    font-size:clamp(34px,4vw,62px);
-    line-height:.95;
-    font-weight:900;
-    letter-spacing:-2px
-  }
-
-  .subtitle{
-    margin:0 0 24px;
-    color:#fff;
-    font-size:16px
-  }
-
-  .accent{
-    color:var(--yellow)
-  }
-
-  .card{
-    background:
-      linear-gradient(
-        145deg,
-        rgba(255,255,255,.045),
-        rgba(255,255,255,.015)
-      );
-    border:1px solid var(--border);
-    border-radius:24px;
-    padding:26px;
-    box-shadow:0 20px 60px rgba(0,0,0,.22)
-  }
-
-  .topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:16px;
-    margin-bottom:22px;
-    flex-wrap:wrap
-  }
-
-  .topbar h2{
-    margin:0;
-    font-size:26px
-  }
-
-  .mode{
-    color:var(--muted);
-    font-size:14px
-  }
-
-  .mode strong{
-    color:var(--yellow)
-  }
-
-  .form-grid{
-    display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:18px
-  }
-
-  .level{
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:18px;
-    background:rgba(0,0,0,.20)
-  }
-
-  .level-title{
-    color:var(--yellow);
-    font-weight:900;
-    font-size:13px;
-    text-transform:uppercase;
-    margin-bottom:5px
-  }
-
-  .level h3{
-    margin:0 0 5px;
-    font-size:21px
-  }
-
-  .level p{
-    margin:0 0 16px;
-    color:var(--muted);
-    font-size:13px;
-    min-height:32px
-  }
-
-  label{
-    display:block;
-    margin:12px 0 6px;
-    font-size:13px;
-    font-weight:700
-  }
-
-  input,
-  select{
-    width:100%;
-    height:44px;
-    border-radius:12px;
-    border:1px solid #3b4448;
-    background:#0e1215;
-    color:#fff;
-    padding:0 13px;
-    outline:none
-  }
-
-  input:focus,
-  select:focus{
-    border-color:var(--pink);
-    box-shadow:0 0 0 3px rgba(255,59,120,.12)
-  }
-
-  input:disabled,
-  select:disabled{
-    opacity:.45;
-    cursor:not-allowed
-  }
-
-  button{
-    border:0;
-    border-radius:12px;
-    min-height:44px;
-    padding:0 18px;
-    color:#fff;
-    font-weight:900;
-    cursor:pointer
-  }
-
-  .primary{
-    background:var(--pink)
-  }
-
-  .primary:hover{
-    background:var(--pink2)
-  }
-
-  .secondary{
-    background:#293136
-  }
-
-  .danger{
-    background:var(--danger)
-  }
-
-  .actions{
-    display:flex;
-    gap:10px;
-    margin-top:14px;
-    flex-wrap:wrap
-  }
-
-  .wide-actions{
-    display:flex;
-    gap:12px;
-    margin-top:22px;
-    flex-wrap:wrap
-  }
-
-  .wide-actions button{
-    min-width:170px
-  }
-
-  .status{
-    margin-top:18px;
-    padding:13px 15px;
-    border-radius:12px;
-    background:#0e1215;
-    border:1px solid var(--border);
-    color:var(--muted);
-    min-height:46px
-  }
-
-  .status.ok{
-    border-color:rgba(57,217,138,.45);
-    color:#b9ffd9
-  }
-
-  .status.error{
-    border-color:rgba(255,77,95,.5);
-    color:#ffd0d5
-  }
-
-  .divider{
-    height:1px;
-    background:var(--border);
-    margin:28px 0
-  }
-
-  .existing-head{
-    display:flex;
-    justify-content:space-between;
-    gap:12px;
-    align-items:center;
-    margin-bottom:14px;
-    flex-wrap:wrap
-  }
-
-  .existing-head h2{
-    margin:0;
-    font-size:24px
-  }
-
-  .search{
-    max-width:340px
-  }
-
-  /* =========================================================
-     ÁRVORE DE CATEGORIAS
-     ========================================================= */
-
-  .tree{
-    display:flex;
-    flex-direction:column;
-    gap:10px
-  }
-
-  .tree-row{
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:13px 15px;
-    background:rgba(255,255,255,.025);
-    transition:
-      border-color .15s ease,
-      background .15s ease
-  }
-
-  /*
-   * Recuo dos níveis
-   */
-  .tree-row.level2{
-    margin-left:28px
-  }
-
-  .tree-row.level3{
-    margin-left:56px
-  }
-
-  /*
-   * Linha principal
-   */
-  .row-main{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px
-  }
-
-  /*
-   * Área clicável do tipo/categoria
-   */
-  .tree-label{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    min-width:0;
-    cursor:pointer;
-    user-select:none
-  }
-
-  /*
-   * Subcategorias não precisam de clique
-   */
-  .tree-label.no-toggle{
-    cursor:default
-  }
-
-  /*
-   * Seta ▶ / ▼
-   */
-  .tree-arrow{
-    width:20px;
-    min-width:20px;
-    height:20px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    color:var(--yellow);
-    font-size:12px;
-    font-weight:900;
-    transition:transform .15s ease
-  }
-
-  /*
-   * Quando não existem filhos
-   */
-  .empty-arrow{
-    color:#697276;
-    font-size:10px
-  }
-
-  /*
-   * Nome da categoria/tipo
-   */
-  .path-name{
-    word-break:break-word
-  }
-
-  /*
-   * Badge TIPO / CAT / SUB
-   */
-  .badge{
-    display:inline-block;
-    font-size:10px;
-    font-weight:900;
-    color:#111;
-    background:var(--yellow);
-    padding:4px 7px;
-    border-radius:7px;
-    margin-right:8px;
-    flex-shrink:0
-  }
-
-  /*
-   * Hover nos itens que podem ser expandidos
-   */
-  .tree-row.level1 .tree-label:hover .path-name,
-  .tree-row.level2 .tree-label:hover .path-name{
-    color:var(--yellow)
-  }
-
-  /*
-   * Tipo expandido
-   */
-  .tree-row.level1.expanded{
-    border-color:rgba(232,201,0,.35);
-    background:rgba(232,201,0,.035)
-  }
-
-  /*
-   * Categoria expandida
-   */
-  .tree-row.level2.expanded{
-    border-color:rgba(232,201,0,.22);
-    background:rgba(232,201,0,.025)
-  }
-
-  /*
-   * Ações dos itens
-   */
-  .row-actions{
-    display:flex;
-    gap:7px;
-    flex-shrink:0
-  }
-
-  .row-actions button{
-    min-height:34px;
-    padding:0 10px;
-    font-size:12px
-  }
-
-  /*
-   * Item vazio
-   */
-  .empty{
-    padding:24px;
-    color:var(--muted);
-    text-align:center;
-    border:1px dashed var(--border);
-    border-radius:14px
-  }
-
-  .hint{
-    font-size:12px;
-    color:var(--muted);
-    margin-top:8px
-  }
-
-  /* Ajuste para o conteúdo ficar corretamente ao lado do menu */
-  .categories-content{
-    width:100%;
-    min-width:0
-  }
-
-  .categories-content .page{
-    max-width:none;
-    padding:28px 30px 60px
-  }
-
-  /*
-   * Pequeno destaque visual no clique
-   */
-  .tree-label:active{
-    opacity:.75
-  }
-
-  /*
-   * Evita que o botão Editar seja confundido
-   * com a área de expansão
-   */
-  .row-actions{
-    position:relative;
-    z-index:2
-  }
-
-  /* =========================================================
-     RESPONSIVO
-     ========================================================= */
-
-  @media(max-width:1050px){
-
-    .form-grid{
-      grid-template-columns:1fr
-    }
-
-  }
-
-  @media(max-width:650px){
-
-    .categories-content .page{
-      padding:20px 14px 40px
-    }
-
-    .card{
-      padding:18px;
-      border-radius:18px
-    }
-
-    .tree-row.level2,
-    .tree-row.level3{
-      margin-left:0
-    }
-
-    .row-main{
-      align-items:flex-start;
-      flex-direction:column
-    }
-
-    .row-actions{
-      width:100%
-    }
-
-    .row-actions button{
-      width:100%
-    }
-
-    .tree-label{
-      width:100%
-    }
-
-  }
-</style>
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>MugArt Admin | Tipos, Categorias e Subcategorias</title>
+    <link rel="icon" href="../assets/favicon.ico">
+    <!-- CSS padrão do painel Admin -->
+    <link rel="stylesheet" href="/admin/css/admin.css?v=6">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase-config.js?v=5"></script>
+    <script src="/admin/js/admin-auth.js?v=1"></script>
+    <style>
+        :root{--bg:#080b0d;--panel:#111619;--border:#30383c;--text:#fff;--muted:#aeb7ba;--pink:#ff3b78;--pink2:#ff4f88;--yellow:#e8c900;--danger:#ff4d5f;--green:#39d98a} *{box-sizing:border-box} body{margin:0;min-height:100vh;background:radial-gradient(circle at 10% 0%,rgba(255,59,120,.10),transparent 35%),radial-gradient(circle at 90% 20%,rgba(0,190,190,.08),transparent 35%),var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif} /* Área da página de categorias */ .page{padding:28px 24px 60px;max-width:1500px;margin:auto} h1{margin:0 0 6px;font-size:clamp(34px,4vw,62px);line-height:.95;font-weight:900;letter-spacing:-2px} .subtitle{margin:0 0 24px;color:#fff;font-size:16px} .accent{color:var(--yellow)} .card{background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));border:1px solid var(--border);border-radius:24px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.22)} .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px;flex-wrap:wrap} .topbar h2{margin:0;font-size:26px} .mode{color:var(--muted);font-size:14px}.mode strong{color:var(--yellow)} .form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px} .level{border:1px solid var(--border);border-radius:18px;padding:18px;background:rgba(0,0,0,.20)} .level-title{color:var(--yellow);font-weight:900;font-size:13px;text-transform:uppercase;margin-bottom:5px} .level h3{margin:0 0 5px;font-size:21px}.level p{margin:0 0 16px;color:var(--muted);font-size:13px;min-height:32px} label{display:block;margin:12px 0 6px;font-size:13px;font-weight:700} input,select{width:100%;height:44px;border-radius:12px;border:1px solid #3b4448;background:#0e1215;color:#fff;padding:0 13px;outline:none} input:focus,select:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(255,59,120,.12)} input:disabled,select:disabled{opacity:.45;cursor:not-allowed} button{border:0;border-radius:12px;min-height:44px;padding:0 18px;color:#fff;font-weight:900;cursor:pointer} .primary{background:var(--pink)}.primary:hover{background:var(--pink2)}.secondary{background:#293136}.danger{background:var(--danger)} .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap} .wide-actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}.wide-actions button{min-width:170px} .status{margin-top:18px;padding:13px 15px;border-radius:12px;background:#0e1215;border:1px solid var(--border);color:var(--muted);min-height:46px} .status.ok{border-color:rgba(57,217,138,.45);color:#b9ffd9}.status.error{border-color:rgba(255,77,95,.5);color:#ffd0d5} .divider{height:1px;background:var(--border);margin:28px 0} .existing-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap} .existing-head h2{margin:0;font-size:24px}.search{max-width:340px} .tree{display:flex;flex-direction:column;gap:10px} .tree-row{border:1px solid var(--border);border-radius:14px;padding:13px 15px;background:rgba(255,255,255,.025)} .tree-row.level2{margin-left:28px}.tree-row.level3{margin-left:56px} .row-main{display:flex;align-items:center;justify-content:space-between;gap:12px} .path{color:#fff;font-weight:700;word-break:break-word} .badge{display:inline-block;font-size:10px;font-weight:900;color:#111;background:var(--yellow);padding:4px 7px;border-radius:7px;margin-right:8px} .row-actions{display:flex;gap:7px;flex-shrink:0}.row-actions button{min-height:34px;padding:0 10px;font-size:12px} .empty{padding:24px;color:var(--muted);text-align:center;border:1px dashed var(--border);border-radius:14px} .hint{font-size:12px;color:var(--muted);margin-top:8px} /* Ajuste para o conteúdo ficar corretamente ao lado do menu */ .categories-content{width:100%;min-width:0} .categories-content .page{max-width:none;padding:28px 30px 60px} @media(max-width:1050px){.form-grid{grid-template-columns:1fr}} @media(max-width:650px){ .categories-content .page{padding:20px 14px 40px} .card{padding:18px;border-radius:18px} .tree-row.level2,.tree-row.level3{margin-left:0} .row-main{align-items:flex-start;flex-direction:column} .row-actions{width:100%} }
+    </style>
+</head>
+
+<body class="admin-body">
+    <!-- MENU LATERAL PADRÃO DO ADMIN -->
+    <aside class="admin-sidebar">
+        <a href="/admin/dashboard.html" class="admin-brand"> <img src="/assets/logo.png" alt="MugArt"> </a>
+        <nav> <a href="/admin/dashboard.html"> Dashboard </a> <a href="/admin/produtos.html"> Produtos </a> <a href="/admin/categorias.html" class="active"> Categorias </a> <a href="/admin/pedidos.html"> Pedidos <span id="sidebar-pending-orders" class="dashboard-menu-badge hidden">0</span> </a>            <a href="/admin/cupons.html"> Cupons </a> <a href="/admin/analytics.html"> Analytics </a> <a href="/admin/configuracoes.html"> Configurações </a> <a href="/" target="_blank" rel="noopener"> Ver loja </a> </nav>
+        <button id="admin-logout-button"
+        class="logout-btn" type="button"> Sair </button>
+    </aside>
+    <!-- CONTEÚDO -->
+    <main class="admin-main categories-content">
+        <div class="page">
+            <h1>TIPOS, CATEGORIAS E SUBCATEGORIAS</h1>
+            <p class="subtitle">Cadastre e organize tudo em <span class="accent">uma única janela</span>.</p>
+            <section class="card">
+                <div class="topbar">
+                    <h2 id="formTitle">Cadastrar estrutura</h2>
+                    <div class="mode">Modo: <strong id="modeText">Novo cadastro</strong></div>
+                </div>
+                <div class="form-grid">
+                    <div class="level">
+                        <div class="level-title">Nível 1</div>
+                        <h3>Tipo de produto</h3>
+                        <p>Ex.: Canecas, Xícaras, Garrafas.</p>
+                        <label for="typeName">Nome do tipo</label>
+                        <input id="typeName" type="text" placeholder="Ex.: Canecas">
+                        <div class="actions">
+                            <button class="primary" id="saveTypeBtn">Adicionar tipo</button>
+                        </div>
+                        <div class="hint"> Cada vez que cadastrar um tipo, ele ficará disponível para as categorias. </div>
+                    </div>
+                    <div class="level">
+                        <div class="level-title">Nível 2</div>
+                        <h3>Categoria</h3>
+                        <p>Escolha o tipo e cadastre a categoria abaixo dele.</p>
+                        <label for="categoryTypeSelect">Tipo de produto</label>
+                        <select id="categoryTypeSelect">
+                            <option value="">Selecione o tipo</option>
+                        </select>
+                        <label for="categoryName">Nome da categoria</label>
+                        <input id="categoryName" type="text" placeholder="Ex.: Datas Comemorativas" disabled>
+                        <div class="actions">
+                            <button class="primary" id="saveCategoryBtn" disabled>Adicionar categoria</button>
+                        </div>
+                    </div>
+                    <div class="level">
+                        <div class="level-title">Nível 3</div>
+                        <h3>Subcategoria</h3>
+                        <p>Escolha o tipo, depois a categoria, e cadastre a subcategoria.</p>
+                        <label for="subcategoryTypeSelect">Tipo de produto</label>
+                        <select id="subcategoryTypeSelect">
+                            <option value="">Selecione o tipo</option>
+                        </select>
+                        <label for="subcategoryCategorySelect">Categoria</label>
+                        <select id="subcategoryCategorySelect" disabled>
+                            <option value="">Selecione a categoria</option>
+                        </select>
+                        <label for="subcategoryName">Nome da subcategoria</label>
+                        <input id="subcategoryName" type="text" placeholder="Ex.: Halloween" disabled>
+                        <div class="actions">
+                            <button class="primary" id="saveSubcategoryBtn" disabled>Adicionar subcategoria</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="wide-actions">
+                    <button class="secondary" id="newBtn">Novo / Limpar</button>
+                    <button class="danger" id="deleteBtn" disabled>Excluir selecionado</button>
+                </div>
+                <div id="status" class="status">Carregando estrutura...</div>
+                <div class="divider"></div>
+                <div class="existing-head">
+                    <h2>Hierarquia cadastrada</h2>
+                    <input id="search" class="search" type="search" placeholder="Pesquisar..."> </div>
+                <div id="tree" class="tree"></div>
+            </section>
+        </div>
+    </main>
+    <script src="/admin/js/categorias.js?v=2"></script>
+</body>
+
+</html>
