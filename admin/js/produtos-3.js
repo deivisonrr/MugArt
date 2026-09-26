@@ -1213,6 +1213,19 @@ async function saveProduct(event) {
   await renderProductHistory(savedId);
 
   alert("Produto salvo com sucesso.");
+
+  // Limpa o formulário depois de salvar
+  resetForm();
+
+  // Volta o título para "Novo produto"
+  a3("#admin3DrawerTitle").textContent = "Novo produto";
+
+  // Gera um novo SKU para o próximo cadastro
+  const nextSku = await generateNextProductSku();
+
+  if (a3("#admin3Sku")) {
+    a3("#admin3Sku").value = nextSku;
+  }
 }
 
 function previewImage(event) {
