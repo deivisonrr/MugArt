@@ -465,6 +465,116 @@
     ];
   }
 
+  function renderMarkdown(value) {
+    var text = String(value || "").replace(/\r\n?/g, "\n");
+
+    if (!text.trim()) return "";
+
+    // Escapa HTML antes de transformar Markdown para evitar que a descrição
+    // cadastrada no painel injete HTML/JavaScript na página pública.
+    text = escapeHtml(text);
+
+    var lines = text.split("\n");
+    var html = [];
+    var inUnorderedList = false;
+    var inOrderedList = false;
+    var inCodeBlock = false;
+    var codeLines = [];
+
+    function closeLists() {
+      if (inUnorderedList) {
+        html.push("</ul>");
+        inUnorderedList = false;
+      }
+      if (inOrderedList) {
+        html.push("</ol>");
+        inOrderedList = false;
+      }
+    }
+
+    function inlineMarkdown(line) {
+      return line
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+        .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+        .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
+        .replace(/_([^_\n]+)_/g, "<em>$1</em>")
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    }
+
+    lines.forEach(function(line) {
+      var trimmed = line.trim();
+
+      if (trimmed === "```") {
+        closeLists();
+        if (inCodeBlock) {
+          html.push("<pre><code>" + codeLines.join("\n") + "</code></pre>");
+          codeLines = [];
+          inCodeBlock = false;
+        } else {
+          inCodeBlock = true;
+        }
+        return;
+      }
+
+      if (inCodeBlock) {
+        codeLines.push(line);
+        return;
+      }
+
+      if (!trimmed) {
+        closeLists();
+        return;
+      }
+
+      var heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
+      if (heading) {
+        closeLists();
+        var level = heading[1].length;
+        html.push("<h" + level + ">" + inlineMarkdown(heading[2]) + "</h" + level + ">");
+        return;
+      }
+
+      var unordered = trimmed.match(/^[-*+]\s+(.+)$/);
+      if (unordered) {
+        if (inOrderedList) {
+          html.push("</ol>");
+          inOrderedList = false;
+        }
+        if (!inUnorderedList) {
+          html.push("<ul>");
+          inUnorderedList = true;
+        }
+        html.push("<li>" + inlineMarkdown(unordered[1]) + "</li>");
+        return;
+      }
+
+      var ordered = trimmed.match(/^\d+[.)]\s+(.+)$/);
+      if (ordered) {
+        if (inUnorderedList) {
+          html.push("</ul>");
+          inUnorderedList = false;
+        }
+        if (!inOrderedList) {
+          html.push("<ol>");
+          inOrderedList = true;
+        }
+        html.push("<li>" + inlineMarkdown(ordered[1]) + "</li>");
+        return;
+      }
+
+      closeLists();
+      html.push("<p>" + inlineMarkdown(trimmed) + "</p>");
+    });
+
+    if (inCodeBlock) {
+      html.push("<pre><code>" + codeLines.join("\n") + "</code></pre>");
+    }
+
+    closeLists();
+    return html.join("\n");
+  }
+
   function renderPage() {
     var product = state.product;
 
@@ -480,8 +590,8 @@
     $("#productName").textContent =
       product.name;
 
-    $("#productDescription").textContent =
-      product.description;
+    $("#productDescription").innerHTML =
+      renderMarkdown(product.description);
 
     renderBadge();
     renderVariants();
