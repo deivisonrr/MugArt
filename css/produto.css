@@ -168,20 +168,9 @@ main {
   transition: transform .18s ease;
 }
 
-/* ==========================================================
-   ZOOM DA IMAGEM DO PRODUTO
-========================================================== */
-
-#productMainImage {
-  transform: scale(1);
-  transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
-  transition: transform .18s ease;
-  will-change: transform;
-}
-
-#productMainImage.zoomed {
+.product-main-media img.zoomed {
   transform: scale(1.75);
-  cursor: zoom-out;
+  transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
 }
 
 .product-main-media video {
@@ -361,6 +350,7 @@ main {
 }
 
 .product-stock {
+  display: none !important;
   margin-bottom: 20px;
   color: var(--green);
   font-weight: 900;
@@ -1009,97 +999,3 @@ main {
 }
 
 .product-shipping-form input {
-  min-height: 44px;
-  padding: 10px 13px;
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 999px;
-  outline: 0;
-  background: rgba(255,255,255,.06);
-  color: #fff;
-}
-
-.product-shipping-form input:focus {
-  border-color: #00d8ff;
-  box-shadow: 0 0 0 3px rgba(0,216,255,.08);
-}
-
-.product-shipping-form button {
-  min-height: 44px;
-  padding: 10px 17px;
-  border: 0;
-  border-radius: 999px;
-  background: #00d8ff;
-  color: #071116;
-  cursor: pointer;
-  font-weight: 900;
-}
-
-.product-shipping-calculator > small {
-  display: block;
-  margin-top: 8px;
-  color: rgba(255,255,255,.48);
-  font-size: 10px;
-}
-
-.shipping-message {
-  margin-top: 12px;
-  padding: 11px;
-  border-radius: 11px;
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.7);
-  font-size: 12px;
-}
-
-.shipping-message.error {
-  background: rgba(255,77,103,.09);
-  color: #ff7c8d;
-}
-
-.product-shipping-options {
-  display: grid;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.product-shipping-option {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  padding: 11px 12px;
-  border: 1px solid rgba(255,255,255,.09);
-  border-radius: 12px;
-  background: rgba(255,255,255,.035);
-}
-
-.product-shipping-option strong,
-.product-shipping-option span,
-.product-shipping-option small {
-  display: block;
-}
-
-.product-shipping-option strong {
-  font-size: 12px;
-}
-
-.product-shipping-option small {
-  margin-top: 3px;
-  color: rgba(255,255,255,.48);
-  font-size: 10px;
-}
-
-.product-shipping-option > span {
-  align-self: center;
-  color: #ffd400;
-  font-weight: 900;
-}
-
-@media (max-width: 600px) {
-  .product-countdown {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .product-shipping-form {
-    grid-template-columns: 1fr;
-  }
-}
