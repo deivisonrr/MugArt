@@ -465,80 +465,6 @@
     ];
   }
 
-
-  function renderMarkdown(value) {
-    var source = String(value || "").replace(/\r\n/g, "\n").trim();
-    if (!source) return "";
-
-    function inlineMarkdown(text) {
-      var html = escapeHtml(text);
-
-      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-
-      html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-      html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
-      html = html.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>");
-      html = html.replace(/(^|[^_])_([^_]+)_(?!_)/g, "$1<em>$2</em>");
-
-      return html;
-    }
-
-    var lines = source.split("\n");
-    var output = [];
-    var paragraph = [];
-    var inList = false;
-
-    function flushParagraph() {
-      if (!paragraph.length) return;
-      output.push("<p>" + paragraph.map(inlineMarkdown).join("<br>") + "</p>");
-      paragraph = [];
-    }
-
-    function closeList() {
-      if (!inList) return;
-      output.push("</ul>");
-      inList = false;
-    }
-
-    lines.forEach(function(line) {
-      var trimmed = line.trim();
-      if (!trimmed) {
-        flushParagraph();
-        closeList();
-        return;
-      }
-
-      var heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
-      if (heading) {
-        flushParagraph();
-        closeList();
-        var level = heading[1].length;
-        output.push("<h" + level + ">" + inlineMarkdown(heading[2]) + "</h" + level + ">");
-        return;
-      }
-
-      var bullet = trimmed.match(/^[-*+]\s+(.+)$/);
-      if (bullet) {
-        flushParagraph();
-        if (!inList) {
-          output.push("<ul>");
-          inList = true;
-        }
-        output.push("<li>" + inlineMarkdown(bullet[1]) + "</li>");
-        return;
-      }
-
-      closeList();
-      paragraph.push(trimmed);
-    });
-
-    flushParagraph();
-    closeList();
-
-    return output.join("");
-  }
-
   function renderPage() {
     var product = state.product;
 
@@ -554,8 +480,8 @@
     $("#productName").textContent =
       product.name;
 
-    $("#productDescription").innerHTML =
-      renderMarkdown(product.description);
+    $("#productDescription").textContent =
+      product.description;
 
     renderBadge();
     renderVariants();
@@ -1296,10 +1222,14 @@
         "Produto esgotado";
 
       stock.classList.add("out");
+      stock.style.display = "block";
+
     } else {
       stock.textContent =
         option.stock +
         " unidade(s) disponível(is)";
+
+      stock.style.display = "block";
 
       if (option.stock <= 3) {
         stock.classList.add("low");
@@ -1311,8 +1241,24 @@
         Math.max(1, option.stock)
       );
 
-    $("#addProductToCart").disabled =
-      option.stock <= 0;
+    var addButton =
+      $("#addProductToCart");
+
+    if (option.stock <= 0) {
+      addButton.disabled = true;
+      addButton.textContent = "Esgotado";
+      addButton.setAttribute(
+        "aria-disabled",
+        "true"
+      );
+    } else {
+      addButton.disabled = false;
+      addButton.textContent =
+        "Adicionar ao carrinho";
+      addButton.removeAttribute(
+        "aria-disabled"
+      );
+    }
 
     renderCommercialConditions();
   }
