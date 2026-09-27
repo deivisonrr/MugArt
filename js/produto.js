@@ -963,7 +963,7 @@
             "Content-Type":
               "application/json",
             "apikey":
-              window.SUPABASE_ANON_KEY ||
+              window.MUGART_SUPABASE_KEY ||
               ""
           },
           body: JSON.stringify({
