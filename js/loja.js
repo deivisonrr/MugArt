@@ -675,6 +675,60 @@ function escapeHtml(value) {
   return String(value == null ? "" : value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 }
 
+function renderMarkdownDescription(value) {
+  var source = String(value == null ? "" : value)
+    .replace(/\\r\\n?/g, "\\n");
+
+  if (!source.trim()) return "";
+
+  var lines = source.split("\\n");
+  var html = [];
+
+  function formatInline(text) {
+    var safe = escapeHtml(text);
+
+    // Negrito: **texto** ou __texto__
+    safe = safe
+      .replace(/\\*\\*(.+?)\\*\\*/g, "<strong>$1</strong>")
+      .replace(/__(.+?)__/g, "<strong>$1</strong>");
+
+    return safe;
+  }
+
+  lines.forEach(function(rawLine, index) {
+    var line = rawLine.trim();
+
+    if (!line) {
+      if (html.length && html[html.length - 1] !== "<br><br>") {
+        html.push("<br><br>");
+      }
+      return;
+    }
+
+    // Títulos Markdown: ### Título, ## Título ou # Título
+    var headingMatch = line.match(/^#{1,3}\\s+(.+)$/);
+
+    if (headingMatch) {
+      html.push("<strong>" + formatInline(headingMatch[1]) + "</strong>");
+    } else {
+      // Listas Markdown: - item, * item ou + item
+      var listMatch = line.match(/^[-*+]\\s+(.+)$/);
+
+      if (listMatch) {
+        html.push("• " + formatInline(listMatch[1]));
+      } else {
+        html.push(formatInline(line));
+      }
+    }
+
+    if (index < lines.length - 1) {
+      html.push("<br>");
+    }
+  });
+
+  return html.join("").replace(/(?:<br>)*(<br><br>)(?:<br>)*/g, "$1");
+}
+
 function getCategoryChildren(parentId) {
   return StoreState.categories.filter(function(category) { return String(category.parent_id || "") === String(parentId || ""); });
 }
@@ -875,7 +929,7 @@ function productCardTemplate(product) {
       '<div class="product-info">' +
         '<span class="product-category">' + getProductHierarchyLabel(product) + "</span>" +
         "<h3>" + product.name + "</h3>" +
-        "<p>" + product.description + "</p>" +
+        '<p class="product-description">' + renderMarkdownDescription(product.description) + "</p>" +
 
         '<div class="product-meta">' +
           "<span>" + product.color + "</span>" +
