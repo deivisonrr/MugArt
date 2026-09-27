@@ -675,6 +675,18 @@ function escapeHtml(value) {
   return String(value == null ? "" : value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 }
 
+function ensureProductDescriptionStyles() {
+  if (document.getElementById("productDescriptionMarkdownStyles")) return;
+
+  var style = document.createElement("style");
+  style.id = "productDescriptionMarkdownStyles";
+  style.textContent =
+    ".product-description-rendered{color:inherit;line-height:1.55;white-space:normal;}" +
+    ".product-description-rendered strong{font-weight:800;}" +
+    ".product-description-rendered .product-description-heading{display:block;font-size:1.05em;margin:4px 0 6px;}";
+  document.head.appendChild(style);
+}
+
 function renderMarkdownDescription(value) {
   var source = String(value == null ? "" : value)
     .replace(/\r\n?/g, "\n");
@@ -1199,6 +1211,7 @@ function openProductModal(productId) {
 
 
 function renderProductModal() {
+  ensureProductDescriptionStyles();
   var product = StoreState.selectedProduct;
   var content = $("#modalContent");
 
@@ -1297,7 +1310,7 @@ function renderProductModal() {
       '<div class="modal-product-info">' +
         '<span class="product-category">' + getProductHierarchyLabel(product) + '</span>' +
         '<h2>' + product.name + '</h2>' +
-        '<p>' + product.description + '</p>' +
+        '<div class="product-description-rendered">' + renderMarkdownDescription(product.description) + '</div>' +
 
         (hasVariations
           ? '<div class="selected-variation-box">' +
