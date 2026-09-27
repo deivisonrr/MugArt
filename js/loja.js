@@ -946,7 +946,7 @@ function productCardTemplate(product) {
         '<div class="product-meta">' +
           "<span>" + product.color + "</span>" +
           '<span class="' + (product.stock <= 4 ? "stock-low" : "") + '">' +
-            (product.stock > 0 ? product.stock + " em estoque" : "Esgotado") +
+            (product.stock <= 0 ? "Esgotado" : "") +
           "</span>" +
         "</div>" +
 
