@@ -677,11 +677,11 @@ function escapeHtml(value) {
 
 function renderMarkdownDescription(value) {
   var source = String(value == null ? "" : value)
-    .replace(/\\r\\n?/g, "\\n");
+    .replace(/\r\n?/g, "\n");
 
   if (!source.trim()) return "";
 
-  var lines = source.split("\\n");
+  var lines = source.split("\n");
   var html = [];
 
   function formatInline(text) {
@@ -689,7 +689,7 @@ function renderMarkdownDescription(value) {
 
     // Negrito: **texto** ou __texto__
     safe = safe
-      .replace(/\\*\\*(.+?)\\*\\*/g, "<strong>$1</strong>")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/__(.+?)__/g, "<strong>$1</strong>");
 
     return safe;
@@ -706,13 +706,13 @@ function renderMarkdownDescription(value) {
     }
 
     // Títulos Markdown: ### Título, ## Título ou # Título
-    var headingMatch = line.match(/^#{1,3}\\s+(.+)$/);
+    var headingMatch = line.match(/^#{1,3}\s+(.+)$/);
 
     if (headingMatch) {
-      html.push("<strong>" + formatInline(headingMatch[1]) + "</strong>");
+      html.push("<strong class=\"product-description-heading\">" + formatInline(headingMatch[1]) + "</strong>");
     } else {
       // Listas Markdown: - item, * item ou + item
-      var listMatch = line.match(/^[-*+]\\s+(.+)$/);
+      var listMatch = line.match(/^[-*+]\s+(.+)$/);
 
       if (listMatch) {
         html.push("• " + formatInline(listMatch[1]));
