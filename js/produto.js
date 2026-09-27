@@ -465,6 +465,80 @@
     ];
   }
 
+
+  function renderMarkdown(value) {
+    var source = String(value || "").replace(/\r\n/g, "\n").trim();
+    if (!source) return "";
+
+    function inlineMarkdown(text) {
+      var html = escapeHtml(text);
+
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+      html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+      html = html.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>");
+      html = html.replace(/(^|[^_])_([^_]+)_(?!_)/g, "$1<em>$2</em>");
+
+      return html;
+    }
+
+    var lines = source.split("\n");
+    var output = [];
+    var paragraph = [];
+    var inList = false;
+
+    function flushParagraph() {
+      if (!paragraph.length) return;
+      output.push("<p>" + paragraph.map(inlineMarkdown).join("<br>") + "</p>");
+      paragraph = [];
+    }
+
+    function closeList() {
+      if (!inList) return;
+      output.push("</ul>");
+      inList = false;
+    }
+
+    lines.forEach(function(line) {
+      var trimmed = line.trim();
+      if (!trimmed) {
+        flushParagraph();
+        closeList();
+        return;
+      }
+
+      var heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
+      if (heading) {
+        flushParagraph();
+        closeList();
+        var level = heading[1].length;
+        output.push("<h" + level + ">" + inlineMarkdown(heading[2]) + "</h" + level + ">");
+        return;
+      }
+
+      var bullet = trimmed.match(/^[-*+]\s+(.+)$/);
+      if (bullet) {
+        flushParagraph();
+        if (!inList) {
+          output.push("<ul>");
+          inList = true;
+        }
+        output.push("<li>" + inlineMarkdown(bullet[1]) + "</li>");
+        return;
+      }
+
+      closeList();
+      paragraph.push(trimmed);
+    });
+
+    flushParagraph();
+    closeList();
+
+    return output.join("");
+  }
+
   function renderPage() {
     var product = state.product;
 
@@ -480,8 +554,8 @@
     $("#productName").textContent =
       product.name;
 
-    $("#productDescription").textContent =
-      product.description;
+    $("#productDescription").innerHTML =
+      renderMarkdown(product.description);
 
     renderBadge();
     renderVariants();
@@ -963,11 +1037,10 @@
             "Content-Type":
               "application/json",
             "apikey":
-              window.MUGART_SUPABASE_KEY ||
+              window.SUPABASE_ANON_KEY ||
               ""
           },
           body: JSON.stringify({
-            to_zip: postalCode,
             cep: postalCode,
             postal_code: postalCode,
             destination_postal_code:
