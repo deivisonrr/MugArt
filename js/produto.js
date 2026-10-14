@@ -1729,6 +1729,12 @@
       existing.unitPrice =
         option.price;
 
+      existing.productName =
+        product.name;
+
+      existing.productCategory =
+        product.category;
+
       existing.image =
         option.image;
     } else {
@@ -1737,6 +1743,8 @@
         variationId: variationId,
         variationColor: option.color,
         variationSku: option.sku,
+        productName: product.name,
+        productCategory: product.category,
         unitPrice: option.price,
         image: option.image,
         quantity: quantity
@@ -1860,6 +1868,24 @@
             }
           ).join("")
         : "<p>Seu carrinho está vazio.</p>";
+  }
+
+  function trackBeginCheckout() {
+    var detailed = state.cart.map(function (item) {
+      var isCurrentProduct = state.product && String(item.productId) === String(state.product.id);
+      return {
+        item_id: item.variationSku || item.productId || "",
+        item_name: isCurrentProduct ? state.product.name : (item.productName || item.variationSku || "Produto MugArt"),
+        item_category: isCurrentProduct ? (state.product.category || undefined) : (item.productCategory || undefined),
+        item_variant: item.variationColor || undefined,
+        price: Number(item.unitPrice || 0),
+        quantity: Math.max(1, Number(item.quantity || 1))
+      };
+    });
+    var value = detailed.reduce(function (sum, item) { return sum + Number(item.price || 0) * Number(item.quantity || 0); }, 0);
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ ecommerce: null });
+    window.dataLayer.push({ event: "begin_checkout", ecommerce: { currency: "BRL", value: value, items: detailed } });
   }
 
   function openCart() {
@@ -2452,6 +2478,20 @@
           "click",
           openCart
         );
+
+      var checkoutLink = document.querySelector(
+        "#productCartDrawer .product-cart-footer a[href='checkout.html']"
+      );
+      if (checkoutLink) {
+        checkoutLink.addEventListener("click", function (event) {
+          if (!state.cart.length) {
+            event.preventDefault();
+            showToast("Adicione um produto ao carrinho antes de finalizar.");
+            return;
+          }
+          trackBeginCheckout();
+        });
+      }
 
       $("#closeProductCart")
         .addEventListener(
